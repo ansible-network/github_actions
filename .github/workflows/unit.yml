@@ -28,7 +28,8 @@ jobs:
         uses: actions/checkout@v3
         with:
           path: ${{ env.source_directory }}
-      
+          fetch-depth: 0
+
       - name: Checkout the github_action repository
         uses: actions/checkout@v3
         with:
@@ -44,7 +45,7 @@ jobs:
         run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
 
       - name: Set the version number in galaxy.yml
-        run: 'sed -i "/^version:.*$/c\version: ${{ github.event.number }}" galaxy.yml'
+        run: 'sed -i "/^version:.*$/c\version: 0.0.${{ github.event.number }}" galaxy.yml'
         working-directory: ${{ env.source_directory }}
       
       - name: Show the galaxy.yml
