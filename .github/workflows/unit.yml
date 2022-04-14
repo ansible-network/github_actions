@@ -58,7 +58,7 @@ jobs:
           path: ${{ env.source_directory }}/galaxy.yml
       
       - name: Print collected data
-        run: echo "${{ steps.collection.outputs }}"
+        run: echo "${{ toJSON(steps.collection.outputs) }}"
 
       - name: Install collection python requirements
         run: python3 -m pip install -r requirements.txt -r test-requirements.txt pytest-ansible-units
