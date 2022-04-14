@@ -43,8 +43,12 @@ jobs:
       - name: Install ansible-core (${{ matrix.ansible-version }})
         run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
 
-      - name: Set the version number in galaxy.yml for ${{ steps.collection.outputs.known_as}}
-        run: "sed -i '/version:.*/c\version: ${{ github.event.number }}' galaxy.yml"
+      - name: Set the version number in galaxy.yml
+        run: 'sed -i "/version:.*/c\version: ${{ github.event.number }}" galaxy.yml'
+        working-directory: ${{ env.source_directory }}
+      
+      - name: Show the galaxy.yml
+        run: cat galaxy.yml
         working-directory: ${{ env.source_directory }}
 
       - name: Identify the collection
@@ -53,18 +57,18 @@ jobs:
         with:
           path: ${{ env.source_directory }}/galaxy.yml
 
-      - name: Install python requirements for ${{ steps.collection.outputs.known_as}}
+      - name: Install collection python requirements
         run: python3 -m pip install -r requirements.txt -r test-requirements.txt pytest-ansible-units
         working-directory: ${{ env.source_directory }}
       
-      - name: Build ${{ steps.collection.outputs.known_as }}
+      - name: Build collection
         run: ansible-galaxy collection build
       
-      - name: Installing ${{ steps.collection.outputs.known_as }} and dependencies to ${{ steps.collection.outputs.root }}
+      - name: Installing collection and dependencies
         run: ansible-galaxy collection install ./${{ steps.collection.outputs.tar_file }}
         working-directory: ${{ env.source_directory }}
 
-      - name: Copy the galaxy.yml from ${{ env.source_directory }} to ${{ steps.collection.outputs.tree }}
+      - name: Copy the galaxy.yml from source to tree
         run: cp ${{ env.source_directory }}/galaxy.yml ${{ steps.collection.outputs.tree }}/galaxy.yml
 
       - name: Print the ansible version
@@ -73,6 +77,6 @@ jobs:
       - name: Print the python dependencies
         run: python3 -m pip list
 
-      - name: Run unit tests for ${{ steps.collection.outputs.known_as}}
+      - name: Run unit tests
         run: pytest -v
         working-directory: ${{ steps.collection.outputs.tree }}
