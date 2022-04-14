@@ -43,6 +43,10 @@ jobs:
       - name: Install ansible-core (${{ matrix.ansible-version }}) after collection requirements
         run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
 
+      - name: Set the version number in galaxy.yml for ${{ steps.collection.outputs.known_as}}
+        run: "sed -i '/version:.*/c\version: ${{ github.event.number }}' galaxy.yml"
+        working-directory: ${{ env.source_directory }}
+
       - name: Identify the collection
         id: collection
         uses: ./github_actions/.github/actions/identify_collection
@@ -53,8 +57,11 @@ jobs:
         run: python3 -m pip install -r requirements.txt -r test-requirements.txt pytest-ansible-units
         working-directory: ${{ env.source_directory }}
       
+      - name: Build ${{ steps.collection.outputs.known_as }}
+        run: ansible-galaxy collection build
+      
       - name: Installing ${{ steps.collection.outputs.known_as }} and dependencies to ${{ steps.collection.outputs.root }}
-        run: ansible-galaxy collection install . -p ${{ steps.collection.outputs.root }}
+        run: ansible-galaxy collection install ./${{ steps.collection.outputs.tar_file }}
         working-directory: ${{ env.source_directory }}
 
       - name: Copy the galaxy.yml from ${{ env.source_directory }} to ${{ steps.collection.outputs.tree }}

@@ -22,6 +22,9 @@ outputs:
   root:
     description: The collection root directory
     value: /home/runner/collections/
+  tarball:
+    description: The collection tarball when built
+    value: ${{ steps.namespace.outputs.value }}-${{ steps.name.outputs.value }}-${{ steps.version.output.value }}.tar.gz
 
 runs:
   using: composite
@@ -40,6 +43,12 @@ runs:
       id: name
       run: |
         echo "::set-output name=value::$(cat ${{ inputs.path }} | yq -r .name)"
+      shell: bash
+    
+    - name: Extract version
+      id: version
+      run: |
+        echo "::set-output name=value::$(cat ${{ inputs.path }} | yq -r .version)"
       shell: bash
 
     - name: Github action python requirements
