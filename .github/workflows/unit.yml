@@ -44,7 +44,7 @@ jobs:
         run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
 
       - name: Set the version number in galaxy.yml
-        run: 'sed -i "/version:.*/c\version: ${{ github.event.number }}" galaxy.yml'
+        run: 'sed -i "/^version:.*$/c\version: ${{ github.event.number }}" galaxy.yml'
         working-directory: ${{ env.source_directory }}
       
       - name: Show the galaxy.yml
