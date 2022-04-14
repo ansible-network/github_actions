@@ -40,11 +40,11 @@ jobs:
       - name: Checkout the github_action repository
         uses: actions/checkout@v3
         with:
-          repo: ansible-network/github_actions
+          repository: ansible-network/github_actions
 
       - name: Identify the collection
         id: collection
-        uses: ./source/.github/actions/identify_collection
+        uses: ./github_actions/.github/actions/identify_collection
         with:
           path: ./source/galaxy.yml
 
