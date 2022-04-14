@@ -45,7 +45,7 @@ jobs:
       
       - name: Build and install the collection
         id: installed
-        uses: ./github_actions/.github/actions/build_and_install_collection
+        uses: ./github_actions/.github/actions/build_install_collection
         with:
           install_python_dependencies: true
           source_path: ${{ env.source_directory }}
