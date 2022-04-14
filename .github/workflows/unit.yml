@@ -43,11 +43,14 @@ jobs:
         with:
           path: ./source/galaxy.yml
 
-      - name: Rehome the ${{ steps.collection.outputs.known_as }} to ${{ steps.collection.outputs.tree }}
-        id: rehome
-        uses: ./github_actions/.github/actions/rehome_collection
-        with:
-          dest-path: ${{ steps.collection.outputs.tree }}
+      # - name: Rehome the ${{ steps.collection.outputs.known_as }} to ${{ steps.collection.outputs.tree }}
+      #   id: rehome
+      #   uses: ./github_actions/.github/actions/rehome_collection
+      #   with:
+      #     dest-path: ${{ steps.collection.outputs.tree }}
+
+      - name: Install the collection and it's dependencies
+        run: ansible-galaxy collection install . -p ../collections/
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
