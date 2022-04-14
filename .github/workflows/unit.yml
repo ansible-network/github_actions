@@ -50,7 +50,7 @@ jobs:
       #     dest-path: ${{ steps.collection.outputs.tree }}
 
       - name: Install the collection and it's dependencies
-        run: ansible-galaxy collection install . -p ../../collections/
+        run: ansible-galaxy collection install . -p /home/runner/collections/
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
