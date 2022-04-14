@@ -40,7 +40,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       
-      - name: Install ansible-core (${{ matrix.ansible-version }}) after collection requirements
+      - name: Install ansible-core (${{ matrix.ansible-version }})
         run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
 
       - name: Set the version number in galaxy.yml for ${{ steps.collection.outputs.known_as}}
