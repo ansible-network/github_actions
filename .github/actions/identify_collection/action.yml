@@ -22,7 +22,7 @@ outputs:
   root:
     description: The collection root directory
     value: /home/runner/collections/
-  tarball:
+  tar_file:
     description: The collection tarball when built
     value: ${{ steps.namespace.outputs.value }}-${{ steps.name.outputs.value }}-${{ steps.version.output.value }}.tar.gz
 
