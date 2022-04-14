@@ -55,6 +55,7 @@ jobs:
       
       - name: Installing ${{ steps.collection.outputs.known_as }} and dependencies to ${{ steps.collection.outputs.root }}
         run: ansible-galaxy collection install . -p ${{ steps.collection.outputs.root }}
+        working-directory: ${{ env.source_directory }}
 
       - name: Copy the galaxy.yml from ${{ env.source_directory }} to ${{ steps.collection.outputs.tree }}
         run: cp ${{ env.source_directory }}/galaxy.yml ${{ steps.collection.outputs.tree }}/galaxy.yml

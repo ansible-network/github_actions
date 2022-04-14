@@ -59,6 +59,7 @@ jobs:
       
       - name: Installing ${{ steps.collection.outputs.known_as }} and dependencies to ${{ steps.collection.outputs.root }}
         run: ansible-galaxy collection install . -p ${{ steps.collection.outputs.root }}
+        working-directory: ${{ env.source_directory }}
 
       - name: Print the ansible version
         run: ansible --version
