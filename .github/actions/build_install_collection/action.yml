@@ -1,0 +1,64 @@
+name: Build and install the collection
+description: Build and install the collection
+
+inputs:
+  install_python_dependencies:
+    description: "Install collection python dependencies"
+    required: true
+  source_path:
+    description: "Path to the collection source"
+    required: true
+  version:
+    description: "Version of the collection"
+    required: true
+outputs:
+  tree:
+    description: "Path to the collection"
+    value: ${{ steps.collection.outputs.tree }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set the version number in galaxy.yml
+      run: 'sed -i "/^version:.*$/c\version: ${{ inputs.version }}" galaxy.yml'
+      shell: bash
+      working-directory: ${{ inputs.source_path }}
+      
+    - name: Show the galaxy.yml
+      run: cat galaxy.yml
+      shell: bash
+      working-directory: ${{ inputs.source_path }}
+
+    - name: Identify the collection
+      id: collection
+      uses: ./github_actions/.github/actions/identify_collection
+      with:
+        path: ${{ inputs.source_path }}/galaxy.yml
+    
+    - name: Print collected data
+      run: echo "${{ toJSON(steps.collection.outputs) }}"
+      shell: bash
+    
+    - name: Install collection python requirements
+      if: ${{ inputs.install_python_dependencies }}
+      run: python3 -m pip install -r requirements.txt -r test-requirements.txt pytest-ansible-units
+      shell: bash
+      working-directory: ${{ inputs.source_path }}
+      
+    - name: Build collection
+      run: ansible-galaxy collection build -vvv
+      shell: bash
+      working-directory: ${{ inputs.source_path }}
+    
+    - name: Installing collection and dependencies
+      run: ansible-galaxy collection install ./${{ steps.collection.outputs.tar_file }} -p ${{ steps.collection.outputs.root }}
+      shell: bash
+      working-directory: ${{ inputs.source_path }}
+
+    - name: Copy the galaxy.yml from source to destination, needed for pytest-ansible-units
+      run: cp galaxy.yml ${{ steps.collection.outputs.collection_path }}/galaxy.yml
+      shell: bash
+      working-directory: ${{ inputs.source_path }}
+    
+
+

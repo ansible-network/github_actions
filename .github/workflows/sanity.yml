@@ -52,12 +52,14 @@ jobs:
       - name: Install ansible-core (${{ matrix.ansible-version }}) after collection requirements
         run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
         
-      - name: Identify the collection
-        id: collection
-        uses: ./github_actions/.github/actions/identify_collection
+      - name: Build and install the collection
+        id: installed
+        uses: ./github_actions/.github/actions/build_and_install_collection
         with:
-          path: ${{ env.source_directory }}/galaxy.yml
-   
+          install_python_dependencies: false
+          source_path: ${{ env.source_directory }}
+          version: 0.0.${{ github.event.number }}
+      
       - name: Print the ansible version
         run: ansible --version
 
@@ -66,4 +68,4 @@ jobs:
 
       - name: Run sanity tests
         run: ansible-test sanity --requirements --color --python ${{ matrix.python-version }}
-        working-directory: ${{ env.source_directory }}
+        working-directory: ${{ steps.installed.outputs.collection_path }}

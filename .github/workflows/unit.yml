@@ -42,39 +42,14 @@ jobs:
       
       - name: Install ansible-core (${{ matrix.ansible-version }})
         run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
-
-      - name: Set the version number in galaxy.yml
-        run: 'sed -i "/^version:.*$/c\version: 0.0.${{ github.event.number }}" galaxy.yml'
-        working-directory: ${{ env.source_directory }}
       
-      - name: Show the galaxy.yml
-        run: cat galaxy.yml
-        working-directory: ${{ env.source_directory }}
-
-      - name: Identify the collection
-        id: collection
-        uses: ./github_actions/.github/actions/identify_collection
+      - name: Build and install the collection
+        id: installed
+        uses: ./github_actions/.github/actions/build_and_install_collection
         with:
-          path: ${{ env.source_directory }}/galaxy.yml
-      
-      - name: Print collected data
-        run: echo "${{ toJSON(steps.collection.outputs) }}"
-
-      - name: Install collection python requirements
-        run: python3 -m pip install -r requirements.txt -r test-requirements.txt pytest-ansible-units
-        working-directory: ${{ env.source_directory }}
-      
-      - name: Build collection
-        run: ansible-galaxy collection build -vvv
-        working-directory: ${{ env.source_directory }}
-
-      - name: Installing collection and dependencies
-        run: ansible-galaxy collection install ./${{ steps.collection.outputs.tar_file }} -p ${{ steps.collection.outputs.root }}
-        working-directory: ${{ env.source_directory }}
-
-      - name: Copy the galaxy.yml from source to tree
-        run: cp galaxy.yml ${{ steps.collection.outputs.tree }}/galaxy.yml
-        working-directory: ${{ env.source_directory }}
+          install_python_dependencies: true
+          source_path: ${{ env.source_directory }}
+          version: 0.0.${{ github.event.number }}
 
       - name: Print the ansible version
         run: ansible --version
@@ -84,4 +59,4 @@ jobs:
 
       - name: Run unit tests
         run: pytest -v
-        working-directory: ${{ steps.collection.outputs.tree }}
+        working-directory: ${{ steps.installed.outputs.collection_path }}
