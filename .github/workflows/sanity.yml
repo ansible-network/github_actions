@@ -35,23 +35,23 @@ jobs:
       - name: Checkout the collection repository
         uses: actions/checkout@v3
         with:
-          path: source
+          path: ./source
       
       - name: Checkout the github_action repository
         uses: actions/checkout@v3
         with:
-          path: ../github_actions
+          path: ./github_actions
           repository: ansible-network/github_actions
 
       - name: Identify the collection
         id: collection
-        uses: ../github_actions/.github/actions/identify_collection
+        uses: ./github_actions/.github/actions/identify_collection
         with:
           path: ./source/galaxy.yml
 
       - name: Rehome the ${{ steps.collection.outputs.known_as }} to ${{ steps.collection.outputs.tree }}
         id: rehome
-        uses: ../github_actions/.github/actions/rehome_collection
+        uses: ./github_actions/.github/actions/rehome_collection
         with:
           dest-path: ${{ steps.collection.outputs.tree }}
 
