@@ -69,7 +69,7 @@ jobs:
         working-directory: ${{ env.source_directory }}
 
       - name: Installing collection and dependencies
-        run: ansible-galaxy collection install ./${{ steps.collection.outputs.tar_file }}
+        run: ansible-galaxy collection install ./${{ steps.collection.outputs.tar_file }} -p ${{ steps.collection.outputs.root }}
         working-directory: ${{ env.source_directory }}
 
       - name: Copy the galaxy.yml from source to tree
