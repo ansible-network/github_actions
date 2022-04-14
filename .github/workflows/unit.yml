@@ -52,6 +52,9 @@ jobs:
       - name: Install the collection and it's dependencies
         run: ansible-galaxy collection install . -p /home/runner/collections/
 
+      - name: Copy the galaxy.yml into the new collection location
+        run: cp ./source/galaxy.yml ${{ steps.collection.outputs.tree }}/galaxy.yml
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
         with:
