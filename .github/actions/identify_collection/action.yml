@@ -16,15 +16,18 @@ outputs:
   name:
     description: The collection name
     value: ${{ steps.name.outputs.value }}
-  tree:
-    description: The collection directory tree
-    value: /home/runner/collections/ansible_collections/${{ steps.namespace.outputs.value }}/${{ steps.name.outputs.value }}
   root:
     description: The collection root directory
     value: /home/runner/collections/
   tar_file:
     description: The collection tarball when built
     value: ${{ steps.namespace.outputs.value }}-${{ steps.name.outputs.value }}-${{ steps.version.output.value }}.tar.gz
+  tree:
+    description: The collection directory tree
+    value: /home/runner/collections/ansible_collections/${{ steps.namespace.outputs.value }}/${{ steps.name.outputs.value }}
+  version:
+    description: The collection version
+    value: ${{ steps.version.output.value }}
 
 runs:
   using: composite
