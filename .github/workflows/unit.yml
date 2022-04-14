@@ -22,7 +22,7 @@ jobs:
           - stable-2.13
           - devel
 
-    name: "python ${{ matrix.python-version }} / ansible ${{ matrix.ansible-version }}"
+    name: "py${{ matrix.python-version }}/${{ matrix.ansible-version }}"
     steps:
       - name: Checkout the collection repository
         uses: actions/checkout@v3
