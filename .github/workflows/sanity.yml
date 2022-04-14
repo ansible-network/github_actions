@@ -5,6 +5,7 @@ jobs:
   sanity:
     env:
       PY_COLORS: "1"
+      source_directory: "./source"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -35,7 +36,7 @@ jobs:
       - name: Checkout the collection repository
         uses: actions/checkout@v3
         with:
-          path: ./source
+          path: ${{ env.source_directory }}
       
       - name: Checkout the github_action repository
         uses: actions/checkout@v3
@@ -55,18 +56,14 @@ jobs:
         id: collection
         uses: ./github_actions/.github/actions/identify_collection
         with:
-          path: ./source/galaxy.yml
-      
-      - name: Installing ${{ steps.collection.outputs.known_as }} and dependencies to ${{ steps.collection.outputs.root }}
-        run: ansible-galaxy collection install . -p ${{ steps.collection.outputs.root }}
-        working-directory: ${{ env.source_directory }}
-
+          path: ${{ env.source_directory }}/galaxy.yml
+   
       - name: Print the ansible version
         run: ansible --version
 
       - name: Print the python dependencies
         run: python3 -m pip list
 
-      - name: Run sanity tests for ${{ steps.collection.outputs.known_as}}
+      - name: Run sanity tests
         run: ansible-test sanity --requirements --color --python ${{ matrix.python-version }}
-        working-directory: ${{ steps.collection.outputs.tree }}
+        working-directory: ${{ env.source_directory }}
