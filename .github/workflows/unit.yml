@@ -33,6 +33,9 @@ jobs:
         with:
           path: ./github_actions
           repository: ansible-network/github_actions
+      
+      - name: Install prerequisite system packages
+        run: apt-get install libssh-dev
 
       - name: Identify the collection
         id: collection
