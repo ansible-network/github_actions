@@ -65,7 +65,7 @@ jobs:
         working-directory: ${{ env.source_directory }}
       
       - name: Build collection
-        run: ansible-galaxy collection build
+        run: ansible-galaxy collection build -vvv
         working-directory: ${{ env.source_directory }}
 
       - name: Installing collection and dependencies

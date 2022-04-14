@@ -27,7 +27,7 @@ outputs:
     value: /home/runner/collections/ansible_collections/${{ steps.namespace.outputs.value }}/${{ steps.name.outputs.value }}
   version:
     description: The collection version
-    value: ${{ steps.version.output.value }}
+    value: ${{ steps.version.outputs.value }}
 
 runs:
   using: composite
