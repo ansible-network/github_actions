@@ -12,9 +12,9 @@ inputs:
     description: "Version of the collection"
     required: true
 outputs:
-  tree:
+  collection_path:
     description: "Path to the collection"
-    value: ${{ steps.collection.outputs.tree }}
+    value: ${{ steps.collection.outputs.collection_path }}
 
 runs:
   using: composite
