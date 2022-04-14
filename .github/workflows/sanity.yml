@@ -32,10 +32,15 @@ jobs:
 
     name: "python ${{ matrix.python-version }} / ansible ${{ matrix.ansible-version }}"
     steps:
-      - name: Checkout
+      - name: Checkout the collection repository
         uses: actions/checkout@v3
         with:
           path: source
+      
+      - name: Checkout the github_action repository
+        uses: actions/checkout@v3
+        with:
+          repo: ansible-network/github_actions
 
       - name: Identify the collection
         id: collection
@@ -45,7 +50,7 @@ jobs:
 
       - name: Rehome the ${{ steps.collection.outputs.known_as }} to ${{ steps.collection.outputs.tree }}
         id: rehome
-        uses: ./source/.github/actions/rehome_collection
+        uses: ./github_actions/.github/actions/rehome_collection
         with:
           dest-path: ${{ steps.collection.outputs.tree }}
 
