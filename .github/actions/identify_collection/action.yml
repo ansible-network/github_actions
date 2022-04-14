@@ -53,7 +53,7 @@ runs:
       run: |
         echo "::set-output name=value::$(cat ${{ inputs.path }} | yq -r .version)"
       shell: bash
-
+    
     - name: Github action python requirements
       run: pip3 uninstall yq -y
       shell: bash
