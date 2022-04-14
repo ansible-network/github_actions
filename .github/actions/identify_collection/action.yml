@@ -19,6 +19,9 @@ outputs:
   tree:
     description: The collection directory tree
     value: /home/runner/collections/ansible_collections/${{ steps.namespace.outputs.value }}/${{ steps.name.outputs.value }}
+  root:
+    description: The collection root directory
+    value: /home/runner/collections/
 
 runs:
   using: composite
