@@ -8,6 +8,10 @@ inputs:
   source_path:
     description: "Path to the collection source"
     required: true
+  system_packages:
+    default: []
+    description: "List of system packages to install"
+    required: false
   version:
     description: "Version of the collection"
     required: true
@@ -54,6 +58,11 @@ runs:
       run: ansible-galaxy collection install ./${{ steps.collection.outputs.tar_file }} -p ${{ steps.collection.outputs.root }}
       shell: bash
       working-directory: ${{ inputs.source_path }}
+    
+    - name: Install any system packages
+      if: ${{ inputs.system_packages }}
+      run: sudo apt-get install -y ${{ inputs.system_packages }}
+      shell: bash
 
     - name: Copy the galaxy.yml from source to destination, needed for pytest-ansible-units
       run: cp galaxy.yml ${{ steps.collection.outputs.collection_path }}/galaxy.yml
