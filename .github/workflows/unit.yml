@@ -3,7 +3,7 @@ on:
   workflow_call:
     inputs:
       system_packages:
-        default: ""
+        default: ''
         required: false
         type: string
 
