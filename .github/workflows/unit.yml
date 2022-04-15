@@ -59,4 +59,5 @@ jobs:
 
       - name: Run unit tests
         run: python -m pytest -vv --showlocals
+        shell: 'script -q -e -c "bash {0}"'
         working-directory: ${{ steps.installed.outputs.collection_path }}
