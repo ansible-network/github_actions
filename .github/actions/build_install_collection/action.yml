@@ -41,7 +41,7 @@ runs:
     
     - name: Install collection python requirements
       if: ${{ inputs.install_python_dependencies == 'true' }}
-      run: python3 -m pip install -r requirements.txt -r test-requirements.txt pytest-ansible-units
+      run: python3 -m pip install -r requirements.txt -r test-requirements.txt git+https://github.com/ansible-community/pytest-ansible-units.git
       shell: bash
       working-directory: ${{ inputs.source_path }}
       
