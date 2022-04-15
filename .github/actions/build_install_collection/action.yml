@@ -9,7 +9,7 @@ inputs:
     description: "Path to the collection source"
     required: true
   system_packages:
-    default: []
+    default: ""
     description: "List of system packages to install"
     required: false
   version:
@@ -60,7 +60,7 @@ runs:
       working-directory: ${{ inputs.source_path }}
     
     - name: Install any system packages
-      if: ${{ inputs.system_packages }}
+      if: ${{ inputs.system_packages != "" }}
       run: sudo apt-get install -y ${{ inputs.system_packages }}
       shell: bash
 
