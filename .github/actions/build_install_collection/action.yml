@@ -53,7 +53,7 @@ runs:
       shell: bash
 
     - name: Install missing system packages using bindep.txt
-      run: bindep test | tail -n +2 | xargs sudo apt-get install -y
+      run: bindep test | tail -n +2 | xargs sudo apt-get -o Debug::pkgProblemResolver=true -o Debug::Acquire::http=true install -y
       shell: bash
       working-directory: ${{ inputs.source_path }}
     
