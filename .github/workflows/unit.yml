@@ -1,11 +1,6 @@
 name: Unit tests
 on:
   workflow_call:
-    inputs:
-      system_packages:
-        default: ''
-        required: false
-        type: string
 
 jobs:
   unit:
@@ -55,7 +50,6 @@ jobs:
         with:
           install_python_dependencies: true
           source_path: ${{ env.source_directory }}
-          system_packages: ${{ inputs.system_packages }}
           version: 0.0.${{ github.event.number }}
 
       - name: Print the ansible version

@@ -8,10 +8,6 @@ inputs:
   source_path:
     description: "Path to the collection source"
     required: true
-  system_packages:
-    default: ''
-    description: "List of system packages to install"
-    required: false
   version:
     description: "Version of the collection"
     required: true
@@ -41,11 +37,6 @@ runs:
     
     - name: Print collected data
       run: echo "${{ toJSON(steps.collection.outputs) }}"
-      shell: bash
-    
-    - name: Install any requested system packages
-      if: inputs.system_packages != ''
-      run: sudo apt-get install -y ${{ inputs.system_packages }}
       shell: bash
     
     - name: Install bindep from pypi
