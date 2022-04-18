@@ -43,9 +43,13 @@ runs:
       run: echo "${{ toJSON(steps.collection.outputs) }}"
       shell: bash
     
-    - name: Install any system packages
+    - name: Install any requested system packages
       if: inputs.system_packages != ''
       run: sudo apt-get install -y ${{ inputs.system_packages }}
+      shell: bash
+    
+    - name: Install system packages using bindep.txt
+      run: sudo bindep test
       shell: bash
     
     - name: Install collection python requirements
