@@ -49,7 +49,7 @@ runs:
       shell: bash
     
     - name: Install bindep from pypi
-      run: python3 -m pip install bindep
+      run: sudo python3 -m pip install bindep
       shell: bash
 
     - name: Install system packages using bindep.txt
