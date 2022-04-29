@@ -11,6 +11,10 @@ inputs:
   version:
     description: "Version of the collection"
     required: true
+  netcommon_version:
+    description: "Version of netcommon to be picked up"
+    required: true
+    
 outputs:
   collection_path:
     description: "Path to the collection"
@@ -21,6 +25,12 @@ runs:
   steps:
     - name: Set the version number in galaxy.yml
       run: 'sed -i "/^version:.*$/c\version: ${{ inputs.version }}" galaxy.yml'
+      shell: bash
+      working-directory: ${{ inputs.source_path }}
+
+    - name: Delete netcommon dependency from galaxy.yml
+      if: ${{ inputs.netcommon_version == 'github' }}
+      run: ' sed "/netcommon/d" galaxy.yml'
       shell: bash
       working-directory: ${{ inputs.source_path }}
       
@@ -69,6 +79,12 @@ runs:
       shell: bash
       working-directory: ${{ inputs.source_path }}
     
+    - name: Install ansible.netcommon from github
+      if: ${{ inputs.netcommon_version == 'github' }}
+      run: ansible-galaxy install -r ./${{ steps.collection.outputs }}/requirements.yml
+      shell: bash
+      working-directory: ${{ inputs.source_path }}
+
     - name: Copy the galaxy.yml from source to destination, needed for pytest-ansible-units
       run: cp galaxy.yml ${{ steps.collection.outputs.collection_path }}/galaxy.yml
       shell: bash
