@@ -34,7 +34,7 @@ jobs:
           - ansible-version: "stable-2.11"
             python-version: "3.10"
 
-    name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }}"
+    name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }}/ netcommon-from-${{ matrix.netcommon-version }}"
     steps:
       - name: Checkout the collection repository
         uses: actions/checkout@v3
