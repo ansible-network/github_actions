@@ -26,7 +26,7 @@ jobs:
           - galaxy
           - github
 
-    name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }} / netcommon-from-${{ matrix.netcommon-version }}"
+    name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }} / ${{ matrix.netcommon-version }}"
     steps:
       - name: Checkout the collection repository
         uses: actions/checkout@v3
