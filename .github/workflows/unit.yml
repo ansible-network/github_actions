@@ -1,6 +1,10 @@
 name: Unit tests
 on:
   workflow_call:
+    inputs:
+      netcommon-version:
+        type: string
+        default: '["galaxy","github"]'
 
 jobs:
   unit:
@@ -22,9 +26,7 @@ jobs:
           - stable-2.12
           - stable-2.13
           - devel
-        netcommon-version:
-          - galaxy
-          - github
+        netcommon-version: "${{ fromJSON(inputs.netcommon-version }}"
 
     name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }} / ${{ matrix.netcommon-version }}"
     if: "(!contains(github.repository, 'netcommon') && matrix.netcommon-version == 'galaxy') || matrix.netcommon-version == 'github'"
