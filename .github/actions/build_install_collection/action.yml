@@ -79,12 +79,6 @@ runs:
       shell: bash
       working-directory: ${{ inputs.source_path }}
     
-    - name: Install ansible.netcommon from github
-      if: ${{ inputs.netcommon_version == 'github' }}
-      run: ansible-galaxy install -r ./${{ steps.collection.outputs.collection_path }}/requirements.yml -p ${{ steps.collection.outputs.root }}
-      shell: bash
-      working-directory: ${{ inputs.source_path }}
-
     - name: Copy the galaxy.yml from source to destination, needed for pytest-ansible-units
       run: cp galaxy.yml ${{ steps.collection.outputs.collection_path }}/galaxy.yml
       shell: bash
