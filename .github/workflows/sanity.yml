@@ -21,6 +21,9 @@ jobs:
           - "3.8"
           - "3.9"
           - "3.10"
+        netcommon-version:
+          - galaxy
+          - github
         exclude:
           - ansible-version: "stable-2.9"
             python-version: "3.9"
@@ -59,6 +62,7 @@ jobs:
           install_python_dependencies: false
           source_path: ${{ env.source_directory }}
           version: 0.0.${{ github.event.number }}
+          netcommon_version: ${{ matrix.netcommon-version }}
       
       - name: Print the ansible version
         run: ansible --version

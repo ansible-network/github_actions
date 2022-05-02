@@ -81,7 +81,7 @@ runs:
     
     - name: Install ansible.netcommon from github
       if: ${{ inputs.netcommon_version == 'github' }}
-      run: ansible-galaxy install -r ./${{ steps.collection.outputs }}/requirements.yml
+      run: ansible-galaxy install -r ./${{ steps.collection.outputs }}/requirements.yml -p ${{ steps.collection.outputs.root }}
       shell: bash
       working-directory: ${{ inputs.source_path }}
 
