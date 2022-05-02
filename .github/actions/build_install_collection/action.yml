@@ -14,6 +14,7 @@ inputs:
   netcommon_version:
     description: "Version of netcommon to be picked up"
     required: true
+    default: "galaxy"
     
 outputs:
   collection_path:

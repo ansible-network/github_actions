@@ -21,36 +21,17 @@ jobs:
           - "3.8"
           - "3.9"
           - "3.10"
-        netcommon-version:
-          - galaxy
-          - github
         exclude:
           - ansible-version: "stable-2.9"
             python-version: "3.9"
-            netcommon-version: "galaxy"
-          - ansible-version: "stable-2.9"
-            python-version: "3.9"
-            netcommon-version: "github"
           - ansible-version: "stable-2.9"
             python-version: "3.10"
-            netcommon-version: "galaxy"
-          - ansible-version: "stable-2.9"
-            python-version: "3.10"
-            netcommon-version: "github"
           - ansible-version: "stable-2.10"
             python-version: "3.10"
-            netcommon-version: "galaxy"
-          - ansible-version: "stable-2.10"
-            python-version: "3.10"
-            netcommon-version: "github"
           - ansible-version: "stable-2.11"
             python-version: "3.10"
-            netcommon-version: "galaxy"
-          - ansible-version: "stable-2.11"
-            python-version: "3.10"
-            netcommon-version: "github"
 
-    name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }} / {{ matrix.netcommon-version }}"
+    name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }}"
     steps:
       - name: Checkout the collection repository
         uses: actions/checkout@v3
@@ -78,25 +59,8 @@ jobs:
           install_python_dependencies: false
           source_path: ${{ env.source_directory }}
           version: 0.0.${{ github.event.number }}
-          netcommon_version: ${{ matrix.netcommon-version }}
+          netcommon_version: "galaxy"
 
-      - name: Checkout netcommon
-        uses: actions/checkout@v3
-        with:
-          path: ./ansible.netcommon
-          repository: ansible-collections/ansible.netcommon
-        if: ${{ matrix.netcommon-version == 'github' }}
-
-      - name: Build and install the netcommon collection
-        uses: ./github_actions/.github/actions/build_install_collection
-          with:
-            install_python_dependencies: true
-            source_path: ./ansible.netcommon
-            version: 0.0.${{ github.event.number }}
-            netcommon_version: ${{ matrix.netcommon-version }}
-        if: ${{ matrix.netcommon-version == 'github' }}
-
-      
       - name: Print the ansible version
         run: ansible --version
 
