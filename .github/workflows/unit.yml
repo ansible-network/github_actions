@@ -27,7 +27,7 @@ jobs:
           - github
 
     name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }} / ${{ matrix.netcommon-version }}"
-    if: !contains(GITHUB_WORKSPACE, 'netcommon') and  ${{ matrix.netcommon-version != 'github' }}
+    if: ${{ 'netcommon' not in github.workspace  and  matrix.netcommon-version != 'github' }}
     steps:
       - name: Checkout the collection repository
         uses: actions/checkout@v3
@@ -62,7 +62,7 @@ jobs:
         with:
           path: ./ansible.netcommon
           repository: ansible-collections/ansible.netcommon
-        if: ${{ matrix.netcommon-version == 'github' }} and !contains(GITHUB_WORKSPACE, 'netcommon')
+        if: ${{ matrix.netcommon-version == 'github' and 'netcommon' not in github.workspace }}
 
       - name: Build and install the netcommon collection
         uses: ./github_actions/.github/actions/build_install_collection
@@ -71,7 +71,7 @@ jobs:
           source_path: ./ansible.netcommon
           version: 0.0.${{ github.event.number }}
           netcommon_version: ${{ matrix.netcommon-version }}
-        if: ${{ matrix.netcommon-version == 'github' }} and !contains(GITHUB_WORKSPACE, 'netcommon')
+        if: ${{ matrix.netcommon-version == 'github' and 'netcommon' not in github.workspace }}
 
       - name: Print the ansible version
         run: ansible --version
