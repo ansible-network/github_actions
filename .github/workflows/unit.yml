@@ -26,10 +26,9 @@ jobs:
           - stable-2.12
           - stable-2.13
           - devel
-        netcommon-version: "${{ fromJSON(inputs.netcommon-version }}"
+        netcommon-version: fromJSON(inputs.netcommon-version)
 
     name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }} / ${{ matrix.netcommon-version }}"
-    if: "(!contains(github.repository, 'netcommon') && matrix.netcommon-version == 'galaxy') || matrix.netcommon-version == 'github'"
     steps:
       - name: Checkout the collection repository
         uses: actions/checkout@v3
