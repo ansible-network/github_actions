@@ -28,7 +28,7 @@ jobs:
           - devel
         netcommon-version: ${{ fromJSON(inputs.netcommon-versions) }}
 
-    name: "py${{ matrix.python-version }}|${{ matrix.ansible-version }}|${{ matrix.netcommon-version }}"
+    name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }} / ${{ matrix.netcommon-version }}"
     steps:
       - name: Checkout the collection repository
         uses: actions/checkout@v3
