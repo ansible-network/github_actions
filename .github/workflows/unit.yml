@@ -2,7 +2,7 @@ name: Unit tests
 on:
   workflow_call:
     inputs:
-      netcommon-version:
+      netcommon-versions:
         type: string
         default: '["galaxy","github"]'
 
@@ -26,9 +26,9 @@ jobs:
           - stable-2.12
           - stable-2.13
           - devel
-        netcommon-version: ${{ fromJSON(inputs.netcommon-version) }}
+        netcommon-version: ${{ fromJSON(inputs.netcommon-versions) }}
 
-    name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }} / ${{ matrix.netcommon-version }}"
+    name: "py${{ matrix.python-version }}|${{ matrix.ansible-version }}|${{ matrix.netcommon-version }}"
     steps:
       - name: Checkout the collection repository
         uses: actions/checkout@v3
