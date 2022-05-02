@@ -83,6 +83,3 @@ runs:
       run: cp galaxy.yml ${{ steps.collection.outputs.collection_path }}/galaxy.yml
       shell: bash
       working-directory: ${{ inputs.source_path }}
-    
-
-

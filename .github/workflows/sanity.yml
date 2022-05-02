@@ -69,7 +69,7 @@ jobs:
         with:
           path: ./ansible.netcommon
           repository: ansible-collections/ansible.netcommon
-        if: ${{ matrix.netcommon-version }} == 'github'
+        if: ${{ inputs.netcommon_version == 'github' }}
 
       - name: Build and install the netcommon collection
         uses: ./github_actions/.github/actions/build_install_collection
@@ -78,7 +78,7 @@ jobs:
             source_path: ./ansible.netcommon
             version: 0.0.${{ github.event.number }}
             netcommon_version: ${{ matrix.netcommon-version }}
-        if: ${{ matrix.netcommon-version }} == 'github'
+        if: ${{ inputs.netcommon_version == 'github' }}
 
       
       - name: Print the ansible version
