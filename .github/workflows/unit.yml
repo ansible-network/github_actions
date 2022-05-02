@@ -27,7 +27,7 @@ jobs:
           - github
 
     name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }} / ${{ matrix.netcommon-version }}"
-    if: '(!contains(github.repository, "netcommon") && matrix.netcommon-version == "galaxy") || matrix.netcommon-version == "github"'
+    if: "(!contains(github.repository, 'netcommon') && matrix.netcommon-version == 'galaxy') || matrix.netcommon-version == 'github'"
     steps:
       - name: Checkout the collection repository
         uses: actions/checkout@v3
