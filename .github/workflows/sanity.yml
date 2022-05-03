@@ -1,6 +1,7 @@
 name: Sanity tests
 on:
   workflow_call:
+
 jobs:
   sanity:
     env:
