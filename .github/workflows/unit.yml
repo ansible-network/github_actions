@@ -40,15 +40,15 @@ jobs:
         with:
           path: ./github_actions
           repository: ansible-network/github_actions
-      
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
-      
+
       - name: Install ansible-core (${{ matrix.ansible-version }})
         run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
-      
+
       - name: Build and install the collection
         id: installed
         uses: ./github_actions/.github/actions/build_install_collection
@@ -64,7 +64,7 @@ jobs:
           path: ./ansible.netcommon
           repository: ansible-collections/ansible.netcommon
         if: |
-          !contains(github.workspace , 'netcommon') 
+          !contains(github.workspace , 'netcommon')
             && ${{ matrix.netcommon-version == 'github' }}
 
       - name: Build and install the netcommon collection
@@ -75,7 +75,7 @@ jobs:
           version: 0.0.${{ github.event.number }}
           netcommon_version: ${{ matrix.netcommon-version }}
         if: |
-          !contains(github.workspace , 'netcommon') 
+          !contains(github.workspace , 'netcommon')
             && ${{ matrix.netcommon-version == 'github' }}
 
       - name: Print the ansible version

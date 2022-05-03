@@ -15,7 +15,7 @@ inputs:
     description: "Version of netcommon to be picked up"
     required: true
     default: "galaxy"
-    
+
 outputs:
   collection_path:
     description: "Path to the collection"
@@ -34,7 +34,7 @@ runs:
       run: ' sed "/netcommon/d" galaxy.yml'
       shell: bash
       working-directory: ${{ inputs.source_path }}
-      
+
     - name: Show the galaxy.yml
       run: cat galaxy.yml
       shell: bash
@@ -45,11 +45,11 @@ runs:
       uses: ./github_actions/.github/actions/identify_collection
       with:
         path: ${{ inputs.source_path }}/galaxy.yml
-    
+
     - name: Print collected data
       run: echo "${{ toJSON(steps.collection.outputs) }}"
       shell: bash
-    
+
     - name: Install bindep from pypi
       run: sudo python3 -m pip install bindep
       shell: bash
@@ -58,28 +58,28 @@ runs:
       run: bindep test | tail -n +2 | xargs sudo apt-get -o Debug::pkgProblemResolver=true -o Debug::Acquire::http=true install -y || exit 0
       shell: bash
       working-directory: ${{ inputs.source_path }}
-    
+
     - name: Check for missing system packages using bindep.txt
       run: bindep test
       shell: bash
       working-directory: ${{ inputs.source_path }}
- 
+
     - name: Install collection python requirements
       if: ${{ inputs.install_python_dependencies == 'true' }}
       run: python3 -m pip install -r requirements.txt -r test-requirements.txt git+https://github.com/ansible-community/pytest-ansible-units.git
       shell: bash
       working-directory: ${{ inputs.source_path }}
-      
+
     - name: Build collection
       run: ansible-galaxy collection build -vvv
       shell: bash
       working-directory: ${{ inputs.source_path }}
-    
+
     - name: Installing collection and dependencies
       run: ansible-galaxy collection install ./${{ steps.collection.outputs.tar_file }} -p ${{ steps.collection.outputs.root }}
       shell: bash
       working-directory: ${{ inputs.source_path }}
-    
+
     - name: Copy the galaxy.yml from source to destination, needed for pytest-ansible-units
       run: cp galaxy.yml ${{ steps.collection.outputs.collection_path }}/galaxy.yml
       shell: bash
