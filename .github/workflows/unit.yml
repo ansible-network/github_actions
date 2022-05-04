@@ -63,7 +63,7 @@ jobs:
         id: collection
         uses: ./github_actions/.github/actions/identify_collection
         with:
-          path: ${{ env.source_directory }}
+          path: ${{ env.source_directory }}/galaxy.yml
 
       - name: Print collected data
         if: ${{ matrix.netcommon-version == 'github' }}
