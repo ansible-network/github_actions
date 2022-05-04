@@ -48,7 +48,7 @@ jobs:
       
       - name: Install ansible-core (${{ matrix.ansible-version }})
         run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
-      
+
       - name: Build and install the collection
         id: installed
         uses: ./github_actions/.github/actions/build_install_collection
@@ -58,25 +58,34 @@ jobs:
           version: 0.0.${{ github.event.number }}
           netcommon_version: ${{ matrix.netcommon-version }}
 
+      - name: Identify the dependencies
+        if: ${{ matrix.netcommon-version == 'github' }}
+        id: collection
+        uses: ./github_actions/.github/actions/identify_collection
+        with:
+          path: ${{ env.source_directory }}
+
+      - name: Print collected data
+        if: ${{ matrix.netcommon-version == 'github' }}
+        run: echo "${{ toJSON(steps.collection.outputs) }}"
+        shell: bash
+
+
       - name: Checkout netcommon
+        if: ${{ matrix.netcommon-version == 'github' && 'netcommon' in steps.collection.outputs.dependency }}
         uses: actions/checkout@v3
         with:
           path: ./ansible.netcommon
           repository: ansible-collections/ansible.netcommon
-        if: |
-          !contains(github.workspace , 'netcommon') 
-            && ${{ matrix.netcommon-version == 'github' }}
 
       - name: Build and install the netcommon collection
+        if: ${{ matrix.netcommon-version == 'github' && 'netcommon' in steps.collection.outputs.dependency }}
         uses: ./github_actions/.github/actions/build_install_collection
         with:
           install_python_dependencies: true
           source_path: ./ansible.netcommon
           version: 0.0.${{ github.event.number }}
           netcommon_version: ${{ matrix.netcommon-version }}
-        if: |
-          !contains(github.workspace , 'netcommon') 
-            && ${{ matrix.netcommon-version == 'github' }}
 
       - name: Print the ansible version
         run: ansible --version

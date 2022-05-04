@@ -28,6 +28,10 @@ outputs:
   version:
     description: The collection version
     value: ${{ steps.version.outputs.value }}
+  dependency:
+    description: The collection dependency
+    value: ${{ steps.dependency.outputs.value }}
+
 
 runs:
   using: composite
@@ -54,6 +58,12 @@ runs:
         echo "::set-output name=value::$(cat ${{ inputs.path }} | yq -r .version)"
       shell: bash
     
+    - name: Extract dependency
+      id: dependency
+      run: |
+        echo "::set-output name=value::$(cat ${{ inputs.path }} | yq -r .dependencies)"
+      shell: bash
+
     - name: Github action python requirements
       run: pip3 uninstall yq -y
       shell: bash
