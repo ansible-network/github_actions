@@ -72,14 +72,14 @@ jobs:
 
 
       - name: Checkout netcommon
-        if: ${{ matrix.netcommon-version == 'github' && contains(steps.collection.outputs.tar_file, 'netcommon') }}
+        if: ${{ matrix.netcommon-version == 'github' && !contains(steps.collection.outputs.tar_file, 'netcommon') }}
         uses: actions/checkout@v3
         with:
           path: ./ansible.netcommon
           repository: ansible-collections/ansible.netcommon
 
       - name: Build and install the netcommon collection
-        if: ${{ matrix.netcommon-version == 'github' && contains(steps.collection.outputs.tar_file, 'netcommon') }}
+        if: ${{ matrix.netcommon-version == 'github' && !contains(steps.collection.outputs.tar_file, 'netcommon') }}
         uses: ./github_actions/.github/actions/build_install_collection
         with:
           install_python_dependencies: true
