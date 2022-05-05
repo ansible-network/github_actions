@@ -9,9 +9,7 @@ on:
         default: tests/integration/labs/single.yaml
         required: false
         type: string
-      cml_ssh_password:
-        required: true
-        type: string
+      
       integration_test_path:
         default: tests/integration/targets
         required: false
@@ -20,12 +18,15 @@ on:
         required: false
         type: string
         default: '["galaxy","github"]'
+     
+    secrets:
+      cml_ssh_password:
+        required: true
       virl_password:
         required: true
-        type: string
       virl_host:
         required: true
-        type: string
+
 jobs:
   integration:
     env:
@@ -113,11 +114,11 @@ jobs:
           --cml-lab ${{ inputs.cml_lab }}
         env:
           ANSIBLE_NETWORK_OS: ${{ inputs.network_os }}
-          CML_SSH_PASSWORD: ${{ inputs.cml_ssh_password }}
+          CML_SSH_PASSWORD: ${{ secrets.cml_ssh_password }}
           CML_SSH_PORT: 1122
           CML_SSH_USER: admin
-          VIRL_HOST: ${{ inputs.virl_host }}
-          VIRL_PASSWORD: ${{ inputs.virl_password }}
+          VIRL_HOST: ${{ secrets.virl_host }}
+          VIRL_PASSWORD: ${{ secrets.virl_password }}
           VIRL_USERNAME: sysadmin
         working-directory: ${{ steps.installed.outputs.collection_path }}
           
