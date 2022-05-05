@@ -51,7 +51,7 @@ runs:
       shell: bash
     
     - name: Install bindep and wheel from pypi
-      run: sudo python3 -m pip install bindep wheel
+      run: sudo python3 -m pip install bindep
       shell: bash
 
     - name: Install missing system packages using bindep.txt

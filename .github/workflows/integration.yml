@@ -116,9 +116,9 @@ jobs:
           ANSIBLE_NETWORK_OS: ${{ inputs.network_os }}
           CML_SSH_PASSWORD: ${{ secrets.cml_ssh_password }}
           CML_SSH_PORT: 1122
-          CML_SSH_USER: admin
+          CML_SSH_USER: sysadmin
           VIRL_HOST: ${{ secrets.virl_host }}
           VIRL_PASSWORD: ${{ secrets.virl_password }}
-          VIRL_USERNAME: sysadmin
+          VIRL_USERNAME: admin
         working-directory: ${{ steps.installed.outputs.collection_path }}
           
