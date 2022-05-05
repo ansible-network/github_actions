@@ -44,7 +44,7 @@ jobs:
 
       - name: Read collection metadata from galaxy.yml
         id: identify
-        uses: ansible-network/github_actions/.github/workflows/identify.yml@main
+        uses: Qalthos/github_actions/.github/actions/identify_collection@dependencies
         with:
           path: ${{ env.source_directory }}
 
@@ -58,13 +58,13 @@ jobs:
       - name: Read dependency collection metadata from galaxy.yml
         if: steps.identify.outputs.dependency != '' && matrix.dependency-source == 'github'
         id: identify-dependency
-        uses: ansible-network/github_actions/.github/workflows/identify.yml@main
+        uses: Qalthos/github_actions/.github/actions/identify_collection@dependencies
         with:
           path: ./dependency
 
       - name: Build and install the dependency collection
         if: steps.identify.outputs.dependency != '' && matrix.dependency-source == 'github'
-        uses: ansible-network/github_actions/.github/workflows/build-and-install.yml@main
+        uses: Qalthos/github_actions/.github/actions/build_install_collection@dependencies
         with:
           install_python_dependencies: true
           source_path: ./dependency
@@ -72,7 +72,7 @@ jobs:
           tar_file: ${{ steps.identify-dependency.outputs.tar_file }}
 
       - name: Build and install the collection
-        uses: ansible-network/github_actions/.github/workflows/build-and-install.yml@main
+        uses: Qalthos/github_actions/.github/actions/build_install_collection@dependencies
         with:
           install_python_dependencies: true
           source_path: ${{ env.source_directory }}
