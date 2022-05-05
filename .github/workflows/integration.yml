@@ -102,10 +102,10 @@ jobs:
       - name: Print the python dependencies
         run: python3 -m pip list
 
-      - name: Run unit tests
+      - name: Run integration tests
         run: >-
           python -m pytest tests/integration 
-          --vv
+          -vv
           --showlocals 
           --integration-tests-path ${{ inputs.integration_test_path }}
           --cml-lab ${{ inputs.cml_lab }}
