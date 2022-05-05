@@ -5,10 +5,13 @@ inputs:
   path:
     description: "Path to the galaxy.yml file"
     required: true
+  version:
+    description: "Version of the collection"
+    required: true
 outputs:
   tar_file:
     description: The collection tarball when built
-    value: ${{ steps.namespace.outputs.value }}-${{ steps.name.outputs.value }}-${{ steps.version.outputs.value }}.tar.gz
+    value: ${{ steps.namespace.outputs.value }}-${{ steps.name.outputs.value }}-${{ inputs.version }}.tar.gz
   collection_path:
     description: The final collection path
     value: /home/runner/collections/ansible_collections/${{ steps.namespace.outputs.value }}/${{ steps.name.outputs.value }}
@@ -21,6 +24,11 @@ runs:
   steps:
     - name: Github action python requirements
       run: pip3 install yq
+      shell: bash
+
+    - name: Set the version number in galaxy.yml
+      run: |
+        yq -yi '.version="${{ inputs.version }}"' '${{ inputs.path }}'
       shell: bash
 
     - name: Extract collection namespace

@@ -47,6 +47,7 @@ jobs:
         uses: Qalthos/github_actions/.github/actions/identify_collection@dependencies
         with:
           path: ${{ env.source_directory }}/galaxy.yml
+          version: 0.0.${{ github.event.number }}
 
       - name: Checkout the collection dependency repository
         if: steps.identify.outputs.dependency != '' && matrix.dependency-source == 'github'
@@ -61,6 +62,7 @@ jobs:
         uses: Qalthos/github_actions/.github/actions/identify_collection@dependencies
         with:
           path: ./dependency/galaxy.yml
+          version: 0.0.${{ github.event.number }}
 
       - name: Build and install the dependency collection
         if: steps.identify.outputs.dependency != '' && matrix.dependency-source == 'github'

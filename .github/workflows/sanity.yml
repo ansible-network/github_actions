@@ -53,6 +53,7 @@ jobs:
         uses: Qalthos/github_actions/.github/actions/identify_collection@dependencies
         with:
           path: ${{ env.source_directory }}/galaxy.yml
+          version: 0.0.${{ github.event.number }}
         
       - name: Build and install the collection
         uses: Qalthos/github_actions/.github/actions/build_install_collection@dependencies
