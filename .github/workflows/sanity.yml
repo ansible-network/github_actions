@@ -40,28 +40,28 @@ jobs:
         with:
           path: ${{ env.source_directory }}
       
-      - name: Checkout the github_action repository
-        uses: actions/checkout@v3
-        with:
-          path: ./github_actions
-          repository: ansible-network/github_actions
-      
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install ansible-core (${{ matrix.ansible-version }}) after collection requirements
+      - name: Install ansible-core (${{ matrix.ansible-version }})
         run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
+
+      - name: Read collection metadata from galaxy.yml
+        id: identify
+        uses: Qalthos/github_actions/.github/actions/identify_collection@dependencies
+        with:
+          path: ${{ env.source_directory }}/galaxy.yml
+          version: 0.0.${{ github.event.number }}
         
       - name: Build and install the collection
-        id: installed
-        uses: ./github_actions/.github/actions/build_install_collection
+        uses: Qalthos/github_actions/.github/actions/build_install_collection@dependencies
         with:
           install_python_dependencies: false
           source_path: ${{ env.source_directory }}
-          version: 0.0.${{ github.event.number }}
-          netcommon_version: "galaxy"
+          collection_path: ${{ steps.identify.outputs.collection_path }}
+          tar_file: ${{ steps.identify.outputs.tar_file }}
 
       - name: Print the ansible version
         run: ansible --version
@@ -71,4 +71,4 @@ jobs:
 
       - name: Run sanity tests
         run: ansible-test sanity --requirements --color --python ${{ matrix.python-version }}
-        working-directory: ${{ steps.installed.outputs.collection_path }}
+        working-directory: ${{ steps.identify.outputs.collection_path }}

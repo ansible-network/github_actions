@@ -1,10 +1,6 @@
 name: Unit tests
 on:
   workflow_call:
-    inputs:
-      netcommon-versions:
-        type: string
-        default: '["galaxy","github"]'
 
 jobs:
   unit:
@@ -27,20 +23,16 @@ jobs:
           - "3.8"
           - "3.9"
           - "3.10"
-        netcommon-version: ${{ fromJSON(inputs.netcommon-versions) }}
+        dependency-source:
+          - galaxy
+          - github
 
-    name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }} / ${{ matrix.netcommon-version }}"
+    name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }} / ${{ matrix.dependency-source }}"
     steps:
       - name: Checkout the collection repository
         uses: actions/checkout@v3
         with:
           path: ${{ env.source_directory }}
-
-      - name: Checkout the github_action repository
-        uses: actions/checkout@v3
-        with:
-          path: ./github_actions
-          repository: ansible-network/github_actions
       
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
@@ -50,30 +42,44 @@ jobs:
       - name: Install ansible-core (${{ matrix.ansible-version }})
         run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
 
+      - name: Read collection metadata from galaxy.yml
+        id: identify
+        uses: Qalthos/github_actions/.github/actions/identify_collection@dependencies
+        with:
+          path: ${{ env.source_directory }}/galaxy.yml
+          version: 0.0.${{ github.event.number }}
+
       - name: Build and install the collection
-        id: installed
-        uses: ./github_actions/.github/actions/build_install_collection
+        uses: Qalthos/github_actions/.github/actions/build_install_collection@dependencies
         with:
           install_python_dependencies: true
           source_path: ${{ env.source_directory }}
-          version: 0.0.${{ github.event.number }}
-          netcommon_version: ${{ matrix.netcommon-version }}
+          collection_path: ${{ steps.identify.outputs.collection_path }}
+          tar_file: ${{ steps.identify.outputs.tar_file }}
 
-      - name: Checkout netcommon
-        if: ${{ matrix.netcommon-version == 'github' && github.repository != 'ansible-collections/ansible.netcommon' }}
+      - name: Checkout the collection dependency repository
+        if: steps.identify.outputs.dependency != '' && matrix.dependency-source == 'github'
         uses: actions/checkout@v3
         with:
-          path: ./ansible.netcommon
-          repository: ansible-collections/ansible.netcommon
+          repository: ansible-collections/${{ steps.identify.outputs.dependency }}
+          path: ./dependency
 
-      - name: Build and install the netcommon collection
-        if: ${{ matrix.netcommon-version == 'github' && github.repository != 'ansible-collections/ansible.netcommon' }}
-        uses: ./github_actions/.github/actions/build_install_collection
+      - name: Read dependency collection metadata from galaxy.yml
+        if: steps.identify.outputs.dependency != '' && matrix.dependency-source == 'github'
+        id: identify-dependency
+        uses: Qalthos/github_actions/.github/actions/identify_collection@dependencies
+        with:
+          path: ./dependency/galaxy.yml
+          version: 0.0.${{ github.event.number }}
+
+      - name: Build and install the dependency collection
+        if: steps.identify.outputs.dependency != '' && matrix.dependency-source == 'github'
+        uses: Qalthos/github_actions/.github/actions/build_install_collection@dependencies
         with:
           install_python_dependencies: true
-          source_path: ./ansible.netcommon
-          version: 0.0.${{ github.event.number }}
-          netcommon_version: ${{ matrix.netcommon-version }}
+          source_path: ./dependency
+          collection_path: ${{ steps.identify-dependency.outputs.collection_path }}
+          tar_file: ${{ steps.identify-dependency.outputs.tar_file }}
 
       - name: Print the ansible version
         run: ansible --version
@@ -83,4 +89,4 @@ jobs:
 
       - name: Run unit tests
         run: python -m pytest -vv --showlocals
-        working-directory: ${{ steps.installed.outputs.collection_path }}
+        working-directory: ${{ steps.identify.outputs.collection_path }}
