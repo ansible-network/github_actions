@@ -7,11 +7,11 @@ on:
         type: string
       cml_lab:
         default: tests/integration/labs/single.yaml
-        required: true
+        required: false
         type: string
       integration_test_path:
         default: tests/integration/targets
-        required: true
+        required: false
         type: string
       netcommon-versions:
         required: false
