@@ -49,6 +49,14 @@ jobs:
           path: ${{ env.source_directory }}/galaxy.yml
           version: 0.0.${{ github.event.number }}
 
+      - name: Build and install the collection
+        uses: Qalthos/github_actions/.github/actions/build_install_collection@dependencies
+        with:
+          install_python_dependencies: true
+          source_path: ${{ env.source_directory }}
+          collection_path: ${{ steps.identify.outputs.collection_path }}
+          tar_file: ${{ steps.identify.outputs.tar_file }}
+
       - name: Checkout the collection dependency repository
         if: steps.identify.outputs.dependency != '' && matrix.dependency-source == 'github'
         uses: actions/checkout@v3
@@ -72,14 +80,6 @@ jobs:
           source_path: ./dependency
           collection_path: ${{ steps.identify-dependency.outputs.collection_path }}
           tar_file: ${{ steps.identify-dependency.outputs.tar_file }}
-
-      - name: Build and install the collection
-        uses: Qalthos/github_actions/.github/actions/build_install_collection@dependencies
-        with:
-          install_python_dependencies: true
-          source_path: ${{ env.source_directory }}
-          collection_path: ${{ steps.identify.outputs.collection_path }}
-          tar_file: ${{ steps.identify.outputs.tar_file }}
 
       - name: Print the ansible version
         run: ansible --version
