@@ -46,7 +46,7 @@ jobs:
         id: identify
         uses: Qalthos/github_actions/.github/actions/identify_collection@dependencies
         with:
-          path: ${{ env.source_directory }}
+          path: ${{ env.source_directory }}/galaxy.yml
 
       - name: Checkout the collection dependency repository
         if: steps.identify.outputs.dependency != '' && matrix.dependency-source == 'github'
@@ -60,7 +60,7 @@ jobs:
         id: identify-dependency
         uses: Qalthos/github_actions/.github/actions/identify_collection@dependencies
         with:
-          path: ./dependency
+          path: ./dependency/galaxy.yml
 
       - name: Build and install the dependency collection
         if: steps.identify.outputs.dependency != '' && matrix.dependency-source == 'github'

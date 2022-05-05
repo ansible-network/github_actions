@@ -26,25 +26,25 @@ runs:
     - name: Extract collection namespace
       id: namespace
       run: |
-        echo "::set-output name=value::$(cat ${{ inputs.path }} | yq -r .namespace)"
+        echo "::set-output name=value::$(yq -r '.namespace' '${{ inputs.path }}')"
       shell: bash
 
     - name: Extract collection name
       id: name
       run: |
-        echo "::set-output name=value::$(cat ${{ inputs.path }} | yq -r .name)"
+        echo "::set-output name=value::$(yq -r '.name' '${{ inputs.path }}')"
       shell: bash
 
     - name: Extract version
       id: version
       run: |
-        echo "::set-output name=value::$(cat ${{ inputs.path }} | yq -r .version)"
+        echo "::set-output name=value::$(yq -r '.version' '${{ inputs.path }}')"
       shell: bash
 
     - name: Extract dependency
       id: dependency
       run: |
-        echo "::set-output name=value::$(cat ${{ inputs.path }} | yq -r .dependencies | keys | join(\" \"))"
+        echo "::set-output name=value::$(yq -r '.dependencies | keys | join(" ")' '${{ inputs.path }}')"
       shell: bash
 
     - name: Github action python requirements
