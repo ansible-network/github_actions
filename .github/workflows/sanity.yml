@@ -39,6 +39,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           path: ${{ env.source_directory }}
+          fetch-depth: "0"
       
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
@@ -52,8 +53,7 @@ jobs:
         id: identify
         uses: Qalthos/github_actions/.github/actions/identify_collection@dependencies
         with:
-          path: ${{ env.source_directory }}/galaxy.yml
-          version: 0.0.${{ github.event.number }}
+          path: ${{ env.source_directory }}
         
       - name: Build and install the collection
         uses: Qalthos/github_actions/.github/actions/build_install_collection@dependencies
