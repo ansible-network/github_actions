@@ -1,0 +1,45 @@
+name: Build the collection
+description: Build the collection for later use
+
+inputs:
+  source_path:
+    description: "Path to the collection source"
+    required: true
+outputs:
+  dependency:
+    description: The collection dependencies
+    value: ${{ steps.keys.outputs.dependency }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set the version number in galaxy.yml
+      run: yq -yi ".version=\"$(git describe --tags)\"" 'galaxy.yml'
+      shell: bash
+      working-directory: ${{ inputs.source_path }}
+
+    - name: Extract metadata from galaxy.yml
+      id: keys
+      run: |
+        echo "::set-output name=namespace::$(yq -r '.namespace' 'galaxy.yml')"
+        echo "::set-output name=name::$(yq -r '.name' 'galaxy.yml')"
+        echo "::set-output name=version::$(yq -r '.version' 'galaxy.yml')"
+        echo "::set-output name=dependency::$(yq -r '.dependencies | keys | join(" ")' 'galaxy.yml')"
+      shell: bash
+      working-directory: ${{ inputs.source_path }}
+
+    - name: Show the galaxy.yml
+      run: cat galaxy.yml
+      shell: bash
+      working-directory: ${{ inputs.source_path }}
+
+    - name: Build collection
+      run: ansible-galaxy collection build -vvv
+      shell: bash
+      working-directory: ${{ inputs.source_path }}
+
+    - name: Upload collection tar for reuse
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ steps.keys.outputs.namespace }}.${{ steps.keys.outputs.name }}
+        path: ${{ inputs.source_path }}/${{ steps.keys.outputs.namespace }}-${{ steps.keys.outputs.name }}-${{ steps.keys.outputs.version }}.tar.gz
