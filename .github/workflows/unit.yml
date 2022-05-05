@@ -82,5 +82,5 @@ jobs:
         run: python3 -m pip list
 
       - name: Run unit tests
-        run: python -m pytest -vv --showlocals
+        run: python -m pytest -vv tests/unit --showlocals
         working-directory: ${{ steps.installed.outputs.collection_path }}
