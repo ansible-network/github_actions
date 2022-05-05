@@ -1,0 +1,113 @@
+name: Integration tests
+on:
+  workflow_call:
+    inputs:
+      network_os:
+        required: true
+        type: string
+      cml_lab:
+        default: tests/integration/labs/single.yaml
+        required: true
+        type: string
+      integration_test_path:
+        default: tests/integration/targets
+        required: true
+        type: string
+      netcommon-versions:
+        required: false
+        type: string
+        default: '["galaxy","github"]'
+jobs:
+  integration:
+    env:
+      PY_COLORS: "1"
+      source_directory: "./source"
+      ANSIBLE_NETWORK_OS: ${{ inputs.network_os }}
+      CML_SSH_PASSWORD: ${{ secrets.cml_ssh_password}}
+      CML_SSH_PORT: 1122
+      CML_SSH_USER: admin
+      VIRL_HOST: ${{ secrets.virl_host}}
+      VIRL_PASSWORD: ${{ secrets.virl_password }}
+      VIRL_USERNAME: sysadmin
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ansible-version:
+          # - stable-2.9
+          # - stable-2.10
+          # - stable-2.11
+          # - stable-2.12
+          - stable-2.13
+          # - milestone
+          # - devel
+        python-version:
+          - "3.8"
+          # - "3.9"
+          # - "3.10"
+        netcommon-version: ${{ fromJSON(inputs.netcommon-versions) }}
+
+    name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }} / ${{ matrix.netcommon-version }}"
+    steps:
+      - name: Checkout the collection repository
+        uses: actions/checkout@v3
+        with:
+          path: ${{ env.source_directory }}
+
+      - name: Checkout the github_action repository
+        uses: actions/checkout@v3
+        with:
+          path: ./github_actions
+          repository: ansible-network/github_actions
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Install ansible-core (${{ matrix.ansible-version }})
+        run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
+
+      - name: Build and install the collection
+        id: installed
+        uses: ./github_actions/.github/actions/build_install_collection
+        with:
+          install_python_dependencies: true
+          source_path: ${{ env.source_directory }}
+          version: 0.0.${{ github.event.number }}
+          netcommon_version: ${{ matrix.netcommon-version }}
+
+      - name: Checkout netcommon
+        if: ${{ matrix.netcommon-version == 'github' && github.repository != 'ansible-collections/ansible.netcommon' }}
+        uses: actions/checkout@v3
+        with:
+          path: ./ansible.netcommon
+          repository: ansible-collections/ansible.netcommon
+
+      - name: Build and install the netcommon collection
+        if: ${{ matrix.netcommon-version == 'github' && github.repository != 'ansible-collections/ansible.netcommon' }}
+        uses: ./github_actions/.github/actions/build_install_collection
+        with:
+          install_python_dependencies: true
+          source_path: ./ansible.netcommon
+          version: 0.0.${{ github.event.number }}
+          netcommon_version: ${{ matrix.netcommon-version }}
+
+      - name: Print the ansible version
+        run: ansible --version
+      
+      - name: Install the integration test dependency
+        run: python3 -m pip install git+https://github.com/ansible-network/pytest-ansible-network-integration.git
+
+      - name: Print the python dependencies
+        run: python3 -m pip list
+
+      - name: Run unit tests
+        run: >-
+          python -m pytest tests/integration 
+          --vv
+          --showlocals 
+          --integration-tests-path ${{ inputs.integration_test_path }}
+          --cml-lab ${{ inputs.cml_lab }}
+        working-directory: ${{ steps.installed.outputs.collection_path }}
+          
