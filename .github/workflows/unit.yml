@@ -33,6 +33,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           path: ${{ env.source_directory }}
+          fetch-depth: "0"
       
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
@@ -54,13 +55,14 @@ jobs:
         with:
           repository: ansible-collections/${{ steps.identify.outputs.dependency }}
           path: ./dependency
+          fetch-depth: "0"
 
       - name: Read dependency collection metadata from galaxy.yml
         if: steps.identify.outputs.dependency != '' && matrix.dependency-source == 'github'
         id: identify-dependency
         uses: Qalthos/github_actions/.github/actions/identify_collection@dependencies
         with:
-          path: ./dependency/galaxy.yml
+          path: ./dependency
 
       - name: Build and install the dependency collection
         if: steps.identify.outputs.dependency != '' && matrix.dependency-source == 'github'
