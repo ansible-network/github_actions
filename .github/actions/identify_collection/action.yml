@@ -5,33 +5,16 @@ inputs:
   path:
     description: "Path to the galaxy.yml file"
     required: true
-
 outputs:
-  known_as:
-    description: The name of the collection
-    value: ${{ steps.namespace.outputs.value }}.${{ steps.name.outputs.value }}
-  namespace:
-    description: The collection namespace
-    value: ${{ steps.namespace.outputs.value }}
-  name:
-    description: The collection name
-    value: ${{ steps.name.outputs.value }}
-  root:
-    description: The collection root directory
-    value: /home/runner/collections/
   tar_file:
     description: The collection tarball when built
     value: ${{ steps.namespace.outputs.value }}-${{ steps.name.outputs.value }}-${{ steps.version.outputs.value }}.tar.gz
   collection_path:
     description: The final collection path
     value: /home/runner/collections/ansible_collections/${{ steps.namespace.outputs.value }}/${{ steps.name.outputs.value }}
-  version:
-    description: The collection version
-    value: ${{ steps.version.outputs.value }}
   dependency:
     description: The collection dependency
     value: ${{ steps.dependency.outputs.value }}
-
 
 runs:
   using: composite
@@ -51,13 +34,13 @@ runs:
       run: |
         echo "::set-output name=value::$(cat ${{ inputs.path }} | yq -r .name)"
       shell: bash
-    
+
     - name: Extract version
       id: version
       run: |
         echo "::set-output name=value::$(cat ${{ inputs.path }} | yq -r .version)"
       shell: bash
-    
+
     - name: Extract dependency
       id: dependency
       run: |
