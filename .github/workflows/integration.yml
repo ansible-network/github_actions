@@ -106,6 +106,7 @@ jobs:
         run: python3 -m pip list
 
       - name: Run integration tests
+        shell: 'script -q -e -c "bash {0}"'
         run: >-
           python -m pytest tests/integration
           -vvvv
