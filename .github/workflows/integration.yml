@@ -104,11 +104,11 @@ jobs:
           --cml-lab ${{ inputs.cml_lab }}
         env:
           ANSIBLE_NETWORK_OS: ${{ inputs.network_os }}
-          CML_SSH_PASSWORD: ${{ secrets.cml_ssh_password}}
+          CML_SSH_PASSWORD: ${{ secrets.CML_SSH_PASSWORD }}
           CML_SSH_PORT: 1122
           CML_SSH_USER: admin
-          VIRL_HOST: ${{ secrets.virl_host}}
-          VIRL_PASSWORD: ${{ secrets.virl_password }}
+          VIRL_HOST: ${{ secrets.VIRL_HOST }}
+          VIRL_PASSWORD: ${{ secrets.VIRL_PASSWORD }}
           VIRL_USERNAME: sysadmin
         working-directory: ${{ steps.installed.outputs.collection_path }}
           
