@@ -44,7 +44,7 @@ runs:
     - name: Extract dependency
       id: dependency
       run: |
-        echo "::set-output name=value::$(cat ${{ inputs.path }} | yq -r .dependencies | keys | join(" "))"
+        echo "::set-output name=value::$(cat ${{ inputs.path }} | yq -r .dependencies | keys | join(\" \"))"
       shell: bash
 
     - name: Github action python requirements
