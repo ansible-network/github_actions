@@ -107,12 +107,13 @@ jobs:
 
       - name: Run integration tests
         run: >-
-          python -m pytest tests/integration 
-          -vv
+          python -m pytest tests/integration
+          -vvv
           --showlocals 
           --integration-tests-path ${{ inputs.integration_test_path }}
           --cml-lab ${{ inputs.cml_lab }}
         env:
+          ANSIBLE_FORCE_COLOR: "1"
           ANSIBLE_NETWORK_OS: ${{ inputs.network_os }}
           CML_SSH_PASSWORD: ${{ secrets.cml_ssh_password }}
           CML_SSH_PORT: 1122
