@@ -1,54 +1,52 @@
-name: Identify collection
-on:
-  workflow_call:
-    inputs:
-      path:
-        description: "Path to the galaxy.yml file"
-        required: true
-    outputs:
-      tar_file:
-        description: The collection tarball when built
-        value: ${{ steps.namespace.outputs.value }}-${{ steps.name.outputs.value }}-${{ steps.version.outputs.value }}.tar.gz
-      collection_path:
-        description: The final collection path
-        value: /home/runner/collections/ansible_collections/${{ steps.namespace.outputs.value }}/${{ steps.name.outputs.value }}
-      dependency:
-        description: The collection dependency
-        value: ${{ steps.dependency.outputs.value }}
+name: Retrieve collection information
+description: Extract collection infromation from the galaxy.yml file
 
-jobs:
-  identify:
-    name: Retrieve collection information
+inputs:
+  path:
+    description: "Path to the galaxy.yml file"
+    required: true
+outputs:
+  tar_file:
+    description: The collection tarball when built
+    value: ${{ steps.namespace.outputs.value }}-${{ steps.name.outputs.value }}-${{ steps.version.outputs.value }}.tar.gz
+  collection_path:
+    description: The final collection path
+    value: /home/runner/collections/ansible_collections/${{ steps.namespace.outputs.value }}/${{ steps.name.outputs.value }}
+  dependency:
+    description: The collection dependency
+    value: ${{ steps.dependency.outputs.value }}
 
-    steps:
-      - name: Github action python requirements
-        run: pip3 install yq
-        shell: bash
+runs:
+  using: composite
+  steps:
+    - name: Github action python requirements
+      run: pip3 install yq
+      shell: bash
 
-      - name: Extract collection namespace
-        id: namespace
-        run: |
-          echo "::set-output name=value::$(cat ${{ inputs.path }} | yq -r .namespace)"
-        shell: bash
+    - name: Extract collection namespace
+      id: namespace
+      run: |
+        echo "::set-output name=value::$(cat ${{ inputs.path }} | yq -r .namespace)"
+      shell: bash
 
-      - name: Extract collection name
-        id: name
-        run: |
-          echo "::set-output name=value::$(cat ${{ inputs.path }} | yq -r .name)"
-        shell: bash
-      
-      - name: Extract version
-        id: version
-        run: |
-          echo "::set-output name=value::$(cat ${{ inputs.path }} | yq -r .version)"
-        shell: bash
-      
-      - name: Extract dependency
-        id: dependency
-        run: |
-          echo "::set-output name=value::$(cat ${{ inputs.path }} | yq -r .dependencies | keys | join(" "))"
-        shell: bash
+    - name: Extract collection name
+      id: name
+      run: |
+        echo "::set-output name=value::$(cat ${{ inputs.path }} | yq -r .name)"
+      shell: bash
 
-      - name: Github action python requirements
-        run: pip3 uninstall yq -y
-        shell: bash
+    - name: Extract version
+      id: version
+      run: |
+        echo "::set-output name=value::$(cat ${{ inputs.path }} | yq -r .version)"
+      shell: bash
+
+    - name: Extract dependency
+      id: dependency
+      run: |
+        echo "::set-output name=value::$(cat ${{ inputs.path }} | yq -r .dependencies | keys | join(" "))"
+      shell: bash
+
+    - name: Github action python requirements
+      run: pip3 uninstall yq -y
+      shell: bash

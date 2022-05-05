@@ -52,7 +52,6 @@ jobs:
         uses: ansible-network/github_actions/.github/workflows/build-and-install.yml@main
         with:
           install_python_dependencies: false
-          collection_source: "galaxy"
           source_path: ${{ env.source_directory }}
           collection_path: ${{ steps.identify.outputs.collection_path }}
           tar_file: ${{ steps.identify.outputs.tar_file }}
