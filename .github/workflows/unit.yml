@@ -58,10 +58,6 @@ jobs:
           version: 0.0.${{ github.event.number }}
           netcommon_version: ${{ matrix.netcommon-version }}
 
-      - name: Print collected data
-        run: echo "${{ github.repository }}"
-        shell: bash
-
       - name: Checkout netcommon
         if: ${{ matrix.netcommon-version == 'github' && github.repository != 'ansible-collections/ansible.netcommon' }}
         uses: actions/checkout@v3
