@@ -71,4 +71,4 @@ jobs:
 
       - name: Run sanity tests
         run: ansible-test sanity --requirements --color --python ${{ matrix.python-version }}
-        working-directory: ${{ env.source_directory }}
+        working-directory: ${{ steps.identify.outputs.collection_path }}

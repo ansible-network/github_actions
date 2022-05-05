@@ -89,4 +89,4 @@ jobs:
 
       - name: Run unit tests
         run: python -m pytest -vv --showlocals
-        working-directory: ${{ env.source_directory }}
+        working-directory: ${{ steps.identify.outputs.collection_path }}
