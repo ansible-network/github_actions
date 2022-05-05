@@ -108,7 +108,8 @@ jobs:
       - name: Run integration tests
         run: >-
           python -m pytest tests/integration
-          -vvv
+          -vvvv
+          -s
           --showlocals 
           --integration-tests-path ${{ inputs.integration_test_path }}
           --cml-lab ${{ inputs.cml_lab }}
