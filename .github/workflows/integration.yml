@@ -22,13 +22,6 @@ jobs:
     env:
       PY_COLORS: "1"
       source_directory: "./source"
-      ANSIBLE_NETWORK_OS: ${{ inputs.network_os }}
-      CML_SSH_PASSWORD: ${{ secrets.cml_ssh_password}}
-      CML_SSH_PORT: 1122
-      CML_SSH_USER: admin
-      VIRL_HOST: ${{ secrets.virl_host}}
-      VIRL_PASSWORD: ${{ secrets.virl_password }}
-      VIRL_USERNAME: sysadmin
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -109,5 +102,13 @@ jobs:
           --showlocals 
           --integration-tests-path ${{ inputs.integration_test_path }}
           --cml-lab ${{ inputs.cml_lab }}
+        env:
+          ANSIBLE_NETWORK_OS: ${{ inputs.network_os }}
+          CML_SSH_PASSWORD: ${{ secrets.cml_ssh_password}}
+          CML_SSH_PORT: 1122
+          CML_SSH_USER: admin
+          VIRL_HOST: ${{ secrets.virl_host}}
+          VIRL_PASSWORD: ${{ secrets.virl_password }}
+          VIRL_USERNAME: sysadmin
         working-directory: ${{ steps.installed.outputs.collection_path }}
           
