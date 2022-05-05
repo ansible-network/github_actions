@@ -58,28 +58,19 @@ jobs:
           version: 0.0.${{ github.event.number }}
           netcommon_version: ${{ matrix.netcommon-version }}
 
-      - name: Identify if the target collection is netcommon or not
-        if: ${{ matrix.netcommon-version == 'github' }}
-        id: collection
-        uses: ./github_actions/.github/actions/identify_collection
-        with:
-          path: ${{ env.source_directory }}/galaxy.yml
-
       - name: Print collected data
-        if: ${{ matrix.netcommon-version == 'github' }}
-        run: echo "${{ toJSON(steps.collection.outputs) }}"
+        run: echo "${{ github.repository }}"
         shell: bash
 
-
       - name: Checkout netcommon
-        if: ${{ matrix.netcommon-version == 'github' && !contains(steps.collection.outputs.tar_file, 'netcommon') }}
+        if: ${{ matrix.netcommon-version == 'github' && github.repository != 'ansible-collections/ansible.netcommon' }}
         uses: actions/checkout@v3
         with:
           path: ./ansible.netcommon
           repository: ansible-collections/ansible.netcommon
 
       - name: Build and install the netcommon collection
-        if: ${{ matrix.netcommon-version == 'github' && !contains(steps.collection.outputs.tar_file, 'netcommon') }}
+        if: ${{ matrix.netcommon-version == 'github' && github.repository != 'ansible-collections/ansible.netcommon' }}
         uses: ./github_actions/.github/actions/build_install_collection
         with:
           install_python_dependencies: true
