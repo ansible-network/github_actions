@@ -115,7 +115,6 @@ jobs:
           -s
           -n 0
           --color=yes
-          --showlocals 
           --integration-tests-path ${{ inputs.integration_test_path }}
           --cml-lab ${{ inputs.cml_lab }}
           ${{ inputs.pytest_addopts }}
