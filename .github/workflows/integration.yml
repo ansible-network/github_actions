@@ -49,7 +49,6 @@ jobs:
           # - "3.9"
           # - "3.10"
         dependency-source:
-          - galaxy
           - github
 
     name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }} / ${{ matrix.dependency-source }}"
