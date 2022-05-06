@@ -134,7 +134,7 @@ jobs:
           VIRL_HOST: ${{ secrets.virl_host }}
           VIRL_PASSWORD: ${{ secrets.virl_password }}
           VIRL_USERNAME: admin
-        working-directory: ${{ steps.installed.outputs.collection_path }}
+        working-directory: ${{ steps.identify.outputs.collection_path }}
       
       - name: Upload logs
         if: always()
