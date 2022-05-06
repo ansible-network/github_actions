@@ -42,16 +42,7 @@ runs:
         name: ${{ inputs.artifact_name }}
         path: ${{ inputs.source_path }}
 
-    - name: Print collected data
-      run: echo "${{ toJSON(steps.download.outputs) }}"
-      shell: bash
-
     - name: Install collection and dependencies
-      run: ansible-galaxy collection install ./${{ steps.download.outputs.download-path }}/*.tar.gz -p /home/runner/collections
-      shell: bash
-      working-directory: ${{ inputs.source_path }}
-
-    - name: Copy the galaxy.yml from source to destination, needed for pytest-ansible-units
-      run: cp galaxy.yml ${{ steps.identify.outputs.collection_path }}/galaxy.yml
+      run: ansible-galaxy collection install ${{ steps.download.outputs.download-path }}/*.tar.gz -p /home/runner/collections
       shell: bash
       working-directory: ${{ inputs.source_path }}

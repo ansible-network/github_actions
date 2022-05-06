@@ -95,7 +95,7 @@ jobs:
         with:
           install_python_dependencies: true
           source_path: ${{ env.source_directory }}
-          artifact_name: ${{ steps.identify.collection_name }}
+          artifact_name: ${{ steps.identify.outputs.collection_name }}
 
       - name: Print the ansible version
         run: ansible --version
