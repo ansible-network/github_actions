@@ -106,12 +106,12 @@ jobs:
         run: python3 -m pip list
 
       - name: Run integration tests
-        shell: 'script -q -e -c "bash {0}"'
         run: >-
           python -m pytest tests/integration
           -vvvv
           -s
-          -n 0
+          -n auto
+          --color=yes
           --showlocals 
           --integration-tests-path ${{ inputs.integration_test_path }}
           --cml-lab ${{ inputs.cml_lab }}
