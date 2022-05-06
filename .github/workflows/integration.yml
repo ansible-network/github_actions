@@ -71,7 +71,7 @@ jobs:
 
       - name: Read collection metadata from galaxy.yml
         id: identify
-        uses: ansible-network/github_actions/.github/actions/identify_collection@main
+        uses: Qalthos/github_actions/.github/actions/identify_collection@dependencies
         with:
           source_path: ${{ env.source_directory }}
 

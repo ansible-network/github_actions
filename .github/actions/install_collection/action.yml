@@ -42,6 +42,10 @@ runs:
         name: ${{ inputs.artifact_name }}
         path: ${{ inputs.source_path }}
 
+    - name: Print collected data
+      run: echo "${{ toJSON(steps.download.outputs) }}"
+      shell: bash
+
     - name: Install collection and dependencies
       run: ansible-galaxy collection install ./${{ steps.download.outputs.download-path }}/*.tar.gz -p /home/runner/collections
       shell: bash
