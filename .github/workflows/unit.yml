@@ -58,14 +58,14 @@ jobs:
           path: ${{ env.dependency_directory }}
           fetch-depth: "0"
 
-      - name: Read dependency collection metadata from galaxy.yml
+      - name: Read collection metadata from ${{ steps.identify.outputs.dependency }}
         if: steps.identify.outputs.dependency != '' && matrix.dependency-source == 'github'
         id: identify-dependency
         uses: ansible-network/github_actions/.github/actions/identify_collection@main
         with:
           source_path: ${{ env.dependency_directory }}
 
-      - name: Build and install the dependency collection
+      - name: Build and install ${{ steps.identify.outputs.dependency }}
         if: steps.identify.outputs.dependency != '' && matrix.dependency-source == 'github'
         uses: ansible-network/github_actions/.github/actions/build_install_collection@main
         with:
@@ -84,6 +84,9 @@ jobs:
 
       - name: Print the ansible version
         run: ansible --version
+
+      - name: Install the unit test dependency
+        run: python3 -m pip install git+https://github.com/ansible-community/pytest-ansible-units.git
 
       - name: Print the python dependencies
         run: python3 -m pip list
