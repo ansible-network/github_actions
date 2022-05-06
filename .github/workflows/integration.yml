@@ -1,15 +1,11 @@
 name: Integration tests
 on:
   workflow_call:
-    inputs:
-      network_os:
-        required: true
-        type: string
+    inputs: 
       cml_lab:
         default: tests/integration/labs/single.yaml
         required: false
         type: string
-      
       integration_test_path:
         default: tests/integration/targets
         required: false
@@ -18,6 +14,13 @@ on:
         required: false
         type: string
         default: '["galaxy","github"]'
+      network_os:
+        required: true
+        type: string
+      pytest_addopts:
+        default: ""
+        required: false
+        type: string
      
     secrets:
       cml_ssh_password:
@@ -109,8 +112,8 @@ jobs:
         run: >-
           python -m pytest tests/integration
           -vvvv
-          -s
-          -n auto
+          --capture=tee-sys
+          -n 1
           --color=yes
           --showlocals 
           --integration-tests-path ${{ inputs.integration_test_path }}
@@ -132,5 +135,5 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: logs
-          path: gh-action-logs/
+          path: test_logs/
           
