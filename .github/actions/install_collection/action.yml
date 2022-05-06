@@ -19,6 +19,18 @@ runs:
       run: sudo python3 -m pip install bindep
       shell: bash
 
+    - name: Download built collection
+      id: download
+      uses: actions/download-artifact@v3
+      with:
+        name: ${{ inputs.artifact_name }}
+        path: ${{ inputs.source_path }}
+
+    - run: |
+        ls ${{ inputs.source_path }}
+        file ${{ inputs.source_path }}
+      shell: bash
+
     - name: Install missing system packages using bindep.txt
       run: bindep test | tail -n +2 | xargs sudo apt-get -o Debug::pkgProblemResolver=true -o Debug::Acquire::http=true install -y || exit 0
       shell: bash
@@ -34,13 +46,6 @@ runs:
       run: python3 -m pip install -r requirements.txt -r test-requirements.txt
       shell: bash
       working-directory: ${{ inputs.source_path }}
-
-    - name: Download built collection
-      id: download
-      uses: actions/download-artifact@v3
-      with:
-        name: ${{ inputs.artifact_name }}
-        path: ${{ inputs.source_path }}
 
     - name: Install collection and dependencies
       run: ansible-galaxy collection install ${{ steps.download.outputs.download-path }}/*.tar.gz -p /home/runner/collections

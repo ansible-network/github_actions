@@ -53,11 +53,6 @@ jobs:
 
     name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }} / ${{ matrix.dependency-source }}"
     steps:
-      - name: Checkout the collection repository
-        uses: actions/checkout@v3
-        with:
-          path: ${{ env.source_directory }}
-      
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
         with:
@@ -69,33 +64,20 @@ jobs:
       - name: Install ansible-core (${{ matrix.ansible-version }})
         run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
 
-      - name: Read collection metadata from galaxy.yml
-        id: identify
-        uses: Qalthos/github_actions/.github/actions/identify_collection@dependencies
-        with:
-          source_path: ${{ env.source_directory }}
-
-      - name: Checkout ${{ steps.identify.outputs.dependency }}
-        if: steps.identify.outputs.dependency != '' && matrix.dependency-source == 'github'
-        uses: actions/checkout@v3
-        with:
-          repository: ansible-collections/${{ steps.identify.outputs.dependency }}
-          path: ${{ env.dependency_directory }}
-
       - name: Install ${{ steps.identify.outputs.dependency }}
-        if: steps.identify.outputs.dependency != '' && matrix.dependency-source == 'github'
+        if: matrix.dependency-source == 'github'
         uses: Qalthos/github_actions/.github/actions/install_collection@dependencies
         with:
           install_python_dependencies: true
           source_path: ${{ env.dependency_directory }}
-          artifact_name: ${{ steps.identify.outputs.dependency }}
+          artifact_name: dependencies
 
       - name: Install the collection
         uses: Qalthos/github_actions/.github/actions/install_collection@dependencies
         with:
           install_python_dependencies: true
           source_path: ${{ env.source_directory }}
-          artifact_name: ${{ steps.identify.outputs.collection_name }}
+          artifact_name: collection
 
       - name: Print the ansible version
         run: ansible --version

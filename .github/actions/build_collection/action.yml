@@ -5,6 +5,9 @@ inputs:
   source_path:
     description: "Path to the collection source"
     required: true
+  artifact_name:
+    description: The name to give the uploaded artifact
+    required: true
 outputs:
   dependency:
     description: The collection dependencies
@@ -38,8 +41,13 @@ runs:
       shell: bash
       working-directory: ${{ inputs.source_path }}
 
-    - name: Upload collection tar for reuse
+    - name: Upload collection files for reuse
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ steps.keys.outputs.namespace }}.${{ steps.keys.outputs.name }}
-        path: ${{ inputs.source_path }}/${{ steps.keys.outputs.namespace }}-${{ steps.keys.outputs.name }}-${{ steps.keys.outputs.version }}.tar.gz
+        name: ${{ inputs.artifact_name }}
+        path: |
+          ${{ inputs.source_path }}/${{ steps.keys.outputs.namespace }}-${{ steps.keys.outputs.name }}-${{ steps.keys.outputs.version }}.tar.gz
+          bindep.txt
+          galaxy.yml
+          requirements.txt
+          test-requirements.txt
