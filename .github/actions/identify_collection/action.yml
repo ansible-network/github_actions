@@ -2,36 +2,19 @@ name: Retrieve collection information
 description: Extract collection infromation from the galaxy.yml file
 
 inputs:
-  path:
-    description: "Path to the galaxy.yml file"
+  source_path:
+    description: Path to the collection source root
     required: true
-
 outputs:
-  known_as:
-    description: The name of the collection
-    value: ${{ steps.namespace.outputs.value }}.${{ steps.name.outputs.value }}
-  namespace:
-    description: The collection namespace
-    value: ${{ steps.namespace.outputs.value }}
-  name:
-    description: The collection name
-    value: ${{ steps.name.outputs.value }}
-  root:
-    description: The collection root directory
-    value: /home/runner/collections/
   tar_file:
     description: The collection tarball when built
-    value: ${{ steps.namespace.outputs.value }}-${{ steps.name.outputs.value }}-${{ steps.version.outputs.value }}.tar.gz
+    value: ${{ steps.keys.outputs.namespace }}-${{ steps.keys.outputs.name }}-${{ steps.keys.outputs.version }}.tar.gz
   collection_path:
     description: The final collection path
-    value: /home/runner/collections/ansible_collections/${{ steps.namespace.outputs.value }}/${{ steps.name.outputs.value }}
-  version:
-    description: The collection version
-    value: ${{ steps.version.outputs.value }}
+    value: /home/runner/collections/ansible_collections/${{ steps.keys.outputs.namespace }}/${{ steps.keys.outputs.name }}
   dependency:
     description: The collection dependency
-    value: ${{ steps.dependency.outputs.value }}
-
+    value: ${{ steps.keys.outputs.dependency }}
 
 runs:
   using: composite
@@ -40,29 +23,20 @@ runs:
       run: pip3 install yq
       shell: bash
 
-    - name: Extract collection namespace
-      id: namespace
-      run: |
-        echo "::set-output name=value::$(cat ${{ inputs.path }} | yq -r .namespace)"
+    - name: Set the version number in galaxy.yml
+      run: yq -yi ".version=\"$(git describe --tags)\"" 'galaxy.yml'
       shell: bash
+      working-directory: ${{ inputs.source_path }}
 
-    - name: Extract collection name
-      id: name
+    - name: Extract metadata from galaxy.yml
+      id: keys
       run: |
-        echo "::set-output name=value::$(cat ${{ inputs.path }} | yq -r .name)"
+        echo "::set-output name=namespace::$(yq -r '.namespace' 'galaxy.yml')"
+        echo "::set-output name=name::$(yq -r '.name' 'galaxy.yml')"
+        echo "::set-output name=version::$(yq -r '.version' 'galaxy.yml')"
+        echo "::set-output name=dependency::$(yq -r '.dependencies | keys | join(" ")' 'galaxy.yml')"
       shell: bash
-    
-    - name: Extract version
-      id: version
-      run: |
-        echo "::set-output name=value::$(cat ${{ inputs.path }} | yq -r .version)"
-      shell: bash
-    
-    - name: Extract dependency
-      id: dependency
-      run: |
-        echo "::set-output name=value::$(cat ${{ inputs.path }} | yq -r .dependencies)"
-      shell: bash
+      working-directory: ${{ inputs.source_path }}
 
     - name: Github action python requirements
       run: pip3 uninstall yq -y
