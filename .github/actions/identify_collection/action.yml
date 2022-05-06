@@ -2,8 +2,8 @@ name: Retrieve collection information
 description: Extract collection infromation from the galaxy.yml file
 
 inputs:
-  path:
-    description: "Path to the galaxy.yml file"
+  source_path:
+    description: Path to the collection source root
     required: true
 outputs:
   tar_file:
@@ -26,7 +26,7 @@ runs:
     - name: Set the version number in galaxy.yml
       run: yq -yi ".version=\"$(git describe --tags)\"" 'galaxy.yml'
       shell: bash
-      working-directory: ${{ inputs.path }}
+      working-directory: ${{ inputs.source_path }}
 
     - name: Extract metadata from galaxy.yml
       id: keys
@@ -36,7 +36,7 @@ runs:
         echo "::set-output name=version::$(yq -r '.version' 'galaxy.yml')"
         echo "::set-output name=dependency::$(yq -r '.dependencies | keys | join(" ")' 'galaxy.yml')"
       shell: bash
-      working-directory: ${{ inputs.path }}
+      working-directory: ${{ inputs.source_path }}
 
     - name: Github action python requirements
       run: pip3 uninstall yq -y

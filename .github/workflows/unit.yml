@@ -7,6 +7,7 @@ jobs:
     env:
       PY_COLORS: "1"
       source_directory: "./source"
+      dependency_directory: "./dependency"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -47,14 +48,14 @@ jobs:
         id: identify
         uses: Qalthos/github_actions/.github/actions/identify_collection@dependencies
         with:
-          path: ${{ env.source_directory }}/galaxy.yml
+          source_path: ${{ env.source_directory }}
 
-      - name: Checkout the collection dependency repository
+      - name: Checkout ${{ steps.identify.outputs.dependency }}
         if: steps.identify.outputs.dependency != '' && matrix.dependency-source == 'github'
         uses: actions/checkout@v3
         with:
           repository: ansible-collections/${{ steps.identify.outputs.dependency }}
-          path: ./dependency
+          path: ${{ env.dependency_directory }}
           fetch-depth: "0"
 
       - name: Read dependency collection metadata from galaxy.yml
@@ -62,14 +63,14 @@ jobs:
         id: identify-dependency
         uses: Qalthos/github_actions/.github/actions/identify_collection@dependencies
         with:
-          path: ./dependency
+          source_path: ${{ env.dependency_directory }}
 
       - name: Build and install the dependency collection
         if: steps.identify.outputs.dependency != '' && matrix.dependency-source == 'github'
         uses: Qalthos/github_actions/.github/actions/build_install_collection@dependencies
         with:
           install_python_dependencies: true
-          source_path: ./dependency
+          source_path: ${{ env.dependency_directory }}
           collection_path: ${{ steps.identify-dependency.outputs.collection_path }}
           tar_file: ${{ steps.identify-dependency.outputs.tar_file }}
 

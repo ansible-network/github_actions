@@ -53,7 +53,7 @@ jobs:
         id: identify
         uses: Qalthos/github_actions/.github/actions/identify_collection@dependencies
         with:
-          path: ${{ env.source_directory }}
+          source_path: ${{ env.source_directory }}
         
       - name: Build and install the collection
         uses: Qalthos/github_actions/.github/actions/build_install_collection@dependencies
