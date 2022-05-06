@@ -111,7 +111,7 @@ jobs:
       - name: Run integration tests
         run: >-
           python -m pytest tests/integration
-          -vvvv
+          -vvv
           -s
           -n 0
           --color=yes
