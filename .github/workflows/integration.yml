@@ -115,6 +115,7 @@ jobs:
           --showlocals 
           --integration-tests-path ${{ inputs.integration_test_path }}
           --cml-lab ${{ inputs.cml_lab }}
+          ${{ inputs.pytest_addopts }}
         env:
           ANSIBLE_FORCE_COLOR: "1"
           ANSIBLE_NETWORK_OS: ${{ inputs.network_os }}
@@ -125,4 +126,11 @@ jobs:
           VIRL_PASSWORD: ${{ secrets.virl_password }}
           VIRL_USERNAME: admin
         working-directory: ${{ steps.installed.outputs.collection_path }}
+      
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: logs
+          path: gh-action-logs/
           
