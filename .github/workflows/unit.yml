@@ -34,7 +34,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           path: ${{ env.source_directory }}
-          fetch-depth: "0"
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
@@ -56,31 +55,21 @@ jobs:
         with:
           repository: ansible-collections/${{ steps.identify.outputs.dependency }}
           path: ${{ env.dependency_directory }}
-          fetch-depth: "0"
 
-      - name: Read collection metadata from ${{ steps.identify.outputs.dependency }}
+      - name: Install ${{ steps.identify.outputs.dependency }}
         if: steps.identify.outputs.dependency != '' && matrix.dependency-source == 'github'
-        id: identify-dependency
-        uses: ansible-network/github_actions/.github/actions/identify_collection@main
-        with:
-          source_path: ${{ env.dependency_directory }}
-
-      - name: Build and install ${{ steps.identify.outputs.dependency }}
-        if: steps.identify.outputs.dependency != '' && matrix.dependency-source == 'github'
-        uses: ansible-network/github_actions/.github/actions/build_install_collection@main
+        uses: Qalthos/github_actions/.github/actions/install_collection@dependencies
         with:
           install_python_dependencies: true
           source_path: ${{ env.dependency_directory }}
-          collection_path: ${{ steps.identify-dependency.outputs.collection_path }}
-          tar_file: ${{ steps.identify-dependency.outputs.tar_file }}
+          artifact_name: ${{ steps.identify.outputs.dependency }}
 
-      - name: Build and install the collection
-        uses: ansible-network/github_actions/.github/actions/build_install_collection@main
+      - name: Install the collection
+        uses: Qalthos/github_actions/.github/actions/install_collection@dependencies
         with:
           install_python_dependencies: true
           source_path: ${{ env.source_directory }}
-          collection_path: ${{ steps.identify.outputs.collection_path }}
-          tar_file: ${{ steps.identify.outputs.tar_file }}
+          artifact_name: ${{ steps.identify.collection_name }}
 
       - name: Print the ansible version
         run: ansible --version

@@ -39,8 +39,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           path: ${{ env.source_directory }}
-          fetch-depth: "0"
-
+      
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
         with:
@@ -54,14 +53,13 @@ jobs:
         uses: ansible-network/github_actions/.github/actions/identify_collection@main
         with:
           source_path: ${{ env.source_directory }}
-
-      - name: Build and install the collection
-        uses: ansible-network/github_actions/.github/actions/build_install_collection@main
+        
+      - name: Install the collection
+        uses: Qalthos/github_actions/.github/actions/install_collection@dependencies
         with:
           install_python_dependencies: false
           source_path: ${{ env.source_directory }}
-          collection_path: ${{ steps.identify.outputs.collection_path }}
-          tar_file: ${{ steps.identify.outputs.tar_file }}
+          artifact_name: ${{ steps.identify.collection_name }}
 
       - name: Print the ansible version
         run: ansible --version
