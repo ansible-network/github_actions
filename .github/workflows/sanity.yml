@@ -51,12 +51,12 @@ jobs:
 
       - name: Read collection metadata from galaxy.yml
         id: identify
-        uses: Qalthos/github_actions/.github/actions/identify_collection@dependencies
+        uses: ansible-network/github_actions/.github/actions/identify_collection@main
         with:
           source_path: ${{ env.source_directory }}
         
       - name: Build and install the collection
-        uses: Qalthos/github_actions/.github/actions/build_install_collection@dependencies
+        uses: ansible-network/github_actions/.github/actions/build_install_collection@main
         with:
           install_python_dependencies: false
           source_path: ${{ env.source_directory }}
