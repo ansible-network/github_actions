@@ -73,6 +73,7 @@ jobs:
           artifact_name: dependencies
 
       - name: Install the collection
+        id: install
         uses: Qalthos/github_actions/install_collection@dependencies
         with:
           install_python_dependencies: true
@@ -108,7 +109,7 @@ jobs:
           VIRL_HOST: ${{ secrets.virl_host }}
           VIRL_PASSWORD: ${{ secrets.virl_password }}
           VIRL_USERNAME: admin
-        working-directory: ${{ steps.identify.outputs.collection_path }}
+        working-directory: ${{ steps.install.outputs.collection_path }}
 
       - name: Upload logs
         if: always()

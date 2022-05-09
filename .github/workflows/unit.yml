@@ -47,6 +47,7 @@ jobs:
           artifact_name: dependencies
 
       - name: Install the collection
+        id: install
         uses: Qalthos/github_actions/install_collection@dependencies
         with:
           install_python_dependencies: true
@@ -69,4 +70,4 @@ jobs:
 
       - name: Run unit tests
         run: python -m pytest -vv tests/unit --showlocals
-        working-directory: ${{ steps.identify.outputs.collection_path }}
+        working-directory: ${{ steps.install.outputs.collection_path }}

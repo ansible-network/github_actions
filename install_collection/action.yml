@@ -11,6 +11,10 @@ inputs:
   artifact_name:
     description: Name where the built collection is stored
     required: true
+outputs:
+  collection_path:
+    description: Path where the collection was installed to
+    value: /home/runner/collections/ansible_collections/${{ steps.identify.outputs.namespace }}/${{ steps.identify.outputs.name }}
 
 runs:
   using: composite
@@ -25,6 +29,14 @@ runs:
       with:
         name: ${{ inputs.artifact_name }}
         path: ${{ inputs.source_path }}
+
+    - name: Extract metadata from galaxy.yml
+      id: identify
+      run: |
+        echo "::set-output name=namespace::$(yq -r '.namespace' 'galaxy.yml')"
+        echo "::set-output name=name::$(yq -r '.name' 'galaxy.yml')"
+      shell: bash
+      working-directory: ${{ inputs.source_path }}
 
     - run: |
         ls ${{ inputs.source_path }}

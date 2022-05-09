@@ -44,11 +44,15 @@ jobs:
         run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
 
       - name: Install the collection
+        id: install
         uses: Qalthos/github_actions/install_collection@dependencies
         with:
           install_python_dependencies: false
           source_path: ${{ env.source_directory }}
           artifact_name: collection
+
+      - run: echo "${{ toJSON(steps.install.outputs) }}"
+        shell: bash
 
       - name: Print the ansible version
         run: ansible --version
@@ -58,4 +62,4 @@ jobs:
 
       - name: Run sanity tests
         run: ansible-test sanity --requirements --color --python ${{ matrix.python-version }}
-        working-directory: ${{ steps.identify.outputs.collection_path }}
+        working-directory: ${{ steps.install.outputs.collection_path }}
