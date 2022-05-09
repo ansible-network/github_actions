@@ -44,7 +44,7 @@ jobs:
         run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
 
       - name: Install the collection
-        uses: Qalthos/github_actions/.github/actions/install_collection@dependencies
+        uses: Qalthos/github_actions/install_collection@dependencies
         with:
           install_python_dependencies: false
           source_path: ${{ env.source_directory }}

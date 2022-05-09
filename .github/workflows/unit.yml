@@ -40,14 +40,14 @@ jobs:
 
       - name: Install ${{ steps.identify.outputs.dependency }}
         if: matrix.dependency-source == 'github'
-        uses: Qalthos/github_actions/.github/actions/install_collection@dependencies
+        uses: Qalthos/github_actions/install_collection@dependencies
         with:
           install_python_dependencies: true
           source_path: ${{ env.dependency_directory }}
           artifact_name: dependencies
 
       - name: Install the collection
-        uses: Qalthos/github_actions/.github/actions/install_collection@dependencies
+        uses: Qalthos/github_actions/install_collection@dependencies
         with:
           install_python_dependencies: true
           source_path: ${{ env.source_directory }}
