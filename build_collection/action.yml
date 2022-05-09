@@ -47,7 +47,7 @@ runs:
         name: ${{ inputs.artifact_name }}
         path: |
           ${{ inputs.source_path }}/${{ steps.keys.outputs.namespace }}-${{ steps.keys.outputs.name }}-${{ steps.keys.outputs.version }}.tar.gz
-          bindep.txt
-          galaxy.yml
-          requirements.txt
-          test-requirements.txt
+          ${{ inputs.source_path }}/bindep.txt
+          ${{ inputs.source_path }}/galaxy.yml
+          ${{ inputs.source_path }}/requirements.txt
+          ${{ inputs.source_path }}/test-requirements.txt
