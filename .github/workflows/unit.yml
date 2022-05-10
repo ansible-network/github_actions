@@ -55,7 +55,7 @@ jobs:
           artifact_name: collection
 
       - name: Copy the galaxy.yml from source to destination, needed for pytest-ansible-units
-        run: cp galaxy.yml ${{ steps.identify.outputs.collection_path }}
+        run: cp galaxy.yml ${{ steps.install.outputs.collection_path }}
         shell: bash
         working-directory: ${{ env.source_directory }}
 

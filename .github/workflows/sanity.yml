@@ -51,9 +51,6 @@ jobs:
           source_path: ${{ env.source_directory }}
           artifact_name: collection
 
-      - run: echo "${{ toJSON(steps.install.outputs) }}"
-        shell: bash
-
       - name: Print the ansible version
         run: ansible --version
 

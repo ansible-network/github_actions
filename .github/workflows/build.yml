@@ -15,10 +15,6 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v3
 
-      - name: Github action python requirements
-        run: pip3 install yq
-        shell: bash
-
       - name: Checkout the collection repository
         uses: actions/checkout@v3
         with:
