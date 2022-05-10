@@ -1,7 +1,7 @@
 name: Integration tests
 on:
   workflow_call:
-    inputs: 
+    inputs:
       cml_lab:
         default: tests/integration/labs/single.yaml
         required: false
@@ -17,7 +17,7 @@ on:
         default: ""
         required: false
         type: string
-     
+
     secrets:
       cml_ssh_password:
         required: true
@@ -58,15 +58,15 @@ jobs:
         with:
           path: ${{ env.source_directory }}
           fetch-depth: "0"
-      
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
-      
+
       - name: Install wheel now for faster builds
         run: python3 -m pip install wheel --upgrade
-         
+
       - name: Install ansible-core (${{ matrix.ansible-version }})
         run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
 
@@ -110,7 +110,7 @@ jobs:
 
       - name: Print the ansible version
         run: ansible --version
-      
+
       - name: Install the integration test dependency
         run: python3 -m pip install git+https://github.com/ansible-network/pytest-ansible-network-integration.git
 
@@ -137,11 +137,10 @@ jobs:
           VIRL_PASSWORD: ${{ secrets.virl_password }}
           VIRL_USERNAME: admin
         working-directory: ${{ steps.identify.outputs.collection_path }}
-      
+
       - name: Upload logs
         if: always()
         uses: actions/upload-artifact@v2
         with:
           name: logs
           path: /home/runner/test_logs/
-          

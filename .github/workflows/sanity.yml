@@ -40,7 +40,7 @@ jobs:
         with:
           path: ${{ env.source_directory }}
           fetch-depth: "0"
-      
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
         with:
@@ -54,7 +54,7 @@ jobs:
         uses: ansible-network/github_actions/.github/actions/identify_collection@main
         with:
           source_path: ${{ env.source_directory }}
-        
+
       - name: Build and install the collection
         uses: ansible-network/github_actions/.github/actions/build_install_collection@main
         with:
