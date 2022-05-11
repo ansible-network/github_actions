@@ -141,7 +141,7 @@ jobs:
         working-directory: ${{ steps.identify.outputs.collection_path }}
 
       - name: Attempt to remove any lab in case the workflow was cancelled
-        if: always()
+        if: cancelled()
         run: cml rm --force --no-confirm
         continue-on-error: true
 
