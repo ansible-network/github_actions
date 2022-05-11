@@ -123,7 +123,6 @@ jobs:
           python -m pytest tests/integration
           -vvv
           -s
-          -n 0
           --color=yes
           --integration-tests-path ${{ inputs.integration_test_path }}
           --cml-lab ${{ inputs.cml_lab }}
