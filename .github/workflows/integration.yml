@@ -137,13 +137,16 @@ jobs:
           VIRL_HOST: ${{ secrets.virl_host }}
           VIRL_PASSWORD: ${{ secrets.virl_password }}
           VIRL_USERNAME: admin
-        shell: bash
         working-directory: ${{ steps.identify.outputs.collection_path }}
 
       - name: Attempt to remove any lab in case the workflow was cancelled
         if: cancelled()
         run: cml rm --force --no-confirm
         continue-on-error: true
+        env:
+          VIRL_HOST: ${{ secrets.virl_host }}
+          VIRL_PASSWORD: ${{ secrets.virl_password }}
+          VIRL_USERNAME: admin
 
       - name: Upload logs
         if: always()
