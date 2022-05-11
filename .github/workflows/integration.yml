@@ -144,6 +144,7 @@ jobs:
         run: cml rm --force --no-confirm
         continue-on-error: true
         env:
+          CML_VERIFY_CERT: False
           VIRL_HOST: ${{ secrets.virl_host }}
           VIRL_PASSWORD: ${{ secrets.virl_password }}
           VIRL_USERNAME: admin
