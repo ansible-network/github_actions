@@ -121,9 +121,6 @@ jobs:
       - name: Run integration tests
         run: >-
           python -m pytest tests/integration
-          -vvv
-          -s
-          --color=yes
           --integration-tests-path ${{ inputs.integration_test_path }}
           --cml-lab ${{ inputs.cml_lab }}
           ${{ inputs.pytest_addopts }}
