@@ -137,7 +137,7 @@ jobs:
 
       - name: Attempt to remove any labs in case the workflow was cancelled
         if: cancelled()
-        run: echo ${{ env.CML_LABS }} | tr -d '\n' | xargs -d ',' -n1 cml use --id && cml rm --force --no-confirm
+        run: echo ${{ env.CML_LABS }} | tr -d '\n' | xargs -d ',' -i sh -c  'cml use --id {} && cml rm --force --no-confirm'
         continue-on-error: true
         env:
           CML_VERIFY_CERT: False
