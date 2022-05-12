@@ -135,9 +135,9 @@ jobs:
           VIRL_USERNAME: admin
         working-directory: ${{ steps.identify.outputs.collection_path }}
 
-      - name: Attempt to remove any lab in case the workflow was cancelled
+      - name: Attempt to remove any labs in case the workflow was cancelled
         if: cancelled()
-        run: cml rm --force --no-confirm
+        run: echo $CML_LABS | tr -d '\n' | xargs -d ',' -n1 cml use --id && cml rm --force --no-confirm
         continue-on-error: true
         env:
           CML_VERIFY_CERT: False
