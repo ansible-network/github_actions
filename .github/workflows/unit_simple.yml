@@ -67,7 +67,7 @@ jobs:
           tar_file: ${{ steps.identify.outputs.tar_file }}
       
       - name: Install collection dependencies
-        run: ansible-galaxy install ${{ inputs.collection_dependencies }}
+        run: ansible-galaxy collection install ${{ inputs.collection_dependencies }}
         if: inputs.collection_dependencies != ''
 
       - name: Print the ansible version
