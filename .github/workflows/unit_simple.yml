@@ -2,7 +2,7 @@ name: Unit tests
 on:
   workflow_call:
     inputs:
-      collection_dependencies:
+      collection_pre_install:
         default: ""
         required: false
         type: string
@@ -58,9 +58,9 @@ jobs:
         with:
           source_path: ${{ env.source_directory }}
 
-      - name: Install collection dependencies first so the collection install does not
-        run: ansible-galaxy collection install ${{ inputs.collection_dependencies }}
-        if: inputs.collection_dependencies != ''
+      - name: Pre install collections dependencies first so the collection install does not
+        run: ansible-galaxy collection install ${{ inputs.collection_pre_install }}
+        if: inputs.collection_pre_install != ''
 
       - name: Build and install the collection
         uses: ansible-network/github_actions/.github/actions/build_install_collection@main
