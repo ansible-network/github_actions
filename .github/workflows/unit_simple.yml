@@ -58,6 +58,10 @@ jobs:
         with:
           source_path: ${{ env.source_directory }}
 
+      - name: Install collection dependencies first so the collection install does not
+        run: ansible-galaxy collection install ${{ inputs.collection_dependencies }}
+        if: inputs.collection_dependencies != ''
+
       - name: Build and install the collection
         uses: ansible-network/github_actions/.github/actions/build_install_collection@main
         with:
@@ -66,10 +70,6 @@ jobs:
           collection_path: ${{ steps.identify.outputs.collection_path }}
           tar_file: ${{ steps.identify.outputs.tar_file }}
       
-      - name: Install collection dependencies
-        run: ansible-galaxy collection install ${{ inputs.collection_dependencies }}
-        if: inputs.collection_dependencies != ''
-
       - name: Print the ansible version
         run: ansible --version
 
