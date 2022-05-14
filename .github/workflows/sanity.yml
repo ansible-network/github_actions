@@ -35,12 +35,6 @@ jobs:
 
     name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }}"
     steps:
-      - name: Checkout the collection repository
-        uses: actions/checkout@v3
-        with:
-          path: ${{ env.source_directory }}
-          fetch-depth: "0"
-
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
         with:
@@ -49,19 +43,13 @@ jobs:
       - name: Install ansible-core (${{ matrix.ansible-version }})
         run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
 
-      - name: Read collection metadata from galaxy.yml
-        id: identify
-        uses: ansible-network/github_actions/.github/actions/identify_collection@main
-        with:
-          source_path: ${{ env.source_directory }}
-
-      - name: Build and install the collection
-        uses: ansible-network/github_actions/.github/actions/build_install_collection@main
+      - name: Install the collection
+        id: install
+        uses: Qalthos/github_actions/install_collection@dependencies
         with:
           install_python_dependencies: false
           source_path: ${{ env.source_directory }}
-          collection_path: ${{ steps.identify.outputs.collection_path }}
-          tar_file: ${{ steps.identify.outputs.tar_file }}
+          artifact_name: collection
 
       - name: Print the ansible version
         run: ansible --version
@@ -71,4 +59,4 @@ jobs:
 
       - name: Run sanity tests
         run: ansible-test sanity --requirements --color --python ${{ matrix.python-version }}
-        working-directory: ${{ steps.identify.outputs.collection_path }}
+        working-directory: ${{ steps.install.outputs.collection_path }}

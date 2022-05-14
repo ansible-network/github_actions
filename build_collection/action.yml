@@ -1,0 +1,49 @@
+name: Build the collection
+description: Build the collection for later use
+
+inputs:
+  source_path:
+    description: "Path to the collection source"
+    required: true
+  artifact_name:
+    description: The name to give the uploaded artifact
+    required: true
+outputs:
+  dependency:
+    description: The collection dependencies
+    value: ${{ steps.identify.outputs.dependency }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set the version number in galaxy.yml
+      run: yq -i ".version=\"$(git describe --tags)\"" 'galaxy.yml'
+      shell: bash
+      working-directory: ${{ inputs.source_path }}
+
+    - name: Show the galaxy.yml
+      run: cat galaxy.yml
+      shell: bash
+      working-directory: ${{ inputs.source_path }}
+
+    - name: Extract metadata from galaxy.yml
+      id: identify
+      uses: Qalthos/github_actions/identify_collection@dependencies
+      with:
+        source_path: ${{ inputs.source_path }}
+
+    - name: Build collection
+      run: ansible-galaxy collection build -vvv
+      shell: bash
+      working-directory: ${{ inputs.source_path }}
+
+    - name: Upload collection files for reuse
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ inputs.artifact_name }}
+        path: |
+          ${{ inputs.source_path }}/${{ steps.identify.outputs.tar_file }}
+          ${{ inputs.source_path }}/bindep.txt
+          ${{ inputs.source_path }}/galaxy.yml
+          ${{ inputs.source_path }}/requirements.txt
+          ${{ inputs.source_path }}/test-requirements.txt

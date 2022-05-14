@@ -1,0 +1,30 @@
+name: Retrieve collection information
+description: Extract collection infromation from the galaxy.yml file
+
+inputs:
+  source_path:
+    description: Path to the collection source root
+    required: true
+outputs:
+  collection_path:
+    description: The final collection path
+    value: /home/runner/collections/ansible_collections/${{ steps.keys.outputs.namespace }}/${{ steps.keys.outputs.name }}
+  dependency:
+    description: The collection dependency (if any)
+    value: ${{ steps.keys.outputs.dependency }}
+  tar_file:
+    description: The generated collection tar file
+    value: ${{ steps.keys.outputs.namespace }}-${{ steps.keys.outputs.name }}-${{ steps.keys.outputs.version }}.tar.gz
+
+runs:
+  using: composite
+  steps:
+    - name: Extract metadata from galaxy.yml
+      id: keys
+      run: |
+        echo "::set-output name=namespace::$(yq '.namespace' 'galaxy.yml')"
+        echo "::set-output name=name::$(yq '.name' 'galaxy.yml')"
+        echo "::set-output name=version::$(yq '.version' 'galaxy.yml')"
+        echo "::set-output name=dependency::$(yq '.dependencies | keys | join(" ")' 'galaxy.yml')"
+      shell: bash
+      working-directory: ${{ inputs.source_path }}
