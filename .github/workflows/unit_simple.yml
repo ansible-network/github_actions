@@ -1,0 +1,84 @@
+name: Unit tests
+on:
+  workflow_call:
+    inputs:
+      collection_dependencies:
+        default: ""
+        required: false
+        type: string
+      matrix_exclude:
+        default: "[]"
+        required: false
+        type: string
+      
+jobs:
+  unit:
+    env:
+      PY_COLORS: "1"
+      source_directory: "./source"
+      dependency_directory: "./dependency"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ansible-version:
+          - stable-2.9
+          - stable-2.10
+          - stable-2.11
+          - stable-2.12
+          - stable-2.13
+          - milestone
+          - devel
+        python-version:
+          - "3.8"
+          - "3.9"
+          - "3.10"
+        exclude: ${{ fromJSON(inputs.matrix_exclude) }}
+
+
+    name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }} / ${{ matrix.dependency-source }}"
+    steps:
+      - name: Checkout the collection repository
+        uses: actions/checkout@v3
+        with:
+          path: ${{ env.source_directory }}
+          fetch-depth: "0"
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install ansible-core (${{ matrix.ansible-version }})
+        run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
+
+      - name: Read collection metadata from galaxy.yml
+        id: identify
+        uses: ansible-network/github_actions/.github/actions/identify_collection@main
+        with:
+          source_path: ${{ env.source_directory }}
+
+      - name: Build and install the collection
+        uses: ansible-network/github_actions/.github/actions/build_install_collection@main
+        with:
+          install_python_dependencies: true
+          source_path: ${{ env.source_directory }}
+          collection_path: ${{ steps.identify.outputs.collection_path }}
+          tar_file: ${{ steps.identify.outputs.tar_file }}
+      
+      - name: Install collection dependencies
+        run: ansible-galaxy install ${{ inputs.collection_dependencies }}
+        if: inputs.collection_dependencies != ''
+
+      - name: Print the ansible version
+        run: ansible --version
+
+      - name: Install the unit test dependency
+        run: python3 -m pip install git+https://github.com/ansible-community/pytest-ansible-units.git
+
+      - name: Print the python dependencies
+        run: python3 -m pip list
+
+      - name: Run unit tests
+        run: python -m pytest -vv tests/unit --showlocals
+        working-directory: ${{ steps.identify.outputs.collection_path }}
