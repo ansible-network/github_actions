@@ -15,7 +15,7 @@ jobs:
         run: >-
           git show origin/${{ github.event.pull_request.base.ref }}..HEAD
           --name-status 
-          --exit-code 
           --oneline 
           --diff-filter=A | 
           grep changelogs/fragments/
+        working-directory: ${{ github.repository }}
