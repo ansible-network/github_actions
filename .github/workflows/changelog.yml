@@ -13,7 +13,7 @@ jobs:
           fetch-depth: "0"
       - name: Ensure a new changelog entry exists
         run: >-
-          git show ${{ github.event.pull_request.base.ref }}..HEAD
+          git show origin/${{ github.event.pull_request.base.ref }}..HEAD
           --name-status 
           --exit-code 
           --oneline 
