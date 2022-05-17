@@ -41,13 +41,12 @@ jobs:
           # - stable-2.10
           # - stable-2.11
           # - stable-2.12
-          # - stable-2.13
-          - v2.13.0rc1
+          - stable-2.13
           # - milestone
           # - devel
         python-version:
-          - "3.8"
-          # - "3.9"
+          # - "3.8"
+          - "3.9"
           # - "3.10"
         dependency-source:
           - github
