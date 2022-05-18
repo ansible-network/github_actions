@@ -73,9 +73,6 @@ jobs:
       - name: Print the ansible version
         run: ansible --version
 
-      - name: Install the unit test dependency
-        run: python3 -m pip install git+https://github.com/ansible-community/pytest-ansible-units.git
-
       - name: Print the python dependencies
         run: python3 -m pip list
 
