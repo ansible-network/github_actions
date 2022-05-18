@@ -1,4 +1,5 @@
-name: Unit tests
+# Simple integration tests where CML is not needed
+name: Integration tests
 on:
   workflow_call:
     inputs:
@@ -6,35 +7,42 @@ on:
         default: ""
         required: false
         type: string
+      integration_test_path:
+        default: tests/integration/targets
+        required: false
+        type: string
       matrix_exclude:
         default: "[]"
         required: false
+        type: string 
+      pytest_addopts:
+        default: ""
+        required: false
         type: string
-      
+
 jobs:
-  unit:
+  integration:
     env:
       PY_COLORS: "1"
       source_directory: "./source"
-      dependency_directory: "./dependency"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         ansible-version:
-          - stable-2.9
-          - stable-2.10
-          - stable-2.11
-          - stable-2.12
+          # - stable-2.9
+          # - stable-2.10
+          # - stable-2.11
+          # - stable-2.12
           - stable-2.13
-          - milestone
-          - devel
+          # - milestone
+          # - devel
         python-version:
-          - "3.8"
+          # - "3.8"
           - "3.9"
-          - "3.10"
-        exclude: ${{ fromJSON(inputs.matrix_exclude) }}
-
+          # - "3.10"
+        dependency-source:
+          - github
 
     name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }} / ${{ matrix.dependency-source }}"
     steps:
@@ -48,6 +56,9 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
+
+      - name: Install wheel now for faster builds
+        run: python3 -m pip install wheel --upgrade
 
       - name: Install ansible-core (${{ matrix.ansible-version }})
         run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
@@ -69,16 +80,24 @@ jobs:
           source_path: ${{ env.source_directory }}
           collection_path: ${{ steps.identify.outputs.collection_path }}
           tar_file: ${{ steps.identify.outputs.tar_file }}
-      
+
       - name: Print the ansible version
         run: ansible --version
-
-      - name: Install the unit test dependency
-        run: python3 -m pip install git+https://github.com/ansible-community/pytest-ansible-units.git
 
       - name: Print the python dependencies
         run: python3 -m pip list
 
-      - name: Run unit tests
-        run: python -m pytest tests/unit --showlocals
+      - name: Run integration tests
+        run: >-
+          python -m pytest 
+          ${{ inputs.pytest_addopts }}
+        env:
+          ANSIBLE_FORCE_COLOR: "1"
         working-directory: ${{ steps.identify.outputs.collection_path }}
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: logs
+          path: /home/runner/test_logs/
