@@ -25,8 +25,9 @@ jobs:
           - ansible-version: stable-2.9
             python-version: "3.8"
           
-          - ansible-version: stable-2.10
-            python-version: "3.6"
+          # cryptography related issues
+          # - ansible-version: stable-2.10
+          #   python-version: "3.6"
           - ansible-version: stable-2.10
             python-version: "3.7"
           - ansible-version: stable-2.10
@@ -34,8 +35,9 @@ jobs:
           - ansible-version: stable-2.10
             python-version: "3.9"
 
-          - ansible-version: stable-2.11
-            python-version: "3.6"
+          # cryptography related issues
+          # - ansible-version: stable-2.11
+          #   python-version: "3.6"
           - ansible-version: stable-2.11
             python-version: "3.7"
           - ansible-version: stable-2.11
