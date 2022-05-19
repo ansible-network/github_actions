@@ -20,19 +20,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      # The matrix should stay in sync with
-        # - unit_simple.yml
-        # - sanity.yml
-        # - integration_simple.yml
       matrix:
+        # The matrix vars need at least one entry each
+        # This can be a duplicate of one below
         ansible-version:
-          - stable-2.12
-          - stable-2.13
-          - milestone
-          - devel
+        - stable-2.9
         python-version:
-          - "3.9"
-          - "3.10"
+        - "3.6"
         exclude: ${{ fromJSON(inputs.matrix_exclude) }}
         include:
           - ansible-version: stable-2.9
@@ -64,10 +58,27 @@ jobs:
 
           - ansible-version: stable-2.12
             python-version: "3.8"
+          - ansible-version: stable-2.12
+            python-version: "3.9"
+          - ansible-version: stable-2.12
+            python-version: "3.10"
 
           - ansible-version: stable-2.13
             python-version: "3.8"
+          - ansible-version: stable-2.13
+            python-version: "3.9"
+          - ansible-version: stable-2.13
+            python-version: "3.10"
 
+          - ansible-version: milestone
+            python-version: "3.9"
+          - ansible-version: milestone
+            python-version: "3.10"
+
+          - ansible-version: devel
+            python-version: "3.9"
+          - ansible-version: devel
+            python-version: "3.10"
 
     name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }} / ${{ matrix.dependency-source }}"
     steps:
