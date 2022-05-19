@@ -21,6 +21,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        ansible-version: []
+        python-version: []
         exclude: ${{ fromJSON(inputs.matrix_exclude) }}
         # The include list should stay in sync with
         # - unit_simple.yml
