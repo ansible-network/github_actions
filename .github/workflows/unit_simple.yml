@@ -30,12 +30,23 @@ jobs:
           - milestone
           - devel
         python-version:
-          - "3.6"
-          - "3.7"
           - "3.8"
           - "3.9"
           - "3.10"
         exclude: ${{ fromJSON(inputs.matrix_exclude) }}
+        include:
+          - ansible-version: stable-2.9
+            python-version: 3.6
+          - ansible-version: stable-2.9
+            python-version: 3.7
+          - ansible-version: stable-2.10
+            python-version: 3.6
+          - ansible-version: stable-2.10
+            python-version: 3.7
+          - ansible-version: stable-2.11
+            python-version: 3.6
+          - ansible-version: stable-2.11
+            python-version: 3.7
 
 
     name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }} / ${{ matrix.dependency-source }}"
