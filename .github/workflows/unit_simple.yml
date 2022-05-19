@@ -22,6 +22,10 @@ jobs:
       fail-fast: false
       matrix:
         exclude: ${{ fromJSON(inputs.matrix_exclude) }}
+        # The include list should stay in sync with
+        # - unit_simple.yml
+        # - sanity.yml
+        # - integration_simple.yml
         include:
           - ansible-version: stable-2.9
             python-version: "3.6"
