@@ -1,18 +1,45 @@
-# Simple integration tests where CML is not needed
-name: Integration tests
+name: Integration tests, no CML, dependencies from galaxy
 on:
   workflow_call:
     inputs:
-      collection_pre_install:
-        default: ""
-        required: false
-        type: string
       integration_test_path:
         default: tests/integration/targets
         required: false
         type: string
       matrix_exclude:
-        default: "[]"
+        default: >-
+          [
+            {
+              "_note": "ansible 2.9 does not support python 3.9",
+              "ansible-version": "stable-2.9",
+              "python-version": "3.9"
+            },
+            {
+              "_note": "ansible 2.9 does not support python 3.10",
+              "ansible-version": "stable-2.9",
+              "python-version": "3.10"
+            },
+            {
+              "_note": "ansible-base 2.10 does not support python 3.10",
+              "ansible-version": "stable-2.10",
+              "python-version": "3.10"
+            },
+            {
+              "_note": "ansible-core 2.11 does not support python 3.10",
+              "ansible-version": "stable-2.11",
+              "python-version": "3.10"
+            },
+            {
+              "_note": "ansible-core 2.14 does not support python 3.8",
+              "ansible-version": "milestone",
+              "python-version": "3.8"
+            },
+            {
+              "_note": "ansible-core 2.14 does not support python 3.8",
+              "ansible-version": "devel",
+              "python-version": "3.8"
+            }
+          ]
         required: false
         type: string 
       pytest_addopts:
@@ -29,62 +56,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        ansible-version:
+          - stable-2.9
+          - stable-2.10
+          - stable-2.11
+          - stable-2.12
+          - stable-2.13
+          - milestone
+          - devel
+        python-version:
+          # ansible-navigator supports python 3.8+
+          - "3.8"
+          - "3.9"
+          - "3.10"
         exclude: ${{ fromJSON(inputs.matrix_exclude) }}
-        # The include list should stay in sync with
-        # - unit_simple.yml
-        # - sanity.yml
-        # - integration_simple.yml
-        include:
-          - ansible-version: stable-2.9
-            python-version: "3.6"
-          - ansible-version: stable-2.9
-            python-version: "3.7"
-          - ansible-version: stable-2.9
-            python-version: "3.8"
-          
-          # cryptography related issues
-          # - ansible-version: stable-2.10
-          #   python-version: "3.6"
-          - ansible-version: stable-2.10
-            python-version: "3.7"
-          - ansible-version: stable-2.10
-            python-version: "3.8"
-          - ansible-version: stable-2.10
-            python-version: "3.9"
-
-          # cryptography related issues
-          # - ansible-version: stable-2.11
-          #   python-version: "3.6"
-          - ansible-version: stable-2.11
-            python-version: "3.7"
-          - ansible-version: stable-2.11
-            python-version: "3.8"
-          - ansible-version: stable-2.11
-            python-version: "3.9"
-
-          - ansible-version: stable-2.12
-            python-version: "3.8"
-          - ansible-version: stable-2.12
-            python-version: "3.9"
-          - ansible-version: stable-2.12
-            python-version: "3.10"
-
-          - ansible-version: stable-2.13
-            python-version: "3.8"
-          - ansible-version: stable-2.13
-            python-version: "3.9"
-          - ansible-version: stable-2.13
-            python-version: "3.10"
-
-          - ansible-version: milestone
-            python-version: "3.9"
-          - ansible-version: milestone
-            python-version: "3.10"
-
-          - ansible-version: devel
-            python-version: "3.9"
-          - ansible-version: devel
-            python-version: "3.10"
 
     name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }}"
     steps:
@@ -110,10 +95,6 @@ jobs:
         uses: ansible-network/github_actions/.github/actions/identify_collection@main
         with:
           source_path: ${{ env.source_directory }}
-
-      - name: Pre install collections dependencies first so the collection install does not
-        run: ansible-galaxy collection install ${{ inputs.collection_pre_install }} -p /home/runner/collections
-        if: inputs.collection_pre_install != ''
 
       - name: Build and install the collection
         uses: ansible-network/github_actions/.github/actions/build_install_collection@main
