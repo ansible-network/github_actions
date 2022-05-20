@@ -7,35 +7,34 @@ on:
         required: false
         type: string
       matrix_exclude:
+        # 2.9/3.9 not supported
+        # 2.9/3.10 not supported
+        # 2.10/3.10 not supported
+        # 2.11/3.10 not supported
+        # 2.14/3.8 not supported 
         default: >-
           [
             {
-              "_note": "ansible 2.9 does not support python 3.9",
               "ansible-version": "stable-2.9",
               "python-version": "3.9"
             },
             {
-              "_note": "ansible 2.9 does not support python 3.10",
               "ansible-version": "stable-2.9",
               "python-version": "3.10"
             },
             {
-              "_note": "ansible-base 2.10 does not support python 3.10",
               "ansible-version": "stable-2.10",
               "python-version": "3.10"
             },
             {
-              "_note": "ansible-core 2.11 does not support python 3.10",
               "ansible-version": "stable-2.11",
               "python-version": "3.10"
             },
             {
-              "_note": "ansible-core 2.14 does not support python 3.8",
               "ansible-version": "milestone",
               "python-version": "3.8"
             },
             {
-              "_note": "ansible-core 2.14 does not support python 3.8",
               "ansible-version": "devel",
               "python-version": "3.8"
             }
