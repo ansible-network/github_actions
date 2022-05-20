@@ -34,7 +34,7 @@ on:
             {
               "ansible-version": "stable-2.9",
               "python-version": "3.11.0-beta.1"
-            }
+            },
             {
               "ansible-version": "stable-2.10",
               "python-version": "3.6"
@@ -46,7 +46,7 @@ on:
             {
               "ansible-version": "stable-2.10",
               "python-version": "3.11.0-beta.1"
-            }
+            },
             {
               "ansible-version": "stable-2.11",
               "python-version": "3.6"
@@ -82,7 +82,7 @@ on:
             {
               "ansible-version": "stable-2.13",
               "python-version": "3.11.0-beta.1"
-            }
+            },
             {
               "ansible-version": "milestone",
               "python-version": "3.6"
