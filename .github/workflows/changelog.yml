@@ -15,5 +15,5 @@ jobs:
         run: >-
           git show origin/${{ github.event.pull_request.base.ref }}..HEAD
           --name-status
-          --oneline
+          --oneline |
           grep -E -e "A\s+changelogs/fragments/" -e "M\s+CHANGELOG.rst"
