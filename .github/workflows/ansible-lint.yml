@@ -1,0 +1,13 @@
+name: ansible-lint
+on:
+  workflow_call:
+
+jobs:
+  ansible-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run ansible-lint
+        uses: ansible-community/ansible-lint-action@main
+        with:
+          path: "tests/integration"
