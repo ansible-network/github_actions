@@ -114,11 +114,11 @@ jobs:
 
       - name: Run integration tests
         run: >-
-          ${{ inputs.pytest_precommand }}
           python -m pytest test/integration
           ${{ inputs.pytest_addopts }}
         env:
           ANSIBLE_FORCE_COLOR: "1"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         working-directory: ${{ steps.identify.outputs.collection_path }}
 
       - name: Upload logs
