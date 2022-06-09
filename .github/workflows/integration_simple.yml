@@ -46,7 +46,7 @@ on:
         required: false
         type: string
     secrets:
-      GITHUB_TOKEN:
+      GH_TOKEN:
         required: false
 
 jobs:
@@ -118,7 +118,7 @@ jobs:
           ${{ inputs.pytest_addopts }}
         env:
           ANSIBLE_FORCE_COLOR: "1"
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         working-directory: ${{ steps.identify.outputs.collection_path }}
 
       - name: Upload logs
