@@ -111,7 +111,7 @@ jobs:
 
       - name: Run integration tests
         run: >-
-          python -m pytest 
+          python -m pytest tests/integration
           ${{ inputs.pytest_addopts }}
         env:
           ANSIBLE_FORCE_COLOR: "1"
