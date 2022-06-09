@@ -45,10 +45,9 @@ on:
         default: ""
         required: false
         type: string
-      pytest_precommand:
-        default: ""
+    secrets:
+      GITHUB_TOKEN:
         required: false
-        type: string
 
 jobs:
   integration:
