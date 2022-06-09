@@ -115,7 +115,6 @@ jobs:
           ${{ inputs.pytest_addopts }}
         env:
           ANSIBLE_FORCE_COLOR: "1"
-          GITHUB_TOKEN: ${{ github.token }}
         working-directory: ${{ steps.identify.outputs.collection_path }}
 
       - name: Upload logs
