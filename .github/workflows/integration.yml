@@ -57,6 +57,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           path: ${{ env.source_directory }}
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: "0"
 
       - name: Set up Python ${{ matrix.python-version }}
