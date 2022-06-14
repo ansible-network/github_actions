@@ -27,6 +27,10 @@ jobs:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
           PR_NUMBER: ${{ github.event.number }}
         if: steps.authorization.outcome == 'success'
+      
+      - run: echo "${{ steps.authorization.outcome }}"
+      - run: echo "${{ github.event_name }}"
+      - run: echo "${{ github.event.label.name }}"
 
       - name: Remove the 'safe to test', not a collaborator, PR was updated or not just added
         id: removed
