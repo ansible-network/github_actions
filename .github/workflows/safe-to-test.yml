@@ -22,14 +22,11 @@ jobs:
         if: github.event.label.name != 'safe to test'
 
       - name: If collaborator, add the label
-        id: label_added
         run: gh pr edit $PR_NUMBER --add-label "safe to test"
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
           PR_NUMBER: ${{ github.event.number }}
-        if: >-
-          github.event.label.name == 'safe to test' &&
-          steps.authorization.outcome == 'success'
+        if: steps.authorization.outcome == 'success'
 
       - name: Remove the 'safe to test', not a collaborator, PR was updated or not just added
         id: removed
@@ -47,4 +44,5 @@ jobs:
           gh api -H "Accept: application/vnd.github.v3+json" $API_URL 
           --jq .labels | grep 'safe to test'
         env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
           API_URL: /repos/${{ github.repository }}/issues/${{ github.event.number }}
