@@ -11,7 +11,6 @@ jobs:
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
-        if: github.event_name != 'labeled'
 
       - name: Check if the PR author is a collaborator
         id: authorization
@@ -20,32 +19,32 @@ jobs:
         env:
           API_URL: /repos/${{ github.repository }}/collaborators/${{ github.actor }}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-        if: github.event_name != 'labeled'
+        if: github.event.label.name != 'safe to test'
 
-      - name: Only if the check passed and not labeled, set the label
+      - name: If collaborator, add the label
+        id: label_added
         run: gh pr edit $PR_NUMBER --add-label "safe to test"
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
           PR_NUMBER: ${{ github.event.number }}
         if: >-
-          github.event_name != 'labeled' &&
-          steps.authorization.outcome == 'success' &&
-          !contains(github.event.pull_request.labels.*.name, 'safe to test')
+          github.event.label.name == 'safe to test' &&
+          steps.authorization.outcome == 'success'
 
-      - name: Remove the 'safe to test' label if not a collaborator
+      - name: Remove the 'safe to test', not a collaborator, PR was updated or not just added
+        id: removed
         run: gh pr edit $PR_NUMBER --remove-label "safe to test"
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
           PR_NUMBER: ${{ github.event.number }}
         if: >-
-          github.event_name != 'labeled' &&
-          steps.authorization.outcome != 'success'
-
-      - name: Fail if not safe to test
-        if: >-
-          steps.authorization.outcome != 'success' &&
-          !contains(github.event.pull_request.labels.*.name, 'safe to test')
-        uses: actions/github-script@v3
-        with:
-          script: |
-            core.setFailed('Label "safe to test" is required or the PR author must be a collaborator')
+            steps.authorization.outcome != 'success' &&
+            github.event.label.name != 'safe to test' &&
+            ( github.event_name == 'synchronize' || github.event_name == 'reopened' )
+     
+      - name: Fail if not now labeled
+        run: >-
+          gh api -H "Accept: application/vnd.github.v3+json" $API_URL 
+          --jq .labels | grep 'safe to test'
+        env:
+          API_URL: /repos/${{ github.repository }}/issues/${{ github.event.number }}
