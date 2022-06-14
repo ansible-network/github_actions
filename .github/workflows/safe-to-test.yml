@@ -17,7 +17,7 @@ jobs:
         run: 'gh api -H "Accept: application/vnd.github.v3+json" $API_URL'
         continue-on-error: true
         env:
-          API_URL: /repos/${{ github.repository }}/collaborators/${{ github.actor }}
+          API_URL: /repos/${{ github.repository }}/collaborators/${{ github.event.pull_request.user.login }}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         if: github.event.label.name != 'safe to test'
 
