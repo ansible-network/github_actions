@@ -12,7 +12,7 @@ jobs:
       - name: Checkout the repository
         uses: actions/checkout@v3
         if: github.event_name != 'labeled'
-      
+
       - name: Check if the PR author is a collaborator
         id: authorization
         run: 'gh api -H "Accept: application/vnd.github.v3+json" $API_URL'
@@ -21,7 +21,7 @@ jobs:
           API_URL: /repos/${{ github.repository }}/collaborators/${{ github.actor }}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         if: github.event_name != 'labeled'
-      
+
       - name: Only if the check passed and not labeled, set the label
         run: gh pr edit $PR_NUMBER --add-label "safe to test"
         env:
@@ -31,7 +31,7 @@ jobs:
           github.event_name != 'labeled' &&
           steps.authorization.outcome == 'success' &&
           !contains(github.event.pull_request.labels.*.name, 'safe to test')
-     
+
       - name: Remove the 'safe to test' label if not a collaborator
         run: gh pr edit $PR_NUMBER --remove-label "safe to test"
         env:
@@ -43,7 +43,7 @@ jobs:
 
       - name: Fail if not safe to test
         if: >-
-          steps.authorization.outcome != 'success' && 
+          steps.authorization.outcome != 'success' &&
           !contains(github.event.pull_request.labels.*.name, 'safe to test')
         uses: actions/github-script@v3
         with:
