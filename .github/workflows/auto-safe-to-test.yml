@@ -1,6 +1,9 @@
 name: auto-safe-to-test
 on:
   workflow_call:
+    secrets:
+      GH_TOKEN:
+        required: true
 
 jobs:
   auto-safe-to-test:
