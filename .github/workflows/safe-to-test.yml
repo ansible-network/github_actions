@@ -40,7 +40,7 @@ jobs:
       
       - name: Check if safe to test
         if: >-
-          steps.authorization.outcome != 'success' and 
+          steps.authorization.outcome != 'success' && 
           !contains(github.event.pull_request.labels.*.name, 'safe to test')
         uses: actions/github-script@v3
         with:
