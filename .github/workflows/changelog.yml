@@ -12,7 +12,7 @@ jobs:
           path: ${{ env.source_directory }}
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: "0"
-        if: "!contains(github.event.pull_request.labels.*.name, 'skip changelog')"
+        if: "!contains(github.event.pull_request.labels.*.name, 'skip-changelog')"
 
       - name: Ensure a new changelog entry exists
         run: >-
@@ -20,5 +20,5 @@ jobs:
           --name-status
           --oneline |
           grep -E -e "A\s+changelogs/fragments/" -e "M\s+CHANGELOG.rst"
-        if: "!contains(github.event.pull_request.labels.*.name, 'skip changelog')"
+        if: "!contains(github.event.pull_request.labels.*.name, 'skip-changelog')"
 
