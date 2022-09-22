@@ -31,6 +31,10 @@ on:
               "python-version": "3.10"
             },
             {
+              "ansible-version": "stable-2.14",
+              "python-version": "3.8"
+            },
+            {
               "ansible-version": "milestone",
               "python-version": "3.8"
             },
@@ -64,6 +68,7 @@ jobs:
           - stable-2.11
           - stable-2.12
           - stable-2.13
+          - stable-2.14
           - milestone
           - devel
         python-version:
