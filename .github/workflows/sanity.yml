@@ -161,6 +161,10 @@ jobs:
       - name: Print the python dependencies
         run: python3 -m pip list
 
+      - name: Install stable pylint
+          run: pip install pylint==2.15.0
+          working-directory: ${{ steps.identify.outputs.collection_path }}
+
       - name: Run sanity tests
         run: ansible-test sanity --requirements --color --python ${{ matrix.python-version }}
         working-directory: ${{ steps.identify.outputs.collection_path }}
