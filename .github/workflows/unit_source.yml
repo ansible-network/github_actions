@@ -7,7 +7,9 @@ on:
         type: string
       matrix_exclude:
         # 2.10/3.10 not supported
+        # 2.10/3.11 not supported
         # 2.11/3.10 not supported
+        # 2.11/3.11 not supported
         # 2.12/3.7 not supported
         # 2.13/3.7 not supported
         # 2.14/3.7 not supported
@@ -19,8 +21,16 @@ on:
               "python-version": "3.10"
             },
             {
+              "ansible-version": "stable-2.10",
+              "python-version": "3.11"
+            },
+            {
               "ansible-version": "stable-2.11",
               "python-version": "3.10"
+            },
+            {
+              "ansible-version": "stable-2.11",
+              "python-version": "3.11"
             },
             {
               "ansible-version": "stable-2.12",
@@ -82,6 +92,7 @@ jobs:
           - "3.8"
           - "3.9"
           - "3.10"
+          - "3.11"
         exclude: ${{ fromJSON(inputs.matrix_exclude) }}
     runs-on: ${{ matrix.os }}
 
