@@ -115,7 +115,7 @@ jobs:
             python-version: "3.6"
     runs-on: ${{ matrix.os }}
   
-    name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }}"
+    name: "py${{ matrix.python-version }} / ${{ matrix.os }} / ${{ matrix.ansible-version }}"
     steps:
       - name: Checkout the collection repository
         uses: actions/checkout@v3
