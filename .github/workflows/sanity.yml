@@ -5,15 +5,13 @@ on:
       matrix_exclude:
         # 2.9/3.9 not supported
         # 2.9/3.10 not supported
-        # 2.10/3.6 cryptography issues
+        # 2.9/3.11 not supported
         # 2.10/3.10 not supported
-        # 2.11/3.6 cryptography issues
+        # 2.10/3.11 not supported
         # 2.11/3.10 not supported
-        # 2.12/3.6 not supported
+        # 2.11/3.11 not supported
         # 2.12/3.7 not supported
-        # 2.13/3.6 not supported
         # 2.13/3.7 not supported
-        # 2.14/3.6 not supported
         # 2.14/3.7 not supported
         # 2.14/3.8 not supported
         default: >-
@@ -27,24 +25,24 @@ on:
               "python-version": "3.10"
             },
             {
-              "ansible-version": "stable-2.10",
-              "python-version": "3.6"
+              "ansible-version": "stable-2.9",
+              "python-version": "3.11"
             },
             {
               "ansible-version": "stable-2.10",
               "python-version": "3.10"
             },
             {
-              "ansible-version": "stable-2.11",
-              "python-version": "3.6"
+              "ansible-version": "stable-2.10",
+              "python-version": "3.11"
             },
             {
               "ansible-version": "stable-2.11",
               "python-version": "3.10"
             },
             {
-              "ansible-version": "stable-2.12",
-              "python-version": "3.6"
+              "ansible-version": "stable-2.11",
+              "python-version": "3.11"
             },
             {
               "ansible-version": "stable-2.12",
@@ -52,15 +50,7 @@ on:
             },
             {
               "ansible-version": "stable-2.13",
-              "python-version": "3.6"
-            },
-            {
-              "ansible-version": "stable-2.13",
               "python-version": "3.7"
-            },
-            {
-              "ansible-version": "stable-2.14",
-              "python-version": "3.6"
             },
             {
               "ansible-version": "stable-2.14",
@@ -72,19 +62,11 @@ on:
             },
             {
               "ansible-version": "milestone",
-              "python-version": "3.6"
-            },
-            {
-              "ansible-version": "milestone",
               "python-version": "3.7"
             },
             {
               "ansible-version": "milestone",
               "python-version": "3.8"
-            },
-            {
-              "ansible-version": "devel",
-              "python-version": "3.6"
             },
             {
               "ansible-version": "devel",
@@ -103,10 +85,11 @@ jobs:
     env:
       PY_COLORS: "1"
       source_directory: "./source"
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
+        os:
+          - ubuntu-latest
         ansible-version:
           - stable-2.9
           - stable-2.10
@@ -117,14 +100,22 @@ jobs:
           - milestone
           - devel
         python-version:
-          - "3.6"
           - "3.7"
           - "3.8"
           - "3.9"
           - "3.10"
+          - "3.11"
         exclude: ${{ fromJSON(inputs.matrix_exclude) }}
+        include:
+          # Python 3.6 is not available after ubuntu-20.04
+          # 2.10/2.11 have cryptography issues on 3.6
+          # Python 3.6 is not supported on Ansible 2.12+
+          - os: ubuntu-20.04
+            ansible-version: stable-2.9
+            python-version: "3.6"
+    runs-on: ${{ matrix.os }}
   
-    name: "py${{ matrix.python-version }} / ${{ matrix.ansible-version }}"
+    name: "py${{ matrix.python-version }} / ${{ matrix.os }} / ${{ matrix.ansible-version }}"
     steps:
       - name: Checkout the collection repository
         uses: actions/checkout@v3
