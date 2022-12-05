@@ -50,7 +50,7 @@ on:
               "ansible-version": "stable-2.12",
               "python-version": "3.7"
             },
-             {
+            {
               "ansible-version": "stable-2.12",
               "python-version": "3.11"
             },
@@ -124,7 +124,7 @@ jobs:
             ansible-version: stable-2.9
             python-version: "3.6"
     runs-on: ${{ matrix.os }}
-  
+
     name: "py${{ matrix.python-version }} / ${{ matrix.os }} / ${{ matrix.ansible-version }}"
     steps:
       - name: Checkout the collection repository
