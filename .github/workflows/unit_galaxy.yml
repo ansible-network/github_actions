@@ -96,7 +96,6 @@ jobs:
         exclude: ${{ fromJSON(inputs.matrix_exclude) }}
         include:
           # Python 3.6 is not available after ubuntu-20.04
-          # 2.10/2.11 have cryptography issues on 3.6
           # Python 3.6 is not supported on Ansible 2.12+
           - os: ubuntu-20.04
             ansible-version: stable-2.9
