@@ -6,10 +6,6 @@ on:
         # 2.9/3.9 not supported
         # 2.9/3.10 not supported
         # 2.9/3.11 not supported
-        # 2.10/3.10 not supported
-        # 2.10/3.11 not supported
-        # 2.11/3.10 not supported
-        # 2.11/3.11 not supported
         # 2.12/3.7 not supported
         # 2.12/3.11 not supported
         # 2.13/3.7 not supported
@@ -28,22 +24,6 @@ on:
             },
             {
               "ansible-version": "stable-2.9",
-              "python-version": "3.11"
-            },
-            {
-              "ansible-version": "stable-2.10",
-              "python-version": "3.10"
-            },
-            {
-              "ansible-version": "stable-2.10",
-              "python-version": "3.11"
-            },
-            {
-              "ansible-version": "stable-2.11",
-              "python-version": "3.10"
-            },
-            {
-              "ansible-version": "stable-2.11",
               "python-version": "3.11"
             },
             {
@@ -89,7 +69,7 @@ on:
           ]
         required: false
         type: string
-      
+
 jobs:
   unit_galaxy:
     env:
@@ -102,8 +82,6 @@ jobs:
           - ubuntu-latest
         ansible-version:
           - stable-2.9
-          - stable-2.10
-          - stable-2.11
           - stable-2.12
           - stable-2.13
           - stable-2.14
@@ -155,7 +133,7 @@ jobs:
           source_path: ${{ env.source_directory }}
           collection_path: ${{ steps.identify.outputs.collection_path }}
           tar_file: ${{ steps.identify.outputs.tar_file }}
-      
+
       - name: Print the ansible version
         run: ansible --version
 
