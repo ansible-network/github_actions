@@ -5,6 +5,10 @@ jobs:
   changelog:
     runs-on: ubuntu-latest
     name: Require a changelog
+    env:
+      PY_COLORS: "1"
+      source_directory: "./source"
+      download_directory: "./downloads"
     steps:
       - name: Checkout the collection repository
         uses: actions/checkout@v3
@@ -12,12 +16,21 @@ jobs:
           path: ${{ env.source_directory }}
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: "0"
-        if: "!contains(github.event.pull_request.labels.*.name, 'skip-changelog')"
 
-      - name: Ensure a new changelog entry exists
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Download python script
+        run: curl -o ${{ env.download_directory }}/validate_changelog.py https://raw.githubusercontent.com/ansible-network/github_actions/blob/main/scripts/validate_changelog.py
+
+      - name: Install python required libraries
+        run: pip install -U pyyaml
+
+      - name: Ensure a valid changelog entry exists
         run: >-
-          git show origin/${{ github.event.pull_request.base.ref }}..HEAD
-          --name-status
-          --oneline |
-          grep -E -e "A\s+changelogs/fragments/" -e "M\s+CHANGELOG.rst"
-        if: "!contains(github.event.pull_request.labels.*.name, 'skip-changelog')"
+          python ${{ env.download_directory }}/validate_changelog.py
+          --base-ref ${{ github.event.pull_request.base.ref }}
+          --head-ref ${{ github.event.pull_request.head.sha }}
+        working-directory: ${{ env.source_directory }}
