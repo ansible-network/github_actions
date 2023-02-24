@@ -1,0 +1,50 @@
+name: Retrieve collection information
+description: Extract collection infromation from the galaxy.yml file
+
+inputs:
+  collection_path:
+    description: Path to the collections to test
+    required: true
+  base_ref:
+    description: The base branch to test against
+    required: false
+    default: 'main'
+  total_jobs:
+    description: The total number of jobs to share targets on
+    required: false
+    default: '3'
+outputs:
+  test_targets:
+    description: The list of targets to test
+    value: ${{ steps.splitter.outputs.test_targets }}
+
+runs:
+  using: composite
+  steps:
+    - name: setup python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Download script
+      run: curl -o ${{ github.workspace }}/list_changed_targets.py https://raw.githubusercontent.com/abikouo/github_actions/cloud_splitter/.github/scripts/list_changed_targets.py
+      shell: bash
+
+    - name: Install python required libraries
+      run: pip install -U pyyaml
+      shell: bash
+
+    - name: Set variable to set test all targets
+      run: echo "ANSIBLE_TEST_ALL_THE_TARGETS=--test-all-the-targets" >> "$GITHUB_ENV"
+      shell: bash
+      if: ${{ (contains(github.event.pull_request.labels.*.name, 'test-all-the-targets')) }}
+
+    - name: List changes for the pull request
+      id: splitter
+      run: >-
+        python ${{ github.workspace }}/list_changed_targets.py
+        --collection-path ${{ inputs.collection_path }}
+        --total-jobs ${{ inputs.total_jobs }}
+        $ANSIBLE_TEST_ALL_THE_TARGETS
+        --base-ref ${{ inputs.base_ref }} >> $GITHUB_OUTPUT
+      shell: bash
