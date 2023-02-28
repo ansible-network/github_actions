@@ -1,0 +1,44 @@
+name: Ansible content GitHub actions CI
+concurrency:
+  group: ${{ github.head_ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - labeled
+      - unlabeled
+      - synchronize
+    branches:
+      - '*'
+    tags:
+      - '*'
+
+jobs:
+  unit_test:
+    name: unit testing of github actions scripts
+    env:
+      source_directory: "./source"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the collection repository
+        uses: actions/checkout@v3
+        with:
+          path: ${{ env.source_directory }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: "0"
+
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install python required libraries
+        run: pip install -U tox
+        shell: bash
+
+      - name: Run unit tests
+        run: tox -e pytest -vv -- .github/scripts -vvvv
+        working-directory: ${{ env.source_directory }}
