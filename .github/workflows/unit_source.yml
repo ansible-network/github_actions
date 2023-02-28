@@ -83,6 +83,7 @@ jobs:
           - "3.11"
         exclude: ${{ fromJSON(inputs.matrix_exclude) }}
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.ansible-version == 'devel' }}
 
     name: "py${{ matrix.python-version }} / ${{ matrix.os }} / ${{ matrix.ansible-version }}"
     steps:
