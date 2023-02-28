@@ -1,4 +1,4 @@
-name: Ansible content GitHub actions CI
+name: Repository tests
 concurrency:
   group: ${{ github.head_ref }}
   cancel-in-progress: true
