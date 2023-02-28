@@ -18,7 +18,7 @@ on:
 
 jobs:
   unit_test:
-    name: unit testing of github actions scripts
+    name: unit tests
     env:
       source_directory: "./source"
     runs-on: ubuntu-latest
