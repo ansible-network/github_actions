@@ -27,7 +27,7 @@ runs:
         python-version: '3.9'
 
     - name: Download script
-      run: curl -o ${{ github.workspace }}/list_changed_targets.py https://raw.githubusercontent.com/abikouo/github_actions/cloud_splitter/.github/scripts/list_changed_targets.py
+      run: curl -o ${{ github.workspace }}/list_changed_targets.py https://raw.githubusercontent.com/ansible-network/github_actions/cloud_splitter/.github/scripts/list_changed_targets.py
       shell: bash
 
     - name: Install python required libraries
