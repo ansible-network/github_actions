@@ -23,11 +23,6 @@ runs:
       run: pip3 install yq
       shell: bash
 
-    - name: Set the version number in galaxy.yml
-      run: yq -yi ".version=\"$(git describe --tags)\"" 'galaxy.yml'
-      shell: bash
-      working-directory: ${{ inputs.source_path }}
-
     - name: Extract metadata from galaxy.yml
       id: keys
       run: |
