@@ -392,7 +392,7 @@ def parse_inputs():
         path, ref = info[0], info[1]
         if not PosixPath(path).exists():
             raise ValueError("The following path '{}' does not exit.".format(path))
-        return path, ref
+        return PosixPath(path), ref
 
     collections_to_tests = os.environ.get("COLLECTIONS_TO_TEST", "").replace("\n", ",").split(",")
     logger.info("collections_to_tests => %s" % collections_to_tests)
