@@ -389,12 +389,12 @@ def parse_inputs():
         info = element.split(":")
         if len(info) != 2:
             raise ValueError("The following '{}' is not a valid format for collection definition.".format(element))
-        path, ref = info[1]
+        path, ref = info[0], info[1]
         if not PosixPath(path).exists():
             raise ValueError("The following path '{}' does not exit.".format(path))
         return path, ref
 
-    collections_to_tests = os.environ.get("COLLECTIONS_TO_TEST", "")
+    collections_to_tests = os.environ.get("COLLECTIONS_TO_TEST", "").replace("\n", ",").split(",")
     logger.info("collections_to_tests => %s" % collections_to_tests)
     collections = list(map(_parse_collection,[x for x in collections_to_tests if x.strip() ]))
     return collections, total_jobs, test_all_the_targets
