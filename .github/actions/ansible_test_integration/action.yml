@@ -48,7 +48,7 @@ runs:
         source_path: ${{ inputs.source_path }}
 
     - name: Build and install the collection
-      uses: ansible-network/github_actions/.github/actions/build_install_collection@main
+      uses: abikouo/github_actions/.github/actions/build_install_collection@cloud_splitter
       with:
         install_python_dependencies: true
         source_path: ${{ inputs.source_path }}
@@ -65,7 +65,7 @@ runs:
 
     - name: Build and install ${{ inputs.dependency_path }}
       if: inputs.dependency_path != ''
-      uses: ansible-network/github_actions/.github/actions/build_install_collection@main
+      uses: abikouo/github_actions/.github/actions/build_install_collection@cloud_splitter
       with:
         install_python_dependencies: true
         source_path: ${{ inputs.dependency_path }}
