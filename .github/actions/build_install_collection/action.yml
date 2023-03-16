@@ -37,6 +37,10 @@ runs:
           echo "file_exists=false" >> $GITHUB_OUTPUT
         fi
 
+    - name: display if bindep.txt file exists
+      run: echo '${{ steps.bindep_check.outputs.file_exists }}'
+      shell: bash
+
     - name: Install missing system packages using bindep.txt
       run: bindep test | tail -n +2 | xargs sudo apt-get -o Debug::pkgProblemResolver=true -o Debug::Acquire::http=true install -y || exit 0
       shell: bash
