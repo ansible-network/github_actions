@@ -71,6 +71,12 @@ runs:
       working-directory: ${{ inputs.source_path }}
       if: steps.galaxy_check.outputs.file_exists == 'true'
 
+    - name: Read collection metadata from galaxy.yml (this is needed for collection on which galaxy.yml is generated)
+      id: identify
+      uses: ansible-network/github_actions/.github/actions/identify_collection@main
+      with:
+        source_path: ${{ inputs.source_path }}
+
     - name: Show the galaxy.yml
       run: cat galaxy.yml
       shell: bash
@@ -115,11 +121,11 @@ runs:
       working-directory: ${{ inputs.source_path }}
 
     - name: Install collection and dependencies
-      run: ansible-galaxy collection install ./${{ inputs.tar_file }} -p /home/runner/collections
+      run: ansible-galaxy collection install ./${{ steps.identify.outputs.tar_file || inputs.tar_file }} -p /home/runner/collections
       shell: bash
       working-directory: ${{ inputs.source_path }}
 
     - name: Copy the galaxy.yml from source to destination, needed for pytest-ansible-units
-      run: cp galaxy.yml ${{ inputs.collection_path }}/galaxy.yml
+      run: cp galaxy.yml ${{ steps.identify.outputs.collection_path || inputs.collection_path }}/galaxy.yml
       shell: bash
       working-directory: ${{ inputs.source_path }}
