@@ -333,8 +333,7 @@ class ElGrandeSeparator:
             slots = [f"{c.collection_name()}-{i+1}" for i in range(self.total_jobs)]
             for b in self.build_up_batches(slots, c):
                 batches.append(b)
-        logger.info(batches)
-        return {x: " ".join(y) for x,y in batches}
+        return ";".join([f"{x}:{','.join(y)}" for x,y in batches])
 
     def build_up_batches(self, slots, c):
         if c.test_groups is None:
@@ -374,7 +373,6 @@ def split_into_equally_sized_chunks(targets, nbchunks):
         chunks[at]["total"] += t.execution_time()
         chunks[at]["targets"].append(t.name)
     return chunks
-
 
 def parse_inputs():
 
@@ -460,6 +458,7 @@ if __name__ == "__main__":
 
     egs = ElGrandeSeparator(collections, total_jobs)
     output = egs.output()
-    logger.info("output => {}".format(output))
-    with open(os.environ.get("GITHUB_OUTPUT", "a")) as fd:
-        fd.write("test_targets=%s\n" % json.dumps(output))
+    logger.info("test_targets => {}".format(output))
+    with open(os.environ.get("GITHUB_OUTPUT"), "a") as fw:
+        fw.write("test_targets={0}\n".format(output))
+
