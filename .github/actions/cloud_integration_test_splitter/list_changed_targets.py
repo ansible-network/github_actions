@@ -404,21 +404,39 @@ def split_into_equally_sized_chunks(targets, nbchunks):
     return chunks
 
 
-if __name__ == "__main__":
-    args = parse_args(sys.argv[1:])
+def parse_inputs():
 
-    collections_path = [PosixPath(i.strip()) for i in args.collection_path.split(",") if i.strip()]
-    collections = [Collection(p) for p in collections_path]
+    test_all_the_targets = bool(os.environ.get("ANSIBLE_TEST_ALL_THE_TARGETS") == "true")
+    jobs = os.environ.get("TOTAL_JOBS")
+    total_jobs = int(jobs)
+
+    def _parse_collection(element):
+        info = element.split(":")
+        if len(info) != 2:
+            raise ValueError("The following '{}' is not a valid format for collection definition.".format(element))
+        path, ref = info[1]
+        if not PosixPath(path).exists():
+            raise ValueError("The following path '{}' does not exit.".format(path))
+        return path, ref
+
+    collections = list(map(_parse_collection, os.environ.get("COLLECTIONS_TO_TEST", "").split(",")))
+    return collections, total_jobs, test_all_the_targets
+
+
+if __name__ == "__main__":
+
+    collections_to_test, total_jobs, test_all_the_targets = parse_inputs()
+    collections = [Collection(p) for p, _ in collections_to_test]
     collections_names = [c.collection_name() for c in collections]
 
     changes = {}
-    if args.test_all_the_targets:
+    if test_all_the_targets:
         changes = {}
         for c in collections:
             c.cover_all()
             changes[c.collection_name()] = c.test_plan
     else:
-        for whc in [WhatHaveChanged(i, args.base_ref) for i in collections_path]:
+        for whc in [WhatHaveChanged(path, ref) for path, ref in collections_to_test]:
             changes[whc.collection_name()] = {
                 "modules": [],
                 "inventory": [],
@@ -462,6 +480,6 @@ if __name__ == "__main__":
         changes = {x: unique_list(changes[x]["targets"]) for x in changes}
         trace_content(f"changes: %s" % json.dumps(changes, indent=2))
 
-    egs = ElGrandeSeparator(collections, args.total_jobs)
+    egs = ElGrandeSeparator(collections, total_jobs)
     output = egs.output()
     print("test_targets=%s" % json.dumps(output))

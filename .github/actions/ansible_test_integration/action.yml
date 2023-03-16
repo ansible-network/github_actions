@@ -1,0 +1,104 @@
+name: ansible test integration
+description: configure cloud environment and run ansible-test integration tests
+inputs:
+  python_version:
+    description: Python version to use to run integration tests
+    required: true
+  ansible_version:
+    description: ansible-core version to use to run integration tests
+    required: true
+  source_path:
+    description: "Path to the collection source"
+    required: true
+  dependency_path:
+    description: "Path to the dependency collection"
+    required: false
+  create_k8s_cluster:
+    description: Wether integration tests required kubernetes cluster to execute
+    required: false
+  ansible_test_targets:
+    description: Integration tests targets
+    required: false
+  ansible_test_environment:
+    description: list of environment variables to set when running ansible-test
+    required: false
+
+runs:
+  using: composite
+  steps:
+
+    - name: Set up Python ${{ inputs.python_version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ inputs.python_version }}
+
+    - name: Install wheel now for faster builds
+      run: python3 -m pip install wheel --upgrade
+      shell: bash
+
+    - name: Install ansible-core (${{ inputs.ansible_version }})
+      run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ inputs.ansible_version }}.tar.gz --disable-pip-version-check
+      shell: bash
+
+    # install source collection
+    - name: Read collection metadata from galaxy.yml
+      id: identify
+      uses: ansible-network/github_actions/.github/actions/identify_collection@main
+      with:
+        source_path: ${{ inputs.source_path }}
+
+    - name: Build and install the collection
+      uses: ansible-network/github_actions/.github/actions/build_install_collection@main
+      with:
+        install_python_dependencies: true
+        source_path: ${{ inputs.source_path }}
+        collection_path: ${{ steps.identify.outputs.collection_path }}
+        tar_file: ${{ steps.identify.outputs.tar_file }}
+
+    # install collection dependencies
+    - name: Read collection metadata from ${{ inputs.dependency_path }}
+      if: inputs.dependency_path != ''
+      id: identify-dependency
+      uses: ansible-network/github_actions/.github/actions/identify_collection@main
+      with:
+        source_path: ${{ inputs.dependency_path }}
+
+    - name: Build and install ${{ inputs.dependency_path }}
+      if: inputs.dependency_path != ''
+      uses: ansible-network/github_actions/.github/actions/build_install_collection@main
+      with:
+        install_python_dependencies: true
+        source_path: ${{ inputs.dependency_path }}
+        collection_path: ${{ steps.identify-dependency.outputs.collection_path }}
+        tar_file: ${{ steps.identify-dependency.outputs.tar_file }}
+
+    - name: Disable selinux with selinux_please_lie_to_me
+      run: |
+        python3 -m pip uninstall -y selinux
+        python3 -m pip install selinux_please_lie_to_me
+      shell: bash
+
+    - name: Create k8s Kind Cluster
+      uses: helm/kind-action@v1.4.0
+      if: inputs.create_k8s_cluster == 'true'
+
+    - name: Set environment variables
+      run: echo "${{ inputs.ansible_test_environment }}" >> $GITHUB_ENV
+      shell: bash
+      if: inputs.ansible_test_environment != ''
+
+    - name: Run integration tests
+      run: >-
+        ansible-test integration
+        --diff
+        --no-temp-workdir
+        --color
+        --skip-tags False
+        --retry-on-error
+        --continue-on-error
+        --python ${{ inputs.python_version }} 
+        -v
+        --coverage
+        ${{ inputs.ansible_test_targets }}
+      shell: bash
+      working-directory: ${{ steps.identify.outputs.collection_path }}

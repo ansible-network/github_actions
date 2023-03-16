@@ -1,14 +1,13 @@
-name: Retrieve collection information
-description: Extract collection infromation from the galaxy.yml file
+name: Cloud integration test splitter
+description: Evaluate which targets need to be tested.
 
 inputs:
-  collection_path:
-    description: Path to the collections to test
+  collections_to_test:
+    description: |
+      Path to the collections to test.
+      Provide as a comma-separated list of collection path and base ref to test against.
+      e.g: 'repo_path_1:main,repo_path_2:stable-2'
     required: true
-  base_ref:
-    description: The base branch to test against
-    required: false
-    default: 'main'
   total_jobs:
     description: The total number of jobs to share targets on
     required: false
@@ -26,25 +25,20 @@ runs:
       with:
         python-version: '3.9'
 
-    - name: Download script
-      run: curl -o ${{ github.workspace }}/list_changed_targets.py https://raw.githubusercontent.com/ansible-network/github_actions/cloud_splitter/.github/scripts/list_changed_targets.py
-      shell: bash
-
     - name: Install python required libraries
       run: pip install -U pyyaml
       shell: bash
 
     - name: Set variable to set test all targets
-      run: echo "ANSIBLE_TEST_ALL_THE_TARGETS=--test-all-the-targets" >> "$GITHUB_ENV"
+      run: echo "ANSIBLE_TEST_ALL_THE_TARGETS=true" >> "$GITHUB_ENV"
       shell: bash
       if: ${{ (contains(github.event.pull_request.labels.*.name, 'test-all-the-targets')) }}
 
-    - name: List changes for the pull request
+    - name: Evaluate targets to test
       id: splitter
       run: >-
-        python ${{ github.workspace }}/list_changed_targets.py
-        --collection-path ${{ inputs.collection_path }}
-        --total-jobs ${{ inputs.total_jobs }}
-        $ANSIBLE_TEST_ALL_THE_TARGETS
-        --base-ref ${{ inputs.base_ref }} >> $GITHUB_OUTPUT
+        python ${{ github.action_path }}/list_changed_targets.py
+      env:
+        COLLECTIONS_TO_TEST: '${{ inputs.collections_to_test }}'
+        TOTAL_JOBS: '${{ inputs.total_jobs }}'
       shell: bash
