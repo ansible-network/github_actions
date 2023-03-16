@@ -1,49 +1,21 @@
 #!/usr/bin/env python3
 
-import argparse
 import ast
 import json
 from pathlib import PosixPath
-import sys
 import subprocess
 import yaml
 import re
 from collections import defaultdict
-from datetime import datetime
 import os
+import logging
 
 
-parser = argparse.ArgumentParser(
-    description="Evaluate which targets need to be tested."
-)
-parser.add_argument(
-    "--base-ref", type=str, default="main", help="the default branch to test against"
-)
-parser.add_argument(
-    "--total-jobs", type=int, default=3, help="the total number of integration tests jobs to share test cases on"
-)
-parser.add_argument(
-    "--test-all-the-targets",
-    dest="test_all_the_targets",
-    action="store_true",
-    default=False,
-    help="list all the target available in the the collection",
-)
-parser.add_argument(
-    "--collection-path",
-    type=str,
-    required=True,
-    help="the location of the collections to test (comma-separated list)."\
-        "e.g: ~/.ansible/collections/ansible_collections/amazon/aws,~/.ansible/collections/ansible_collections/community/aws"
-)
+FORMAT = '[%(asctime)s] - %(message)s'
+logging.basicConfig(format=FORMAT)
+logger = logging.getLogger('resolve_dependency')
+logger.setLevel(logging.DEBUG)
 
-
-def trace_content(text):
-    dt = datetime.now().strftime("%H:%M:%S")
-    sys.stderr.write(f"[{dt}-{os.getpid()}] {text}\n")
-
-def parse_args(raw_args):
-    return parser.parse_args(raw_args)
 
 def read_collection_name(path):
     with (path / "galaxy.yml").open() as fd:
@@ -165,7 +137,7 @@ class WhatHaveChanged:
         """
         if self.files is None:
             git_diff_cmd = "git diff origin/{0} --name-only".format(self.base_ref)
-            trace_content(f"git_diff_cmd: {git_diff_cmd} cmd: '{self.collection_path}'")
+            logger.info(f"git_diff_cmd: {git_diff_cmd} cmd: '{self.collection_path}'")
             params = {
                 "stdout": subprocess.PIPE,
                 "stderr": subprocess.PIPE,
@@ -174,8 +146,8 @@ class WhatHaveChanged:
             }
             proc = subprocess.Popen(git_diff_cmd, **params)
             out, err = proc.communicate()
-            trace_content(f"stdout: {out.decode()}")
-            trace_content(f"stderr: {err.decode()}")
+            logger.info(f"stdout: {out.decode()}")
+            logger.info(f"stderr: {err.decode()}")
             self.files = [PosixPath(p) for p in out.decode().split("\n")]
         return self.files
 
@@ -361,7 +333,7 @@ class ElGrandeSeparator:
             slots = [f"{c.collection_name()}-{i+1}" for i in range(self.total_jobs)]
             for b in self.build_up_batches(slots, c):
                 batches.append(b)
-        trace_content(batches)
+        logger.info(batches)
         return {x: " ".join(y) for x,y in batches}
 
     def build_up_batches(self, slots, c):
@@ -410,6 +382,9 @@ def parse_inputs():
     jobs = os.environ.get("TOTAL_JOBS")
     total_jobs = int(jobs)
 
+    logger.info("Total jobs => %d" % total_jobs)
+    logger.info("test_all_the_targets => %s" % test_all_the_targets)
+
     def _parse_collection(element):
         info = element.split(":")
         if len(info) != 2:
@@ -419,7 +394,9 @@ def parse_inputs():
             raise ValueError("The following path '{}' does not exit.".format(path))
         return path, ref
 
-    collections = list(map(_parse_collection, os.environ.get("COLLECTIONS_TO_TEST", "").split(",")))
+    collections_to_tests = os.environ.get("COLLECTIONS_TO_TEST", "")
+    logger.info("collections_to_tests => %s" % collections_to_tests)
+    collections = list(map(_parse_collection,[x for x in collections_to_tests if x.strip() ]))
     return collections, total_jobs, test_all_the_targets
 
 
@@ -478,8 +455,11 @@ if __name__ == "__main__":
                     c.add_target_to_plan(t)
 
         changes = {x: unique_list(changes[x]["targets"]) for x in changes}
-        trace_content(f"changes: %s" % json.dumps(changes, indent=2))
+
+    logger.info("changes\n{}".format(json.dumps(changes)))
 
     egs = ElGrandeSeparator(collections, total_jobs)
     output = egs.output()
-    print("test_targets=%s" % json.dumps(output))
+    logger.info("output => {}".format(output))
+    with open(os.environ.get("GITHUB_OUTPUT", "a")) as fd:
+        fd.write("test_targets=%s\n" % json.dumps(output))
