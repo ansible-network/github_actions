@@ -379,6 +379,13 @@ def parse_inputs():
     test_all_the_targets = bool(os.environ.get("ANSIBLE_TEST_ALL_THE_TARGETS") == "true")
     jobs = os.environ.get("TOTAL_JOBS")
     total_jobs = int(jobs)
+    pr_body = os.environ.get("PULL_REQUEST_BODY")
+    targets = dict()
+
+    TARGETSTOTEST_RE = re.compile(r"^TargetsToTest=([\w\.\:,;]+)", re.MULTILINE | re.IGNORECASE)
+    m = TARGETSTOTEST_RE.findall(pr_body)
+    if m:
+        targets = {i.split(":")[0]:i.split(":")[1].split(",") for i in m[0].split(";")}
 
     logger.info("Total jobs => %d" % total_jobs)
     logger.info("test_all_the_targets => %s" % test_all_the_targets)
@@ -395,17 +402,23 @@ def parse_inputs():
     collections_to_tests = os.environ.get("COLLECTIONS_TO_TEST", "").replace("\n", ",").split(",")
     logger.info("collections_to_tests => %s" % collections_to_tests)
     collections = list(map(_parse_collection,[x for x in collections_to_tests if x.strip() ]))
-    return collections, total_jobs, test_all_the_targets
+    return collections, total_jobs, test_all_the_targets, targets
 
 
 if __name__ == "__main__":
 
-    collections_to_test, total_jobs, test_all_the_targets = parse_inputs()
+    collections_to_test, total_jobs, test_all_the_targets, targets_to_test = parse_inputs()
     collections = [Collection(p) for p, _ in collections_to_test]
     collections_names = [c.collection_name() for c in collections]
 
     changes = {}
-    if test_all_the_targets:
+    if targets_to_test:
+        for c in collections:
+            if c.collection_name() in targets_to_test:
+                for target in targets_to_test[c.collection_name()]:
+                    c.add_target_to_plan(target)
+                changes[c.collection_name()] = c.test_plan
+    elif test_all_the_targets:
         changes = {}
         for c in collections:
             c.cover_all()

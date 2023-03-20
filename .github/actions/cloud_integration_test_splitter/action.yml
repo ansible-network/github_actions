@@ -41,4 +41,5 @@ runs:
       env:
         COLLECTIONS_TO_TEST: '${{ inputs.collections_to_test }}'
         TOTAL_JOBS: '${{ inputs.total_jobs }}'
+        PULL_REQUEST_BODY: '${{ github.event.pull_request.body }}'
       shell: bash
