@@ -351,28 +351,14 @@ class ElGrandeSeparator:
 
 
 def split_into_equally_sized_chunks(targets, nbchunks):
-    total_time = sum(x.execution_time() for x in targets)
-    time_per_chunk = int(total_time / nbchunks) + 1
     chunks = [{"total": 0, "targets": []} for _ in range(nbchunks)]
 
-    def _findslot(t):
-        if t.execution_time() >= time_per_chunk:
-            # find first slot with total_time=0
-            for i, d in enumerate(chunks):
-                if d["total"] == 0:
-                    return i
-        else:
-            # find the appropriate slot
-            for i, d in enumerate(chunks):
-                if t.execution_time() + d["total"] <= time_per_chunk:
-                    return i
-        return 0
-
     for t in targets:
-        at = _findslot(t)
+        at = chunks.index(min(chunks, key=lambda k: k['total']))
         chunks[at]["total"] += t.execution_time()
         chunks[at]["targets"].append(t.name)
     return chunks
+
 
 def parse_inputs():
 
@@ -384,6 +370,7 @@ def parse_inputs():
 
     TARGETSTOTEST_RE = re.compile(r"^TargetsToTest=([\w\.\:,;]+)", re.MULTILINE | re.IGNORECASE)
     m = TARGETSTOTEST_RE.findall(pr_body)
+    logger.info("TargetsToTests => %s" % m)
     if m:
         targets = {i.split(":")[0]:i.split(":")[1].split(",") for i in m[0].split(";")}
 
