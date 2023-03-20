@@ -4,6 +4,9 @@ inputs:
   python_version:
     description: Python version to use to run integration tests
     required: true
+  python_librairies:
+    description: Python module to install to run integration tests
+    required: false
   ansible_version:
     description: ansible-core version to use to run integration tests
     required: true
@@ -77,6 +80,12 @@ runs:
         python3 -m pip uninstall -y selinux
         python3 -m pip install selinux_please_lie_to_me
       shell: bash
+
+    - name: Install python libraries
+      run: |
+        python3 -m pip install ${{ inputs.python_librairies }}
+      shell: bash
+      if: inputs.python_librairies != ''
 
     - name: Create k8s Kind Cluster
       uses: helm/kind-action@v1.4.0
