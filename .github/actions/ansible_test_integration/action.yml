@@ -107,7 +107,6 @@ runs:
         --continue-on-error
         --python ${{ inputs.python_version }} 
         -v
-        --coverage
         ${{ inputs.ansible_test_targets }}
       shell: bash
       working-directory: ${{ steps.identify.outputs.collection_path }}
