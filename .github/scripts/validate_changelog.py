@@ -1,16 +1,18 @@
 #!/usr/bin/python
 
-import re
+import argparse
 import os
-from collections import defaultdict
-import yaml
+import re
 import subprocess
 import sys
-import argparse
+from collections import defaultdict
+
+import yaml
 
 
 def is_valid_change_log(ref):
     return re.match("^changelogs/fragments/(.*)\.(yaml|yml)$", ref)
+
 
 def is_module_or_plugin(ref):
     prefix_list = (
@@ -42,8 +44,8 @@ def is_documentation_file(ref):
     )
     return ref.startswith(prefix_list)
 
-def is_added_module_or_plugin_or_documentation_changes(changes):
 
+def is_added_module_or_plugin_or_documentation_changes(changes):
     # Validate Pull request add new modules and plugins
     if any([is_module_or_plugin(x) for x in changes["A"]]):
         return True
@@ -55,8 +57,8 @@ def is_added_module_or_plugin_or_documentation_changes(changes):
 
     return False
 
-def validate_changelog(path):
 
+def validate_changelog(path):
     try:
         # https://github.com/ansible-community/antsibull-changelog/blob/main/docs/changelogs.rst#changelog-fragment-categories
         changes_type = (
@@ -77,31 +79,33 @@ def validate_changelog(path):
         for section in result:
             for key in section.keys():
                 if key not in changes_type:
-                    print("Unexpected changelog section {0} from file {1}".format(key, os.path.basename(path)))
+                    print(
+                        "Unexpected changelog section {0} from file {1}".format(
+                            key, os.path.basename(path)
+                        )
+                    )
                     return False
                 if not isinstance(section[key], list):
                     print(
                         "Changelog section {0} from file {1} must be a list, {2} found instead.".format(
-                            key,
-                            os.path.basename(path),
-                            type(section[key])
+                            key, os.path.basename(path), type(section[key])
                         )
                     )
                     return False
         return True
     except (IOError, yaml.YAMLError) as exc:
-        print("Error loading changelog file {0}: {1}".format(os.path.basename(path),exc))
+        print(
+            "Error loading changelog file {0}: {1}".format(os.path.basename(path), exc)
+        )
         return False
 
+
 def run_command(cmd):
-    params = {
-        "stdout": subprocess.PIPE,
-        "stderr": subprocess.PIPE,
-        "shell": True
-    }
+    params = {"stdout": subprocess.PIPE, "stderr": subprocess.PIPE, "shell": True}
     proc = subprocess.Popen(cmd, **params)
     out, err = proc.communicate()
     return proc.returncode, out, err
+
 
 def list_files(head_ref, base_ref):
     cmd = "git diff origin/{0} {1} --name-status".format(base_ref, head_ref)
@@ -117,29 +121,31 @@ def list_files(head_ref, base_ref):
             changes[v[0]].append(v[1])
     return changes
 
-def main(head_ref, base_ref):
 
+def main(head_ref, base_ref):
     changes = list_files(head_ref, base_ref)
     if changes:
         changelog = [x for x in changes["A"] if is_valid_change_log(x)]
         if not changelog:
             if not is_added_module_or_plugin_or_documentation_changes(changes):
                 print(
-                    "Missing changelog fragment. This is not required only if "\
+                    "Missing changelog fragment. This is not required only if "
                     "PR adds new modules and plugins or contain only documentation changes."
                 )
                 sys.exit(1)
             print(
-                "Changelog not required as PR adds new modules and/or plugins or "\
+                "Changelog not required as PR adds new modules and/or plugins or "
                 "contain only documentation changes."
             )
         elif any(not validate_changelog(f) for f in changelog):
             sys.exit(1)
     sys.exit(0)
 
-if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description="Validate changelog file from new commit")
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Validate changelog file from new commit"
+    )
     parser.add_argument("--base-ref", required=True)
     parser.add_argument("--head-ref", required=True)
 
