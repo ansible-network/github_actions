@@ -15,7 +15,7 @@ jobs:
       os: "ubuntu-latest"
     runs-on: ubuntu-latest
 
-    name: "Code Coverage ${{ env.python-version }} / ${{ env.os }} / ${{ env.ansible-version }}"
+    name: "Code Coverage | Python 3.10"
     steps:
       - name: Checkout the collection repository
         uses: actions/checkout@v3
