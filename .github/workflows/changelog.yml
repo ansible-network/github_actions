@@ -20,7 +20,7 @@ jobs:
       - name: setup python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
+          python-version: "3.9"
 
       - name: Download python script
         run: curl -o /tmp/validate_changelog.py https://raw.githubusercontent.com/ansible-network/github_actions/blob/main/scripts/validate_changelog.py

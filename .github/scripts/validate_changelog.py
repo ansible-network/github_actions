@@ -40,7 +40,7 @@ def is_documentation_file(ref):
         "docs/",
         "plugins/doc_fragments",
     )
-    return ref.startswith(prefix_list)   
+    return ref.startswith(prefix_list)
 
 def is_added_module_or_plugin_or_documentation_changes(changes):
 
