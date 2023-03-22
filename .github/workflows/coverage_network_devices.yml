@@ -24,10 +24,10 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: "0"
 
-      - name: Set up Python ${{ env.python-version }}
+      - name: Set up Python ${{ env.python_version }}
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ env.python-version }}
+          python-version: ${{ env.python_version }}
 
       - name: Install ansible-core (${{ env.ansible-version }})
         run: python3 -m pip install ansible-core
@@ -58,7 +58,7 @@ jobs:
 
       - name: Run Coverage tests
         run: |
-          ansible-test units --python ${{ env.python-version }} --coverage --requirements
+          ansible-test units --python ${{ env.python_version }} --coverage --requirements
           ansible-test coverage xml
         working-directory: ${{ steps.identify.outputs.collection_path }}
 
