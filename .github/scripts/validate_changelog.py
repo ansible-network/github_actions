@@ -19,7 +19,6 @@ def is_valid_change_log(ref):
     return re.match(r"^changelogs/fragments/(.*)\.(yaml|yml)$", ref)
 
 
-
 def is_module_or_plugin(ref):
     prefix_list = (
         "plugins/modules",
@@ -128,20 +127,18 @@ def list_files(head_ref, base_ref):
 
 
 def main(head_ref, base_ref):
-
-def main(head_ref, base_ref):
     changes = list_files(head_ref, base_ref)
     if changes:
         changelog = [x for x in changes["A"] if is_valid_change_log(x)]
         if not changelog:
             if not is_added_module_or_plugin_or_documentation_changes(changes):
-                print(
+                logger.error(
                     "Missing changelog fragment. This is not required"
                     " only if PR adds new modules and plugins or contain"
                     " only documentation changes."
                 )
                 sys.exit(1)
-            print(
+            logger.info(
                 "Changelog not required as PR adds new modules and/or"
                 " plugins or contain only documentation changes."
             )
