@@ -27,7 +27,7 @@ jobs:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
           PR_NUMBER: ${{ github.event.number }}
         if: steps.authorization.outcome == 'success'
-  
+
       - name: Remove the 'safe to test', not a collaborator, PR was updated or not just added
         id: removed
         run: gh pr edit $PR_NUMBER --remove-label "safe to test"
@@ -35,13 +35,13 @@ jobs:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
           PR_NUMBER: ${{ github.event.number }}
         if: >-
-            steps.authorization.outcome != 'success' &&
-            github.event.label.name != 'safe to test' &&
-            ( github.event.action == 'synchronize' || github.event.action == 'reopened' )
-     
+          steps.authorization.outcome != 'success' &&
+          github.event.label.name != 'safe to test' &&
+          ( github.event.action == 'synchronize' || github.event.action == 'reopened' )
+
       - name: Fail if not now labeled
         run: >-
-          gh api -H "Accept: application/vnd.github.v3+json" $API_URL 
+          gh api -H "Accept: application/vnd.github.v3+json" $API_URL
           --jq .labels | grep 'safe to test'
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}

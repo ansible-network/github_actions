@@ -21,4 +21,3 @@ jobs:
           --oneline |
           grep -E -e "A\s+changelogs/fragments/" -e "M\s+CHANGELOG.rst"
         if: "!contains(github.event.pull_request.labels.*.name, 'skip-changelog')"
-
