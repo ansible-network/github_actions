@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import argparse
-import os
+import logging
 import re
 import subprocess
 import sys
@@ -9,9 +9,15 @@ from collections import defaultdict
 
 import yaml
 
+FORMAT = "[%(asctime)s] - %(message)s"
+logging.basicConfig(format=FORMAT)
+logger = logging.getLogger("validate_changelog")
+logger.setLevel(logging.DEBUG)
+
 
 def is_valid_change_log(ref):
-    return re.match("^changelogs/fragments/(.*)\.(yaml|yml)$", ref)
+    return re.match(r"^changelogs/fragments/(.*)\.(yaml|yml)$", ref)
+
 
 
 def is_module_or_plugin(ref):
@@ -79,29 +85,28 @@ def validate_changelog(path):
         for section in result:
             for key in section.keys():
                 if key not in changes_type:
-                    print(
-                        "Unexpected changelog section {0} from file {1}".format(
-                            key, os.path.basename(path)
-                        )
-                    )
+                    msg = f"{key} from {path} is not a valid changelog type"
+                    logger.error(msg)
                     return False
                 if not isinstance(section[key], list):
-                    print(
-                        "Changelog section {0} from file {1} must be a list, {2} found instead.".format(
-                            key, os.path.basename(path), type(section[key])
+                    logger.error(
+                        "Changelog section {0} from file {1} must be a list,"
+                        " {2} found instead.".format(
+                            key,
+                            path,
+                            type(section[key]),
                         )
                     )
                     return False
         return True
     except (IOError, yaml.YAMLError) as exc:
-        print(
-            "Error loading changelog file {0}: {1}".format(os.path.basename(path), exc)
-        )
+        msg = "yaml loading error for file {0} -> {1}".format(path, exc)
+        logger.error(msg)
         return False
 
 
 def run_command(cmd):
-    params = {"stdout": subprocess.PIPE, "stderr": subprocess.PIPE, "shell": True}
+    params = dict(stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     proc = subprocess.Popen(cmd, **params)
     out, err = proc.communicate()
     return proc.returncode, out, err
@@ -109,7 +114,7 @@ def run_command(cmd):
 
 def list_files(head_ref, base_ref):
     cmd = "git diff origin/{0} {1} --name-status".format(base_ref, head_ref)
-    print("Running command '{0}'".format(cmd))
+    logger.info("Executing '{0}'".format(cmd))
     rc, stdout, stderr = run_command(cmd)
     if rc != 0:
         raise ValueError(stderr)
@@ -123,19 +128,22 @@ def list_files(head_ref, base_ref):
 
 
 def main(head_ref, base_ref):
+
+def main(head_ref, base_ref):
     changes = list_files(head_ref, base_ref)
     if changes:
         changelog = [x for x in changes["A"] if is_valid_change_log(x)]
         if not changelog:
             if not is_added_module_or_plugin_or_documentation_changes(changes):
                 print(
-                    "Missing changelog fragment. This is not required only if "
-                    "PR adds new modules and plugins or contain only documentation changes."
+                    "Missing changelog fragment. This is not required"
+                    " only if PR adds new modules and plugins or contain"
+                    " only documentation changes."
                 )
                 sys.exit(1)
             print(
-                "Changelog not required as PR adds new modules and/or plugins or "
-                "contain only documentation changes."
+                "Changelog not required as PR adds new modules and/or"
+                " plugins or contain only documentation changes."
             )
         elif any(not validate_changelog(f) for f in changelog):
             sys.exit(1)
