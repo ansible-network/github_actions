@@ -6,8 +6,12 @@ import re
 import subprocess
 import sys
 from collections import defaultdict
+from typing import Any, Dict, Tuple, Union
 
-import yaml
+try:
+    import yaml
+except ImportError:
+    pass
 
 FORMAT = "[%(asctime)s] - %(message)s"
 logging.basicConfig(format=FORMAT)
@@ -15,11 +19,12 @@ logger = logging.getLogger("validate_changelog")
 logger.setLevel(logging.DEBUG)
 
 
-def is_valid_change_log(ref):
-    return re.match(r"^changelogs/fragments/(.*)\.(yaml|yml)$", ref)
+def is_valid_change_log(ref: str) -> bool:
+    match = re.match(r"^changelogs/fragments/(.*)\.(yaml|yml)$", ref)
+    return bool(match)
 
 
-def is_module_or_plugin(ref):
+def is_module_or_plugin(ref: str) -> bool:
     prefix_list = (
         "plugins/modules",
         "plugins/action",
@@ -42,7 +47,7 @@ def is_module_or_plugin(ref):
     return ref.startswith(prefix_list)
 
 
-def is_documentation_file(ref):
+def is_documentation_file(ref: str) -> bool:
     prefix_list = (
         "docs/",
         "plugins/doc_fragments",
@@ -50,20 +55,20 @@ def is_documentation_file(ref):
     return ref.startswith(prefix_list)
 
 
-def is_added_module_or_plugin_or_documentation_changes(changes):
+def should_skip_changelog(changes: Dict[Any, Any]) -> bool:
     # Validate Pull request add new modules and plugins
-    if any([is_module_or_plugin(x) for x in changes["A"]]):
+    if any(is_module_or_plugin(x) for x in changes["A"]):
         return True
 
     # Validate documentation changes only
     all_files = changes["A"] + changes["M"] + changes["D"]
-    if all([is_documentation_file(x) for x in all_files]):
+    if all(is_documentation_file(x) for x in all_files):
         return True
 
     return False
 
 
-def validate_changelog(path):
+def validate_changelog(path: str) -> bool:
     try:
         # https://github.com/ansible-community/antsibull-changelog/blob/main/docs/changelogs.rst#changelog-fragment-categories
         changes_type = (
@@ -78,8 +83,8 @@ def validate_changelog(path):
             "known_issues",
             "trivial",
         )
-        with open(path, "rb") as f:
-            result = list(yaml.safe_load_all(f))
+        with open(path, "rb") as file_desc:
+            result = list(yaml.safe_load_all(file_desc))
 
         for section in result:
             for key in section.keys():
@@ -89,49 +94,49 @@ def validate_changelog(path):
                     return False
                 if not isinstance(section[key], list):
                     logger.error(
-                        "Changelog section {0} from file {1} must be a list,"
-                        " {2} found instead.".format(
-                            key,
-                            path,
-                            type(section[key]),
-                        )
+                        "Changelog section %s from file %s must be a list,"
+                        " '%s' found instead.",
+                        key,
+                        path,
+                        type(section[key]),
                     )
                     return False
         return True
     except (IOError, yaml.YAMLError) as exc:
-        msg = "yaml loading error for file {0} -> {1}".format(path, exc)
+        msg = f"yaml loading error for file {path} -> {exc}"
         logger.error(msg)
         return False
 
 
-def run_command(cmd):
-    params = dict(stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    proc = subprocess.Popen(cmd, **params)
-    out, err = proc.communicate()
-    return proc.returncode, out, err
+def run_command(cmd: str) -> Tuple[Union[int, Any], str, str]:
+    with subprocess.Popen(
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
+    ) as proc:
+        out, err = proc.communicate()
+        return proc.returncode, out.decode("utf-8"), err.decode("utf-8")
 
 
-def list_files(head_ref, base_ref):
-    cmd = "git diff origin/{0} {1} --name-status".format(base_ref, head_ref)
-    logger.info("Executing '{0}'".format(cmd))
-    rc, stdout, stderr = run_command(cmd)
-    if rc != 0:
+def list_files(ref: str) -> Dict[Any, Any]:
+    command = "git diff origin/" + ref + " --name-status"
+    logger.info("Executing -> %s", command)
+    ret_code, stdout, stderr = run_command(command)
+    if ret_code != 0:
         raise ValueError(stderr)
 
     changes = defaultdict(list)
-    for file in stdout.decode("utf-8").split("\n"):
-        v = file.split("\t")
-        if len(v) == 2:
-            changes[v[0]].append(v[1])
+    for file in stdout.split("\n"):
+        file_attr = file.split("\t")
+        if len(file_attr) == 2:
+            changes[file_attr[0]].append(file_attr[1])
     return changes
 
 
-def main(head_ref, base_ref):
-    changes = list_files(head_ref, base_ref)
+def main(ref: str) -> None:
+    changes = list_files(ref)
     if changes:
         changelog = [x for x in changes["A"] if is_valid_change_log(x)]
         if not changelog:
-            if not is_added_module_or_plugin_or_documentation_changes(changes):
+            if not should_skip_changelog(changes):
                 logger.error(
                     "Missing changelog fragment. This is not required"
                     " only if PR adds new modules and plugins or contain"
@@ -151,8 +156,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Validate changelog file from new commit"
     )
-    parser.add_argument("--base-ref", required=True)
-    parser.add_argument("--head-ref", required=True)
+    parser.add_argument("--ref", required=True, help="Pull request base ref")
 
     args = parser.parse_args()
-    main(args.head_ref, args.base_ref)
+    main(args.ref)

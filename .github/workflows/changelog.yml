@@ -32,5 +32,4 @@ jobs:
         run: >-
           python /tmp/validate_changelog.py
           --base-ref ${{ github.event.pull_request.base.ref }}
-          --head-ref ${{ github.event.pull_request.head.sha }}
         working-directory: ${{ env.source_directory }}
