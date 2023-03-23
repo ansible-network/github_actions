@@ -19,7 +19,7 @@ logger = logging.getLogger("validate_changelog")
 logger.setLevel(logging.DEBUG)
 
 
-def is_valid_change_log(ref: str) -> bool:
+def is_changelog_file(ref: str) -> bool:
     match = re.match(r"^changelogs/fragments/(.*)\.(yaml|yml)$", ref)
     return bool(match)
 
@@ -68,7 +68,7 @@ def should_skip_changelog(changes: Dict[Any, Any]) -> bool:
     return False
 
 
-def validate_changelog(path: str) -> bool:
+def is_valid_changelog_format(path: str) -> bool:
     try:
         # https://github.com/ansible-community/antsibull-changelog/blob/main/docs/changelogs.rst#changelog-fragment-categories
         changes_type = (
@@ -128,13 +128,15 @@ def list_files(ref: str) -> Dict[Any, Any]:
         file_attr = file.split("\t")
         if len(file_attr) == 2:
             changes[file_attr[0]].append(file_attr[1])
+    logger.info("changes -> %s", changes)
     return changes
 
 
 def main(ref: str) -> None:
     changes = list_files(ref)
     if changes:
-        changelog = [x for x in changes["A"] if is_valid_change_log(x)]
+        changelog = [x for x in changes["A"] if is_changelog_file(x)]
+        logger.info("changelog files -> %s", changelog)
         if not changelog:
             if not should_skip_changelog(changes):
                 logger.error(
@@ -147,8 +149,16 @@ def main(ref: str) -> None:
                 "Changelog not required as PR adds new modules and/or"
                 " plugins or contain only documentation changes."
             )
-        elif any(not validate_changelog(f) for f in changelog):
-            sys.exit(1)
+        else:
+            invalid_changelog_files = [
+                x for x in changelog if not is_valid_changelog_format(x)
+            ]
+            if invalid_changelog_files:
+                logger.error(
+                    "The following changelog files are not valid -> %s",
+                    invalid_changelog_files,
+                )
+                sys.exit(1)
     sys.exit(0)
 
 
