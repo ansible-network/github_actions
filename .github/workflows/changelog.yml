@@ -31,5 +31,5 @@ jobs:
       - name: Ensure a valid changelog entry exists
         run: >-
           python /tmp/validate_changelog.py
-          --base-ref ${{ github.event.pull_request.base.ref }}
+          --ref ${{ github.event.pull_request.base.ref }}
         working-directory: ${{ env.source_directory }}
