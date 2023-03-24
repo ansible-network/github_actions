@@ -1,0 +1,53 @@
+name: "Checkout Repository"
+description: |
+  checkout repository and override commit based on keyword 'depends-on' from pull request message
+inputs:
+  repository:
+    description: |
+      Repository to checkout, repository is defined by organisation and repository name
+      e.g: ansible-collections/kubernetes.core
+    required: true
+  ref:
+    description: |
+      The default branch, tag or SHA to checkout.
+    required: true
+  destination_directory:
+    description: |
+      Path where repositories will be checkout
+    required: true
+  pull_request_body:
+    description: "Pull request body used to override version to checkout"
+    required: false
+    default: ${{ github.event.pull_request.body }}
+runs:
+  using: composite
+  steps:
+    - name: Set up Python '3.9'
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.9"
+
+    - name: install PyGithub
+      run: |
+        pip install -U PyGithub
+      shell: bash
+
+    - id: dependency-resolution
+      shell: bash
+      run: |
+        python ${{ github.action_path }}/resolve_dependency.py
+      env:
+        RESOLVE_REF_PR_BODY: ${{ inputs.pull_request_body }}
+        RESOLVE_REF_REPOSITORY: ${{ inputs.repository }}
+
+    - name: display merge commit sha from dependency resolution
+      run: echo "[checkout ${{ inputs.repository }}] merge commit sha from dependency resolution => '${{ steps.dependency-resolution.outputs.merge_commit_sha }}'"
+      shell: bash
+
+    - name: checkout repository
+      uses: actions/checkout@v3
+      with:
+        repository: ${{ inputs.repository }}
+        path: ${{ inputs.destination_directory }}
+        ref: ${{ steps.dependency-resolution.outputs.merge_commit_sha || inputs.ref }}
+        fetch-depth: "0"
