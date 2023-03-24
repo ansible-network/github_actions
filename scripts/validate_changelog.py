@@ -8,10 +8,7 @@ import sys
 from collections import defaultdict
 from typing import Any, Dict, Tuple, Union
 
-try:
-    import yaml
-except ImportError:
-    pass
+import yaml
 
 FORMAT = "[%(asctime)s] - %(message)s"
 logging.basicConfig(format=FORMAT)
