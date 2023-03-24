@@ -1,0 +1,11 @@
+[tool.pylint]
+
+[tool.pylint.format]
+max-line-length = 100
+
+[tool.pylint.messages_control]
+disable = ["fixme", "missing-docstring"]
+enable = [
+  "useless-suppression", # Identify unneeded pylint disable statements
+
+]
