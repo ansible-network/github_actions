@@ -1,4 +1,5 @@
 #!/usr/bin/python
+"""Script to check if a PR has a correct changelog fragment."""
 
 import argparse
 import logging
@@ -6,7 +7,6 @@ import re
 import subprocess
 import sys
 from collections import defaultdict
-from typing import Any, Dict, Tuple, Union
 
 import yaml
 
@@ -17,11 +17,21 @@ logger.setLevel(logging.DEBUG)
 
 
 def is_changelog_file(ref: str) -> bool:
+    """Check if a file is a changelog fragment.
+
+    :param ref: the file to be checked
+    :returns: True if file is a changelog fragment else False
+    """
     match = re.match(r"^changelogs/fragments/(.*)\.(yaml|yml)$", ref)
     return bool(match)
 
 
 def is_module_or_plugin(ref: str) -> bool:
+    """Check if a file is a module or plugin.
+
+    :param ref: the file to be checked
+    :returns: True if file is a module or plugin else False
+    """
     prefix_list = (
         "plugins/modules",
         "plugins/action",
@@ -45,6 +55,11 @@ def is_module_or_plugin(ref: str) -> bool:
 
 
 def is_documentation_file(ref: str) -> bool:
+    """Check if a file is a documentation file.
+
+    :param ref: the file to be checked
+    :returns: True if file is a documentation file else False
+    """
     prefix_list = (
         "docs/",
         "plugins/doc_fragments",
@@ -52,7 +67,12 @@ def is_documentation_file(ref: str) -> bool:
     return ref.startswith(prefix_list)
 
 
-def should_skip_changelog(changes: Dict[Any, Any]) -> bool:
+def should_skip_changelog(changes: dict[str, list[str]]) -> bool:
+    """Determine whether a changelog fragment is necessary.
+
+    :param changes: A dictionary keyed on change status (A, M, D, etc.) of lists of changed files
+    :returns: True if a changelog fragment is not required for this PR else False
+    """
     # Validate Pull request add new modules and plugins
     if any(is_module_or_plugin(x) for x in changes["A"]):
         return True
@@ -66,6 +86,11 @@ def should_skip_changelog(changes: Dict[Any, Any]) -> bool:
 
 
 def is_valid_changelog_format(path: str) -> bool:
+    """Check if changelog fragment is formatted properly.
+
+    :param path: the file to be checked
+    :returns: True if the file passes validation else False
+    """
     try:
         # https://github.com/ansible-community/antsibull-changelog/blob/main/docs/changelogs.rst#changelog-fragment-categories
         changes_type = (
@@ -99,13 +124,18 @@ def is_valid_changelog_format(path: str) -> bool:
                     )
                     return False
         return True
-    except (IOError, yaml.YAMLError) as exc:
+    except (OSError, yaml.YAMLError) as exc:
         msg = f"yaml loading error for file {path} -> {exc}"
         logger.error(msg)
         return False
 
 
-def run_command(cmd: str) -> Tuple[Union[int, Any], str, str]:
+def run_command(cmd: str) -> tuple[int, str, str]:
+    """Run a command and return the response.
+
+    :param cmd: The command to run
+    :returns: A tuple of (return code, stdout, stderr)
+    """
     with subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
@@ -117,14 +147,20 @@ def run_command(cmd: str) -> Tuple[Union[int, Any], str, str]:
         return proc.returncode, out, err
 
 
-def list_files(ref: str) -> Dict[Any, Any]:
+def list_files(ref: str) -> dict[str, list[str]]:
+    """List all files changed since ref, grouped by change status.
+
+    :param ref: The git ref to compare to
+    :returns: A dictionary keyed on change status (A, M, D, etc.) of lists of changed files
+    :raises ValueError: If the file gathering command fails
+    """
     command = "git diff origin/" + ref + " --name-status"
     logger.info("Executing -> %s", command)
     ret_code, stdout, stderr = run_command(command)
     if ret_code != 0:
         raise ValueError(stderr)
 
-    changes = defaultdict(list)
+    changes: dict[str, list[str]] = defaultdict(list)
     for file in stdout.split("\n"):
         file_attr = file.split("\t")
         if len(file_attr) == 2:
@@ -134,6 +170,10 @@ def list_files(ref: str) -> Dict[Any, Any]:
 
 
 def main(ref: str) -> None:
+    """Run the script.
+
+    :param ref: The pull request base ref
+    """
     changes = list_files(ref)
     if changes:
         changelog = [x for x in changes["A"] if is_changelog_file(x)]

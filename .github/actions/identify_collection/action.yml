@@ -1,5 +1,5 @@
 name: Retrieve collection information
-description: Extract collection infromation from the galaxy.yml file
+description: Extract collection information from the galaxy.yml file
 
 inputs:
   source_path:
