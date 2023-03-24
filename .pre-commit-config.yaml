@@ -48,3 +48,5 @@ repos:
     rev: v2.17.0
     hooks:
       - id: pylint
+        additional_dependencies:
+          - PyYAML
