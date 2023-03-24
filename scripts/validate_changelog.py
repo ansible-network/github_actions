@@ -6,9 +6,11 @@ import logging
 import re
 import subprocess
 import sys
+
 from collections import defaultdict
 
 import yaml
+
 
 FORMAT = "[%(asctime)s] - %(message)s"
 logging.basicConfig(format=FORMAT)
@@ -116,8 +118,7 @@ def is_valid_changelog_format(path: str) -> bool:
                     return False
                 if not isinstance(section[key], list):
                     logger.error(
-                        "Changelog section %s from file %s must be a list,"
-                        " '%s' found instead.",
+                        "Changelog section %s from file %s must be a list, '%s' found instead.",
                         key,
                         path,
                         type(section[key]),
@@ -191,9 +192,7 @@ def main(ref: str) -> None:
                 " plugins or contain only documentation changes."
             )
         else:
-            invalid_changelog_files = [
-                x for x in changelog if not is_valid_changelog_format(x)
-            ]
+            invalid_changelog_files = [x for x in changelog if not is_valid_changelog_format(x)]
             if invalid_changelog_files:
                 logger.error(
                     "The following changelog files are not valid -> %s",
@@ -204,9 +203,7 @@ def main(ref: str) -> None:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Validate changelog file from new commit"
-    )
+    parser = argparse.ArgumentParser(description="Validate changelog file from new commit")
     parser.add_argument("--ref", required=True, help="Pull request base ref")
 
     args = parser.parse_args()
