@@ -110,10 +110,10 @@ def is_valid_changelog_format(path: str) -> bool:
 
 def run_command(cmd: str) -> Tuple[Union[int, Any], str, str]:
     with subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, encoding="utf-8",
     ) as proc:
         out, err = proc.communicate()
-        return proc.returncode, out.decode("utf-8"), err.decode("utf-8")
+        return proc.returncode, out, err
 
 
 def list_files(ref: str) -> Dict[Any, Any]:
