@@ -7,6 +7,7 @@ import sys
 
 from github import Github
 
+
 FORMAT = "[%(asctime)s] - %(message)s"
 logging.basicConfig(format=FORMAT)
 logger = logging.getLogger("resolve_dependency")
@@ -51,9 +52,7 @@ def main() -> None:
 
     # get pull request merge commit sha
     merge_commit_sha = get_pr_merge_commit_sha(repository, pr_number)
-    logger.info(
-        "merge commit sha for pull request %d => '%s'", pr_number, merge_commit_sha
-    )
+    logger.info("merge commit sha for pull request %d => '%s'", pr_number, merge_commit_sha)
     github_output = os.environ.get("GITHUB_OUTPUT")
     if github_output:
         with open(str(github_output), "a", encoding="utf-8") as file_handler:

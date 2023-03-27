@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 
-import pytest
 import os
 import string
-from random import choice
-from unittest.mock import MagicMock, patch
 
-from resolve_dependency import (
-    get_pr_merge_commit_sha,
-    resolve_ref,
-    main
-)
+from random import choice
+from unittest.mock import MagicMock
+from unittest.mock import patch
+
+import pytest
+
+from resolve_dependency import get_pr_merge_commit_sha
+from resolve_dependency import main
+from resolve_dependency import resolve_ref
 
 
 @pytest.mark.parametrize(
@@ -18,33 +19,31 @@ from resolve_dependency import (
     [
         ("Depends-On: https://github.com/my_org/my_collection/pull/12345", True),
         (
-            "Depends-On: https://github.com/my_org/my_collection/pull/12345\n"\
+            "Depends-On: https://github.com/my_org/my_collection/pull/12345\n"
             "Depends-On: https://github.com/my_org/my_collection/pull/67890",
             True,
         ),
         (
-            "Depends-On: https://github.com/another_org/my_collection/pull/4000\n"\
+            "Depends-On: https://github.com/another_org/my_collection/pull/4000\n"
             "Depends-On: https://github.com/my_org/my_collection/pull/12345",
             True,
         ),
         (
-            "Depends-On: https://github.com/my_org/my_collection/pull/12345\n"\
+            "Depends-On: https://github.com/my_org/my_collection/pull/12345\n"
             "Depends-On: https://github.com/my_org/my_collection/pull/67890",
             True,
         ),
         ("Depends-On: https://github.com/another_org/my_collection/pull/12345", False),
         ("Depends-On: https://github.com/my_org/my_collection2/pull/12345", False),
         ("Depends-On: https://github.com/my_org/my_collection/pull", False),
-    ]
+    ],
 )
 def test_resolve_ref(pr_body, match):
-
     expected = 12345 if match else 0
     assert resolve_ref(pr_body, "my_org/my_collection") == expected
 
 
-class FakePullRequest(object):
-
+class FakePullRequest:
     def __init__(self, mergeable):
         self.mergeable = mergeable
         self.merge_commit_sha = self.generate_commit_sha()
@@ -58,7 +57,6 @@ class FakePullRequest(object):
 @pytest.mark.parametrize("mergeable", [True, False])
 @patch("resolve_dependency.Github")
 def test_get_pr_merge_commit_sha(m_Github, mergeable):
-
     m_github_obj = MagicMock()
     m_Github.return_value = m_github_obj
 
@@ -91,7 +89,6 @@ def test_get_pr_merge_commit_sha(m_Github, mergeable):
 @patch("resolve_dependency.get_pr_merge_commit_sha")
 @patch("resolve_dependency.resolve_ref")
 def test_main(m_resolve_ref, m_get_pr_merge_commit_sha, repository, resolve_ref_pr, tmp_path):
-
     pr_body = "My pull request body - this is a sample for unit tests"
     repository_name = "my_test_repository"
     os.environ["RESOLVE_REF_PR_BODY"] = pr_body
