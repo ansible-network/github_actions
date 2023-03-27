@@ -62,6 +62,7 @@ repos:
       - id: mypy
         additional_dependencies:
           - types-PyYAML
+          - pygithub
 
   - repo: https://github.com/pycqa/pylint
     rev: v3.0.0a6
@@ -70,3 +71,13 @@ repos:
         additional_dependencies:
           - PyYAML
           - pygithub
+
+  - repo: local
+    hooks:
+      - id: pytest-check
+        name: pytest-check
+        entry: pytest .github scripts -vvvv
+        types: [python]
+        language: system
+        pass_filenames: false
+        always_run: true

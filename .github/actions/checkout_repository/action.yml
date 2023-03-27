@@ -11,14 +11,10 @@ inputs:
     description: |
       The default branch, tag or SHA to checkout.
     required: true
-  destination_directory:
+  path:
     description: |
       Path where repositories will be checkout
     required: true
-  pull_request_body:
-    description: "Pull request body used to override version to checkout"
-    required: false
-    default: ${{ github.event.pull_request.body }}
 runs:
   using: composite
   steps:
@@ -37,7 +33,7 @@ runs:
       run: |
         python ${{ github.action_path }}/resolve_dependency.py
       env:
-        RESOLVE_REF_PR_BODY: ${{ inputs.pull_request_body }}
+        RESOLVE_REF_PR_BODY: ${{ github.event.pull_request.body }}
         RESOLVE_REF_REPOSITORY: ${{ inputs.repository }}
 
     - name: display merge commit sha from dependency resolution
@@ -48,6 +44,6 @@ runs:
       uses: actions/checkout@v3
       with:
         repository: ${{ inputs.repository }}
-        path: ${{ inputs.destination_directory }}
+        path: ${{ inputs.path }}
         ref: ${{ steps.dependency-resolution.outputs.merge_commit_sha || inputs.ref }}
         fetch-depth: "0"

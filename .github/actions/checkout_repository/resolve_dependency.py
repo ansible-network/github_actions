@@ -4,7 +4,6 @@ import logging
 import os
 import re
 import sys
-from typing import Any
 
 from github import Github
 
@@ -14,7 +13,7 @@ logger = logging.getLogger("resolve_dependency")
 logger.setLevel(logging.DEBUG)
 
 
-def get_pr_merge_commit_sha(repository: str, pr_number: int) -> Any:
+def get_pr_merge_commit_sha(repository: str, pr_number: int) -> str:
     access_token = os.environ.get("GITHUB_TOKEN")
     gh_obj = Github(access_token)
     repo = gh_obj.get_repo(repository)
@@ -34,8 +33,8 @@ def resolve_ref(pr_body: str, repository: str) -> int:
         re.MULTILINE | re.IGNORECASE,
     )
     # Search for expression starting with depends-on not case-sensitive
-    match = pr_regx.findall(pr_body)
-    return int(match[0]) if match else 0
+    match = pr_regx.search(pr_body)
+    return int(match.group(1)) if match else 0
 
 
 def main() -> None:
@@ -55,9 +54,10 @@ def main() -> None:
     logger.info(
         "merge commit sha for pull request %d => '%s'", pr_number, merge_commit_sha
     )
-    gh_output = str(os.environ.get("GITHUB_OUTPUT"))
-    with open(gh_output, "a", encoding="utf-8") as file_handler:
-        file_handler.write(f"merge_commit_sha={merge_commit_sha}\n")
+    github_output = os.environ.get("GITHUB_OUTPUT")
+    if github_output:
+        with open(str(github_output), "a", encoding="utf-8") as file_handler:
+            file_handler.write(f"merge_commit_sha={merge_commit_sha}\n")
 
 
 if __name__ == "__main__":
