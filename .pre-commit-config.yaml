@@ -80,6 +80,9 @@ repos:
         name: pytest-check
         entry: pytest .github scripts -vvvv
         types: [python]
-        language: system
+        language: python
         pass_filenames: false
         always_run: true
+        additional_dependencies:
+          - pytest
+          - pygithub
