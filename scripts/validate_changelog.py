@@ -8,6 +8,7 @@ import subprocess
 import sys
 
 from collections import defaultdict
+from pathlib import Path
 
 import yaml
 
@@ -94,6 +95,13 @@ def is_valid_changelog_format(path: str) -> bool:
     :returns: True if the file passes validation else False
     """
     try:
+        config = Path("changelogs/config.yaml")
+        with open(config, "rb") as changelog_config:
+            sections = yaml.safe_load(changelog_config)["sections"]
+            changes_type = tuple(item[0] for item in sections)
+            logger.info("Found the following changelog sections: %s", changes_type)
+    except (OSError, yaml.YAMLError) as exc:
+        logger.info("Failed to read changelog config, using default sections instead: %s", exc)
         # https://github.com/ansible-community/antsibull-changelog/blob/main/docs/changelogs.rst#changelog-fragment-categories
         changes_type = (
             "release_summary",
@@ -107,6 +115,8 @@ def is_valid_changelog_format(path: str) -> bool:
             "known_issues",
             "trivial",
         )
+
+    try:
         with open(path, "rb") as file_desc:
             result = list(yaml.safe_load_all(file_desc))
 
