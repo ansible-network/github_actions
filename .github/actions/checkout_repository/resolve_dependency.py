@@ -1,4 +1,5 @@
 #!/usr/bin/python
+"""Script to check if a depends-on pull request has been defined into pull request body."""
 
 import logging
 import os
@@ -15,6 +16,13 @@ logger.setLevel(logging.DEBUG)
 
 
 def get_pr_merge_commit_sha(repository: str, pr_number: int) -> str:
+    """Retrieve pull request merge commit sha.
+
+    :param repository: The repository name
+    :param pr_number: The pull request number
+    :returns: The pull request merge commit sha if it exists
+    :raises ValueError: if the pull request is not mergeable
+    """
     access_token = os.environ.get("GITHUB_TOKEN")
     gh_obj = Github(access_token)
     repo = gh_obj.get_repo(repository)
@@ -29,6 +37,12 @@ def get_pr_merge_commit_sha(repository: str, pr_number: int) -> str:
 
 
 def resolve_ref(pr_body: str, repository: str) -> int:
+    """Get pull request reference number defined with Depends-On.
+
+    :param pr_body: the pull request body
+    :param repository: The repository name
+    :returns: pull request number if it is defined else 0
+    """
     pr_regx = re.compile(
         rf"^Depends-On:[ ]*https://github.com/{repository}/pull/(\d+)\s*$",
         re.MULTILINE | re.IGNORECASE,
@@ -39,6 +53,7 @@ def resolve_ref(pr_body: str, repository: str) -> int:
 
 
 def main() -> None:
+    """Run the script."""
     pr_body = os.environ.get("RESOLVE_REF_PR_BODY") or ""
     repository = os.environ.get("RESOLVE_REF_REPOSITORY") or ""
 

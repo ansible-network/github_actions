@@ -63,6 +63,7 @@ repos:
         additional_dependencies:
           - types-PyYAML
           - pygithub
+          - pytest
 
   - repo: https://github.com/pycqa/pylint
     rev: v3.0.0a6
@@ -71,6 +72,7 @@ repos:
         additional_dependencies:
           - PyYAML
           - pygithub
+          - pytest
 
   - repo: local
     hooks:
