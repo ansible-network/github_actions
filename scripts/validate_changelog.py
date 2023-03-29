@@ -96,9 +96,10 @@ def is_valid_changelog_format(path: str) -> bool:
     """
     try:
         config = Path("changelogs/config.yaml")
-        with open(config, "rb") as changelog_config:
-            sections = yaml.safe_load(changelog_config)["sections"]
-            changes_type = tuple(item[0] for item in sections)
+        with open(config, "rb") as config_file:
+            changelog_config = yaml.safe_load(config_file)
+            changes_type = tuple(item[0] for item in changelog_config["sections"])
+            changes_type += (changelog_config["trivial_section_name"],)
             logger.info("Found the following changelog sections: %s", changes_type)
     except (OSError, yaml.YAMLError) as exc:
         logger.info("Failed to read changelog config, using default sections instead: %s", exc)
