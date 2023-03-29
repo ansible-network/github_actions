@@ -3,39 +3,57 @@ description: Build and install the collection
 
 inputs:
   install_python_dependencies:
-    description: "Install collection python dependencies"
-    required: true
+    description: "Whether to install collection python dependencies or not"
+    default: "true"
   source_path:
     description: "Path to the collection source"
-    required: true
+    default: "."
   collection_path:
     description: The final collection path
-    required: true
+    default: ""
   tar_file:
     description: The collection tarball when built
-    required: true
+    default: ""
 
 runs:
   using: composite
   steps:
-    - name: Show the galaxy.yml
-      run: cat galaxy.yml
-      shell: bash
-      working-directory: ${{ inputs.source_path }}
+    - uses: actions/checkout@v3
+      with:
+        path: "./.githubactions"
+
+    - name: Build ansible collection
+      id: build-collection
+      uses: ./.githubactions/.github/actions/build_collection
+      with:
+        source_path: ${{ inputs.source_path }}
 
     - name: Install bindep from pypi
       run: sudo python3 -m pip install bindep
       shell: bash
 
+    - name: check if bindep.txt exists
+      id: bindep_check
+      shell: bash
+      run: |
+        if test -f "bindep.txt"; then
+          echo "file_exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "file_exists=false" >> $GITHUB_OUTPUT
+        fi
+      working-directory: ${{ inputs.source_path }}
+
     - name: Install missing system packages using bindep.txt
       run: bindep test | tail -n +2 | xargs sudo apt-get -o Debug::pkgProblemResolver=true -o Debug::Acquire::http=true install -y || exit 0
       shell: bash
       working-directory: ${{ inputs.source_path }}
+      if: steps.bindep_check.outputs.file_exists == 'true'
 
     - name: Check for missing system packages using bindep.txt
       run: bindep test
       shell: bash
       working-directory: ${{ inputs.source_path }}
+      if: steps.bindep_check.outputs.file_exists == 'true'
 
     - name: Install collection python requirements
       if: ${{ inputs.install_python_dependencies == 'true' }}
@@ -43,17 +61,12 @@ runs:
       shell: bash
       working-directory: ${{ inputs.source_path }}
 
-    - name: Build collection
-      run: ansible-galaxy collection build -vvv
-      shell: bash
-      working-directory: ${{ inputs.source_path }}
-
-    - name: Install collection and dependencies
-      run: ansible-galaxy collection install ./${{ inputs.tar_file }} -p /home/runner/collections
+    - name: Install collection
+      run: ansible-galaxy collection install ${{ steps.build-collection.outputs.tar_file }} -p /home/runner/collections
       shell: bash
       working-directory: ${{ inputs.source_path }}
 
     - name: Copy the galaxy.yml from source to destination, needed for pytest-ansible-units
-      run: cp galaxy.yml ${{ inputs.collection_path }}/galaxy.yml
+      run: cp galaxy.yml ${{ steps.build-collection.outputs.collection_path }}/galaxy.yml
       shell: bash
       working-directory: ${{ inputs.source_path }}

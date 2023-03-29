@@ -1,0 +1,72 @@
+name: Build ansible collection
+description: |
+  This action generates a collection tarball from a directory source.
+  if required, action will execute playbook tools/prepare_release.yml and
+  generate-ansible-collection before building ansible collection.
+
+inputs:
+  source_path:
+    description: "Path to the collection directory to build"
+    default: "."
+outputs:
+  tar_file:
+    description: The path to the collection generated tarball
+    value: ${{ steps.identify.outputs.tar_file }}
+  collection_path:
+    description: The path where collection will be installed
+    value: ${{ steps.identify.outputs.collection_path }}
+
+runs:
+  using: composite
+  steps:
+    - name: install ansible-network/releases
+      run: pip install git+https://github.com/ansible-network/releases
+      shell: bash
+
+    - name: check if ansible-playbook is installed
+      id: ansible_check
+      shell: bash
+      run: |
+        if ! command -v ansible-playbook &> /dev/null; then
+          echo "ansible_installed=false" >> $GITHUB_OUTPUT
+        else
+          echo "ansible_installed=true" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Install ansible-core (stable-2.12)
+      run: python3 -m pip install https://github.com/ansible/ansible/archive/stable-2.12.tar.gz --disable-pip-version-check
+      shell: bash
+      if: steps.ansible_check.outputs.ansible_installed == 'false'
+
+    - name: check if collection contains file tools/prepare_release.yml
+      id: prepare_release_check
+      shell: bash
+      run: |
+        if test -f "tools/prepare_release.yml"; then
+          echo "file_exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "file_exists=false" >> $GITHUB_OUTPUT
+        fi
+      working-directory: ${{ inputs.source_path }}
+
+    - name: Run tools/prepare_release.yml
+      run: ansible-playbook tools/prepare_release.yml -v
+      shell: bash
+      working-directory: ${{ inputs.source_path }}
+      if: steps.prepare_release_check.outputs.file_exists == 'true'
+
+    - name: Generate version number for ansible collection
+      run: generate-ansible-collection
+      shell: bash
+      working-directory: ${{ inputs.source_path }}
+
+    - name: Read collection metadata from galaxy.yml
+      id: identify
+      uses: ansible-network/github_actions/.github/actions/identify_collection@main
+      with:
+        source_path: ${{ inputs.source_path }}
+
+    - name: Build collection
+      run: ansible-galaxy collection build -vvv
+      shell: bash
+      working-directory: ${{ inputs.source_path }}
