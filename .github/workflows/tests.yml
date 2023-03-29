@@ -1,0 +1,94 @@
+name: CI
+concurrency:
+  group: ${{ github.head_ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - labeled
+      - unlabeled
+      - synchronize
+    branches:
+      - main
+      - stable-*
+    tags:
+      - "*"
+
+jobs:
+  build_collection:
+    runs-on: ubuntu-latest
+    env:
+      test_path: "./collection"
+    steps:
+      # Clone this repo
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # Test with collection without 'version' in galaxy.xml (ansible-collections/cloud.common)
+      - name: Checkout collection to test
+        uses: actions/checkout@v3
+        with:
+          repository: ansible-collections/cloud.common
+          ref: 2.0.0
+          path: ${{ env.test_path }}
+
+      - name: Build ansible collection
+        id: build-collection
+        uses: ./.github/actions/build_collection
+        with:
+          source_path: ${{ env.test_path }}
+
+      - name: Ensure action output
+        run: |
+          [[ ${{ steps.build-collection.outputs.tar_file }} == "cloud-common-2.0.0.tar.gz" ]]
+        shell: bash
+
+      - name: Ensure collection was built as expected
+        run: |
+          test -f ${{ steps.build-collection.outputs.tar_file }}
+        shell: bash
+        working-directory: ${{ env.test_path }}
+
+  build_install_collection:
+    runs-on: ubuntu-latest
+    env:
+      test_path: "./collection"
+    steps:
+      # Clone this repo
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Checkout collection to test
+        uses: actions/checkout@v3
+        with:
+          repository: ansible-collections/kubernetes.core
+          ref: 2.4.0
+          path: ${{ env.test_path }}
+
+      - name: Build and install collection
+        uses: ./.github/actions/build_install_collection
+        with:
+          source_path: ${{ env.test_path }}
+
+      - name: create kubernetes cluster
+        uses: helm/kind-action@v1.4.0
+
+      - name: Execute playbook using collection installed
+        run: |
+          set -eux
+          echo "- hosts: localhost" > test_playbook.yaml
+          echo "  gather_facts: false" >> test_playbook.yaml
+          echo "  collections:" >> test_playbook.yaml
+          echo "    - kubernetes.core" >> test_playbook.yaml
+          echo "  vars:" >> test_playbook.yaml
+          echo "    ansible_python_interpreter: python3" >> test_playbook.yaml
+          echo "  tasks:" >> test_playbook.yaml
+          echo "    - name: ensure namespace" >> test_playbook.yaml
+          echo "      k8s:" >> test_playbook.yaml
+          echo "       kind: namespace" >> test_playbook.yaml
+          echo "       name: testing" >> test_playbook.yaml
+          ansible-playbook test_playbook.yaml -vvv
+        shell: bash
