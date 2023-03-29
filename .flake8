@@ -29,7 +29,7 @@ extend-ignore =
   Q,
   # annoy black by allowing white space before : https://github.com/psf/black/issues/315
   E203,
-  # duplicate of pylint W0611 (unused-import)  
+  # duplicate of pylint W0611 (unused-import)
   F401,
   # duplicate of pylint E0602 (undefined-variable)
   F821,
