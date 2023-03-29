@@ -15,6 +15,9 @@ profile = "black" # Avoid conflict with black
 [tool.pylint.format]
 max-line-length = 100
 
+[tool.pylint.master]
+no-docstring-rgx = "__.*__"
+
 [tool.pylint.messages_control]
 disable = ["fixme"]
 enable = [
