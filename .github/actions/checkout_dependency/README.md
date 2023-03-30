@@ -1,4 +1,4 @@
-# Checkout_repository
+# checkout_dependency
 
 This action checks-out your repository under the specified destination directory using the action actions/checkout. Use the `depends-On: repository/pull/xx` to override the reference to checkout.
 
@@ -7,7 +7,7 @@ This action checks-out your repository under the specified destination directory
 <!-- start usage -->
 
 ```yaml
-- uses: ansible-network/github_actions/.github/actions/checkout_repository@main
+- uses: ansible-network/github_actions/.github/actions/checkout_dependency@main
   with:
     # Repository name with owner. For example, ansible-collections/kubernetes.core
     repository: ""
@@ -18,6 +18,9 @@ This action checks-out your repository under the specified destination directory
 
     # Relative path under $GITHUB_WORKSPACE to place the repository
     path: ""
+
+    # Number of commits to fetch. 0 indicates all history for all branches and tags.
+    fetch-depth: "1"
 ```
 
 <!-- end usage -->
@@ -39,7 +42,7 @@ Depends-On: repository/pull/xx
 Github action step:
 
 ```yaml
-- uses: ansible-network/github_actions/.github/actions/checkout_repository@main
+- uses: ansible-network/github_actions/.github/actions/checkout_dependency@main
   with:
     repository: my_org/my_collection
     ref: main

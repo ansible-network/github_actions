@@ -79,7 +79,7 @@ jobs:
 
       - name: Checkout ${{ steps.identify.outputs.dependency }}
         if: steps.identify.outputs.dependency != '' && matrix.dependency-source == 'github'
-        uses: actions/checkout@v3
+        uses: ansible-network/github_actions/.github/actions/checkout_dependency@main
         with:
           repository: ansible-collections/${{ steps.identify.outputs.dependency }}
           path: ${{ env.dependency_directory }}
