@@ -90,5 +90,5 @@ jobs:
           echo "      k8s:" >> test_playbook.yaml
           echo "       kind: namespace" >> test_playbook.yaml
           echo "       name: testing" >> test_playbook.yaml
-          ansible-playbook test_playbook -vvv
+          ansible-playbook test_playbook.yaml -vvv
         shell: bash
