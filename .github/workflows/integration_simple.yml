@@ -7,26 +7,10 @@ on:
         required: false
         type: string
       matrix_exclude:
-        # 2.9/3.9 not supported
-        # 2.9/3.10 not supported
-        # 2.9/3.11 not supported
         # 2.12/3.11 not supported
         # 2.13/3.11 not supported
-        # 2.14/3.8 not supported
         default: >-
           [
-            {
-              "ansible-version": "stable-2.9",
-              "python-version": "3.9"
-            },
-            {
-              "ansible-version": "stable-2.9",
-              "python-version": "3.10"
-            },
-            {
-              "ansible-version": "stable-2.9",
-              "python-version": "3.11"
-            },
             {
               "ansible-version": "stable-2.12",
               "python-version": "3.11"
@@ -35,18 +19,6 @@ on:
               "ansible-version": "stable-2.13",
               "python-version": "3.11"
             },
-            {
-              "ansible-version": "stable-2.14",
-              "python-version": "3.8"
-            },
-            {
-              "ansible-version": "milestone",
-              "python-version": "3.8"
-            },
-            {
-              "ansible-version": "devel",
-              "python-version": "3.8"
-            }
           ]
         required: false
         type: string
@@ -68,15 +40,13 @@ jobs:
       fail-fast: false
       matrix:
         ansible-version:
-          - stable-2.9
           - stable-2.12
           - stable-2.13
           - stable-2.14
           - milestone
           - devel
         python-version:
-          # ansible-navigator supports python 3.8+
-          - "3.8"
+          # ansible-navigator supports python 3.9+
           - "3.9"
           - "3.10"
           - "3.11"
