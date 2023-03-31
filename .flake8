@@ -9,8 +9,6 @@ count = true
 # Feel free to add as needed, flake8 has no automatic way
 # to leverage the gitignore file
 extend-exclude =
-  # GitHub configs
-  .github,
   # Cache files of MyPy
   .mypy_cache,
   # Cache files of pytest
