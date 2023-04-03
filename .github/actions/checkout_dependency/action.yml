@@ -4,7 +4,7 @@ description: |
 inputs:
   repository:
     description: "Repository name with owner. For example, ansible-collections/cloud.common"
-    required: true
+    default: ${{ github.repository }}
   ref:
     description: "The default branch, tag or SHA to checkout if no reference (using depends-on) is found"
   path:
