@@ -70,6 +70,27 @@ def is_documentation_file(ref: str) -> bool:
     return ref.startswith(prefix_list)
 
 
+def is_release_pr(changes: dict[str, list[str]]) -> bool:
+    """Determine whether the changeset looks like a release.
+
+    :param changes: A dictionary keyed on change status (A, M, D, etc.) of lists of changed files
+    :returns: True if the changes match a collection release else False
+    """
+    # Should only have Deleted and Modified files.
+    if not set(changes.keys()).issubset(("D", "M")):
+        return False
+
+    # All deletions should be of changelog files
+    if not all(is_changelog_file(x) for x in changes["D"]):
+        return False
+
+    # A changelog release will only change these files
+    if not set(changes["M"]).issubset(("CHANGELOG.rst", "changelogs/changelog.yaml", "galaxy.yml")):
+        return False
+
+    return True
+
+
 def should_skip_changelog(changes: dict[str, list[str]]) -> bool:
     """Determine whether a changelog fragment is necessary.
 
@@ -188,6 +209,10 @@ def main(ref: str) -> None:
     """
     changes = list_files(ref)
     if changes:
+        if is_release_pr(changes):
+            logger.info("This PR looks like a release!")
+            sys.exit(0)
+
         changelog = [x for x in changes["A"] if is_changelog_file(x)]
         logger.info("changelog files -> %s", changelog)
         if not changelog:
