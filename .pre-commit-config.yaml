@@ -15,12 +15,12 @@ repos:
           - prettier-plugin-toml
 
   - repo: https://github.com/psf/black
-    rev: 23.1.0
+    rev: 23.3.0
     hooks:
       - id: black
 
   - repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.4.2
+    rev: v1.5.1
     hooks:
       - id: remove-tabs
 
@@ -64,7 +64,7 @@ repos:
           - types-PyYAML
 
   - repo: https://github.com/pycqa/pylint
-    rev: v2.17.1
+    rev: v3.0.0a6
     hooks:
       - id: pylint
         additional_dependencies:
