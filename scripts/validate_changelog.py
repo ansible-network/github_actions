@@ -84,7 +84,7 @@ def is_release_pr(changes: dict[str, list[str]]) -> bool:
     if not all(is_changelog_file(x) for x in changes["D"]):
         return False
 
-    # A changelog release will only change these files
+    # A collection release should only change these files
     if not set(changes["M"]).issubset(("CHANGELOG.rst", "changelogs/changelog.yaml", "galaxy.yml")):
         return False
 
