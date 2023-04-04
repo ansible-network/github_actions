@@ -91,19 +91,17 @@ def is_release_pr(changes: dict[str, list[str]]) -> bool:
     return True
 
 
-def should_skip_changelog(changes: dict[str, list[str]]) -> bool:
+def is_changelog_needed(changes: dict[str, list[str]]) -> bool:
     """Determine whether a changelog fragment is necessary.
 
     :param changes: A dictionary keyed on change status (A, M, D, etc.) of lists of changed files
     :returns: True if a changelog fragment is not required for this PR else False
     """
-    # Validate Pull request add new modules and plugins
-    if any(is_module_or_plugin(x) for x in changes["A"]):
-        return True
-
-    # Validate documentation changes only
-    all_files = changes["A"] + changes["M"] + changes["D"]
-    if all(is_documentation_file(x) for x in all_files):
+    # Changes to existing plugins or modules require a changelog
+    # Changelog entries are not needed for new plugins or modules
+    # https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#generating-changelogs
+    modifications = changes["M"] + changes["D"]
+    if any(is_module_or_plugin(x) for x in modifications):
         return True
 
     return False
@@ -216,7 +214,7 @@ def main(ref: str) -> None:
         changelog = [x for x in changes["A"] if is_changelog_file(x)]
         logger.info("changelog files -> %s", changelog)
         if not changelog:
-            if not should_skip_changelog(changes):
+            if is_changelog_needed(changes):
                 logger.error(
                     "Missing changelog fragment. This is not required"
                     " only if PR adds new modules and plugins or contain"
