@@ -12,6 +12,10 @@ on:
         # 2.13/3.11 not supported
         # 2.14/3.7 not supported
         # 2.14/3.8 not supported
+        # milestone/3.7 not supported
+        # milestone/3.8 not supported
+        # devel/3.7 not supported
+        # devel/3.8 not supported
         default: >-
           [
             {
