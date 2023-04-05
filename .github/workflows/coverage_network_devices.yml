@@ -18,7 +18,7 @@ jobs:
     name: "Code Coverage | Python 3.10"
     steps:
       - name: Checkout the collection repository
-        uses: actions/checkout@v3
+        uses: ansible-network/github_actions/.github/actions/checkout_dependency@main
         with:
           path: ${{ env.source_directory }}
           ref: ${{ github.event.pull_request.head.sha }}
