@@ -23,13 +23,9 @@ outputs:
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v3
-      with:
-        path: "./.githubactions"
-
-    - name: Build ansible collection
+    - name: Build collection
       id: build-collection
-      uses: ./.githubactions/.github/actions/build_collection
+      uses: abikouo/github_actions/.github/actions/build_collection@build_install_collection
       with:
         source_path: ${{ inputs.source_path }}
 
