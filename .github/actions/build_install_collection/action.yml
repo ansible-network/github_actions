@@ -15,6 +15,11 @@ inputs:
     description: The collection tarball when built
     default: ""
 
+outputs:
+  collection_path:
+    description: The final collection path
+    value: ${{ steps.build-collection.outputs.collection_path }}
+
 runs:
   using: composite
   steps:
