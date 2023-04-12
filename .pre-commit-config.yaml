@@ -86,3 +86,4 @@ repos:
         additional_dependencies:
           - pytest
           - pygithub
+          - pyyaml

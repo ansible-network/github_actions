@@ -1,0 +1,46 @@
+name: Cloud integration test splitter
+description: Evaluate which targets need to be tested.
+
+inputs:
+  collections_to_test:
+    description: |
+      Path to the collections to test.
+      Provide as a comma-separated list of collection path and base ref to test against.
+      e.g: 'repo_path_1:main,repo_path_2:stable-2'
+    required: true
+  total_jobs:
+    description: The total number of jobs to share targets on
+    required: false
+    default: "3"
+outputs:
+  test_targets:
+    description: The list of targets to test
+    value: ${{ steps.splitter.outputs.test_targets }}
+
+runs:
+  using: composite
+  steps:
+    - name: setup python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.9"
+
+    - name: Install python required libraries
+      run: pip install -U pyyaml
+      shell: bash
+
+    - name: Set variable to set test all targets
+      run: echo "ANSIBLE_TEST_ALL_THE_TARGETS=true" >> "$GITHUB_ENV"
+      shell: bash
+      if: ${{ (contains(github.event.pull_request.labels.*.name, 'test-all-the-targets')) }}
+
+    - name: Evaluate targets to test
+      id: splitter
+      run: >-
+        python ${{ github.action_path }}/list_changed_targets.py
+      env:
+        COLLECTIONS_TO_TEST: "${{ inputs.collections_to_test }}"
+        TOTAL_JOBS: "${{ inputs.total_jobs }}"
+        PULL_REQUEST_BODY: "${{ github.event.pull_request.body }}"
+        PULL_REQUEST_BASE_REF: "${{ github.event.pull_request.base.ref }}"
+      shell: bash
