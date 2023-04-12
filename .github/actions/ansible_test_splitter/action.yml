@@ -42,4 +42,5 @@ runs:
         COLLECTIONS_TO_TEST: "${{ inputs.collections_to_test }}"
         TOTAL_JOBS: "${{ inputs.total_jobs }}"
         PULL_REQUEST_BODY: "${{ github.event.pull_request.body }}"
+        PULL_REQUEST_BASE_REF: "${{ github.event.pull_request.base.ref }}"
       shell: bash
