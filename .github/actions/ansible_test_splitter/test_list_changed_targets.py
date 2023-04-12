@@ -16,7 +16,6 @@ from list_changed_common import ElGrandeSeparator
 from list_changed_common import WhatHaveChanged
 from list_changed_common import list_pyimport
 from list_changed_common import make_unique
-from list_changed_common import parse_collection_info
 from list_changed_common import read_collection_name
 from list_changed_common import read_collections_to_test
 from list_changed_common import read_targets_to_test
@@ -336,25 +335,6 @@ def test_make_unique() -> None:
     assert make_unique(["a", "b"]) == ["a", "b"]
 
 
-def test_parse_collection_info(tmp_path: PosixPath) -> None:
-    """Test parse_collection_info function.
-
-    :param tmp_path: temporary path patch
-    """
-    expected = "The following 'some_path' is not a valid format for collection definition."
-    with pytest.raises(ValueError, match=expected):
-        parse_collection_info("some_path")
-
-    expected = "The following path 'some_path' does not exit."
-    with pytest.raises(ValueError, match=expected):
-        parse_collection_info("some_path:main")
-
-    collection_dir = tmp_path / "collection_path"
-    collection_dir.mkdir()
-    collection_dir_name = str(collection_dir)
-    assert parse_collection_info(f"{collection_dir_name}:main") == (collection_dir, "main")
-
-
 def test_read_test_all_the_targets(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test read_test_all_the_targets function.
 
@@ -431,24 +411,11 @@ def test_read_targets_to_test(monkeypatch: pytest.MonkeyPatch) -> None:
     }
 
 
-@patch("list_changed_common.parse_collection_info")
-def test_read_collections_to_test(
-    m_parse_collection_info: MagicMock, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_read_collections_to_test(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test read_collections_to_test function.
 
-    :param m_parse_collection_info: parse_collection_info patched method
     :param monkeypatch: monkey patch
     """
-    m_parse_collection_info.side_effect = lambda x: (
-        PosixPath(x.split(":", maxsplit=1)[0]),
-        x.split(":", maxsplit=1)[1],
-    )
-
-    collection_to_test = "col1:main,col2:stable-1\n  ,col3:release"
+    collection_to_test = "col1,col2\n  ,col3"
     monkeypatch.setenv("COLLECTIONS_TO_TEST", collection_to_test)
-    assert read_collections_to_test() == [
-        (PosixPath("col1"), "main"),
-        (PosixPath("col2"), "stable-1"),
-        (PosixPath("col3"), "release"),
-    ]
+    assert read_collections_to_test() == [PosixPath("col1"), PosixPath("col2"), PosixPath("col3")]

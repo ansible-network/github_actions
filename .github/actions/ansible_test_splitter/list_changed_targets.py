@@ -2,7 +2,6 @@
 """Script to list target to test for a pull request."""
 
 import json
-import logging
 import os
 
 from pathlib import PosixPath
@@ -20,12 +19,6 @@ from list_changed_common import read_test_all_the_targets
 from list_changed_common import read_total_jobs
 
 
-FORMAT = "[%(asctime)s] - %(message)s"
-logging.basicConfig(format=FORMAT)
-logger = logging.getLogger("list_changed_targets")
-logger.setLevel(logging.DEBUG)
-
-
 class ListChangedTargets:
     """A class used to list changed impacted for a pull request."""
 
@@ -36,6 +29,7 @@ class ListChangedTargets:
 
         self.test_all_the_targets = read_test_all_the_targets()
         self.targets_to_test = read_targets_to_test()
+        self.base_ref = os.environ.get("PULL_REQUEST_BASE_REF", "")
 
     def make_change_targets_to_test(self, collections: list[Collection]) -> dict[str, list[str]]:
         """Create change for a specific target to test.
@@ -90,7 +84,7 @@ class ListChangedTargets:
             for collection in collections:
                 collection.add_target_to_plan(plugin_file_name)
 
-        for whc in [WhatHaveChanged(path, ref) for path, ref in self.collections_to_test]:
+        for whc in [WhatHaveChanged(path, self.base_ref) for path in self.collections_to_test]:
             listed_changes[whc.collection_name] = {
                 "modules": [],
                 "inventory": [],
@@ -119,6 +113,7 @@ class ListChangedTargets:
             for target in whc.targets():
                 _add_changed_target(whc.collection_name, target, "targets")
 
+        print("----------- Listed Changes -----------\n", json.dumps(listed_changes, indent=2))
         return {x: make_unique(y["targets"]) for x, y in listed_changes.items()}
 
     def run(self) -> str:
@@ -126,7 +121,7 @@ class ListChangedTargets:
 
         :returns: resulting string of targets divide into chunks
         """
-        collections = [Collection(p) for p, _ in self.collections_to_test]
+        collections = [Collection(p) for p in self.collections_to_test]
 
         if self.targets_to_test:
             changes = self.make_change_targets_to_test(collections)
@@ -135,7 +130,7 @@ class ListChangedTargets:
         else:
             changes = self.make_changed_targets(collections)
 
-        logger.info("changes => %s", json.dumps(changes))
+        print("----------- Changes -----------\n", json.dumps(changes, indent=2))
         egs = ElGrandeSeparator(collections, self.total_jobs)
         return egs.output()
 

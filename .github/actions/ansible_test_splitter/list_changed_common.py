@@ -2,7 +2,6 @@
 """Define collection module for list_changed_targets executable."""
 
 import ast
-import logging
 import os
 import re
 import subprocess
@@ -16,12 +15,6 @@ from typing import List
 from typing import Optional
 
 import yaml
-
-
-FORMAT = "[%(asctime)s] - %(message)s"
-logging.basicConfig(format=FORMAT)
-logger = logging.getLogger("list_changed_common")
-logger.setLevel(logging.DEBUG)
 
 
 def read_collection_name(collection_path: PosixPath) -> str:
@@ -533,24 +526,6 @@ def equal_share(targets: list[Target], nbchunks: int) -> list[dict[str, Any]]:
     return [{"total": total_data[i], "targets": targets_data[i]} for i in range(nbchunks)]
 
 
-def parse_collection_info(element: str) -> tuple[PosixPath, str]:
-    """Get collection path and ref from input string.
-
-    :param element: input string, e.g: './ansible-network:stable-2.1'
-    :returns: a tuple of collection path and reference branch
-    :raises ValueError: when element is not matching expecting format or path does not exist.
-    """
-    info = element.split(":")
-    if len(info) != 2:
-        raise ValueError(
-            f"The following '{element}' is not a valid format for collection definition."
-        )
-    col_path, ref = info[0], info[1]
-    if not PosixPath(col_path).exists():
-        raise ValueError(f"The following path '{col_path}' does not exit.")
-    return PosixPath(col_path), ref
-
-
 def read_test_all_the_targets() -> bool:
     """Test if all targets should be executed.
 
@@ -595,11 +570,13 @@ def read_targets_to_test() -> dict[str, list[str]]:
     return targets_to_test
 
 
-def read_collections_to_test() -> list[tuple[PosixPath, str]]:
+def read_collections_to_test() -> list[PosixPath]:
     """Read module parameters from environment variables.
 
     :returns: a list of parameters to execute the module
     """
-    collections_to_tests = os.environ.get("COLLECTIONS_TO_TEST", "").replace("\n", ",").split(",")
-    logger.info("collections_to_tests => %s", collections_to_tests)
-    return list(map(parse_collection_info, [x for x in collections_to_tests if x.strip()]))
+    return [
+        PosixPath(path)
+        for path in os.environ.get("COLLECTIONS_TO_TEST", "").replace("\n", ",").split(",")
+        if path.strip()
+    ]
