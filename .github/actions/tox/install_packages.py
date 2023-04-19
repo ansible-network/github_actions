@@ -117,16 +117,18 @@ def from_setupcfg(path: str) -> Optional[str]:
     :returns: A python package name
     """
     setup_cfg = os.path.join(path, "setup.cfg")
-    if os.path.exists(setup_cfg):
-        config = ConfigParser()
-        config.read(setup_cfg)
-        try:
-            return config.get("metadata", "name")
-        except (NoSectionError, NoOptionError):
-            # Some things have a setup.cfg, but don't keep
-            # metadata in it; fall back to setup.py below
-            logger.info("[metadata] name not found in %s, skipping", setup_cfg)
-    return None
+    if not os.path.exists(setup_cfg):
+        logger.info("%s does not exist", setup_cfg)
+        return None
+    config = ConfigParser()
+    config.read(setup_cfg)
+    try:
+        return config.get("metadata", "name")
+    except (NoSectionError, NoOptionError):
+        # Some things have a setup.cfg, but don't keep
+        # metadata in it; fall back to setup.py below
+        logger.info("[metadata] name not found in %s, skipping", setup_cfg)
+        return None
 
 
 def from_setuppy(path: str, tox_py: str) -> Optional[str]:
@@ -136,18 +138,21 @@ def from_setuppy(path: str, tox_py: str) -> Optional[str]:
     :param tox_py: python executable using to test setup.py
     :returns: A python package name
     """
-    if os.path.exists(os.path.join(path, "setup.py")):
-        # It's a python package but doesn't use pbr, so we need to run
-        # python setup.py --name to get setup.py to tell us what the
-        # package name is.
-        package_name = subprocess.check_output(
-            [os.path.abspath(tox_py), "setup.py", "--name"],
-            cwd=path,
-            shell=True,
-            stderr=subprocess.STDOUT,
-        ).decode("utf-8")
-        if package_name:
-            return package_name.strip()
+    setup_py = os.path.join(path, "setup.py")
+    if not os.path.exists(setup_py):
+        logger.info("%s does not exist", setup_py)
+        return None
+    # It's a python package but doesn't use pbr, so we need to run
+    # python setup.py --name to get setup.py to tell us what the
+    # package name is.
+    package_name = subprocess.check_output(
+        [os.path.abspath(tox_py), "setup.py", "--name"],
+        cwd=path,
+        shell=True,
+        stderr=subprocess.STDOUT,
+    ).decode("utf-8")
+    if package_name:
+        return package_name.strip()
     return None
 
 
