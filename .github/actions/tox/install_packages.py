@@ -110,50 +110,42 @@ def get_envlist(tox_config: RawConfigParser) -> list[str]:
     return envlist
 
 
-def from_setupcfg(path: str) -> Optional[str]:
-    """Read package name from setup.cfg file.
-
-    :param path: the location of the python package
-    :returns: A python package name
-    """
-    setup_cfg = os.path.join(path, "setup.cfg")
-    if not os.path.exists(setup_cfg):
-        logger.info("%s does not exist", setup_cfg)
-        return None
-    config = ConfigParser()
-    config.read(setup_cfg)
-    try:
-        return config.get("metadata", "name")
-    except (NoSectionError, NoOptionError):
-        # Some things have a setup.cfg, but don't keep
-        # metadata in it; fall back to setup.py below
-        logger.info("[metadata] name not found in %s, skipping", setup_cfg)
-        return None
-
-
-def from_setuppy(path: str, tox_py: str) -> Optional[str]:
-    """Read package name by executing setup.py.
+def read_package_name(path: str, tox_py: str) -> Optional[str]:
+    """Read package name from from setup.cfg or by running setup.py.
 
     :param path: the location of the python package
     :param tox_py: python executable using to test setup.py
     :returns: A python package name
     """
-    setup_py = os.path.join(path, "setup.py")
-    if not os.path.exists(setup_py):
-        logger.info("%s does not exist", setup_py)
-        return None
-    # It's a python package but doesn't use pbr, so we need to run
-    # python setup.py --name to get setup.py to tell us what the
-    # package name is.
-    package_name = subprocess.check_output(
-        [os.path.abspath(tox_py), "setup.py", "--name"],
-        cwd=path,
-        shell=True,
-        stderr=subprocess.STDOUT,
-    ).decode("utf-8")
-    if package_name:
-        return package_name.strip()
-    return None
+    setup_cfg = os.path.join(path, "setup.cfg")
+    name = None
+    if os.path.exists(setup_cfg):
+        config = ConfigParser()
+        config.read(setup_cfg)
+        try:
+            name = config.get("metadata", "name")
+        except (NoSectionError, NoOptionError):
+            # Some things have a setup.cfg, but don't keep
+            # metadata in it; fall back to setup.py below
+            logger.info("[metadata] name not found in %s, skipping", setup_cfg)
+    else:
+        logger.info("%s does not exist", setup_cfg)
+        setup_py = os.path.join(path, "setup.py")
+        if not os.path.exists(setup_py):
+            logger.info("%s does not exist", setup_py)
+        else:
+            # It's a python package but doesn't use pbr, so we need to run
+            # python setup.py --name to get setup.py to tell us what the
+            # package name is.
+            package_name = subprocess.check_output(
+                [os.path.abspath(tox_py), "setup.py", "--name"],
+                cwd=path,
+                shell=True,
+                stderr=subprocess.STDOUT,
+            ).decode("utf-8")
+            if package_name:
+                name = package_name.strip()
+    return name
 
 
 def identify_packages(dirs: list[str], tox_py: str) -> dict[str, str]:
@@ -165,7 +157,7 @@ def identify_packages(dirs: list[str], tox_py: str) -> dict[str, str]:
     """
     packages = {}
     for path in dirs:
-        package_name = from_setupcfg(path) or from_setuppy(path, tox_py)
+        package_name = read_package_name(path, tox_py)
         if not package_name:
             logger.info("Could not find package name for '%s'", path)
         else:
