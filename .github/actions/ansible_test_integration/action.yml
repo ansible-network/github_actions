@@ -77,7 +77,7 @@ runs:
       run: python3 -m pip install ${{ steps.requirements.outputs.argument }} ${{ steps.constraints.outputs.argument }}
       shell: bash
       working-directory: ${{ inputs.collection_path }}
-      if: steps.requirements.outputs.argument != '' or steps.constraints.outputs.argument != ''
+      if: ${{ (steps.requirements.outputs.argument != '') || (steps.constraints.outputs.argument != '') }}
 
     - name: Set environment variables
       run: echo "${{ inputs.ansible_test_environment }}" >> $GITHUB_ENV
