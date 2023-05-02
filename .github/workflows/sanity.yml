@@ -87,10 +87,13 @@ on:
               "ansible-version": "stable-2.9",
               "python-version": "3.6"
             },
-            {
-              "ansible-version": "devel",
-              "unstable": true,
-            },
+          ]
+        required: false
+        type: string
+      unstable:
+        default: >-
+          [
+            "devel",
           ]
         required: false
         type: string
@@ -119,11 +122,10 @@ jobs:
           - "3.9"
           - "3.10"
           - "3.11"
-        unstable: [false]
         exclude: ${{ fromJSON(inputs.matrix_exclude) }}
         include: ${{ fromJSON(inputs.matrix_include) }}
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.unstable }}
+    continue-on-error: ${{ contains(fromJSON(inputs.unstable), matrix.ansible-version) }}
 
     name: "py${{ matrix.python-version }} / ${{ matrix.os }} / ${{ matrix.ansible-version }}"
     steps:
