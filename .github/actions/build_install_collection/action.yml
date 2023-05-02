@@ -23,19 +23,33 @@ runs:
       shell: bash
       working-directory: ${{ inputs.source_path }}
 
+    - name: check if bindep.txt exists
+      id: bindep_check
+      shell: bash
+      run: |
+        if test -f "bindep.txt"; then
+          echo "file_exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "file_exists=false" >> $GITHUB_OUTPUT
+        fi
+      working-directory: ${{ inputs.source_path }}
+
     - name: Install bindep from pypi
       run: sudo python3 -m pip install bindep
       shell: bash
+      if: steps.bindep_check.outputs.file_exists == 'true'
 
     - name: Install missing system packages using bindep.txt
       run: bindep test | tail -n +2 | xargs sudo apt-get -o Debug::pkgProblemResolver=true -o Debug::Acquire::http=true install -y || exit 0
       shell: bash
       working-directory: ${{ inputs.source_path }}
+      if: steps.bindep_check.outputs.file_exists == 'true'
 
     - name: Check for missing system packages using bindep.txt
       run: bindep test
       shell: bash
       working-directory: ${{ inputs.source_path }}
+      if: steps.bindep_check.outputs.file_exists == 'true'
 
     - name: Install collection python requirements
       if: ${{ inputs.install_python_dependencies == 'true' }}
