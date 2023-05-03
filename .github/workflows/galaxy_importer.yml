@@ -14,6 +14,7 @@ jobs:
       - name: checkout collection
         uses: ansible-network/github_actions/.github/actions/checkout_dependency@main
         with:
+          path: ${{ env.source_path }}
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Read collection metadata from galaxy.yml
