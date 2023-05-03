@@ -33,7 +33,7 @@ jobs:
         with:
           repository: ansible-network/releases
           path: ${{ env.importer_path }}
-          ref: main
+          ref: master
 
       - name: Create tox environment
         uses: abikouo/github_actions/.github/actions/tox@tox_linters
