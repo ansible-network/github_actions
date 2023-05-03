@@ -45,8 +45,9 @@ jobs:
       - name: Confirm collection can be imported into galaxy
         run: |
           source .tox/venv/bin/activate
-          ./tools/validate-collection.sh ${{ steps.identify.outputs.tar_file }}
+          ./tools/validate-collection.sh ${COLLECTION_TARBALL}
         shell: bash
         env:
-          GALAXY_IMPORTER_CONFIG: "${{ env.source_path }}/tests/galaxy-importer.cfg"
+          COLLECTION_TARBALL: "${{ github.workspace }}/${{ env.source_path }}/${{ steps.identify.outputs.tar_file }}"
+          GALAXY_IMPORTER_CONFIG: "${{ github.workspace }}/${{ env.source_path }}/tests/galaxy-importer.cfg"
         working-directory: ${{ env.importer_path }}
