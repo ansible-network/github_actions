@@ -1,0 +1,51 @@
+name: galaxy importer
+
+on:
+  workflow_call:
+
+jobs:
+  galaxy:
+    runs-on: ubuntu-latest
+    name: importer
+    env:
+      source_path: "./source"
+      importer_path: "./importer"
+    steps:
+      - name: checkout collection
+        uses: ansible-network/github_actions/.github/actions/checkout_dependency@main
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Read collection metadata from galaxy.yml
+        id: identify
+        uses: ansible-network/github_actions/.github/actions/identify_collection@main
+        with:
+          source_path: ${{ env.source_path }}
+
+      - name: Build collection
+        run: ansible-galaxy collection build -vvv
+        shell: bash
+        working-directory: ${{ env.source_path }}
+
+      - name: checkout ansible-network/releases
+        uses: ansible-network/github_actions/.github/actions/checkout_dependency@main
+        with:
+          repository: ansible-network/releases
+          path: ${{ env.importer_path }}
+          ref: main
+
+      - name: Create tox environment
+        uses: abikouo/github_actions/.github/actions/tox@tox_linters
+        with:
+          path: ${{ env.importer_path }}
+          tox_envlist: venv
+          tox_extra_args: "-vv --notest"
+
+      - name: Confirm collection can be imported into galaxy
+        run: |
+          source .tox/venv/bin/activate
+          ./tools/validate-collection.sh ${{ steps.identify.outputs.tar_file }}
+        shell: bash
+        env:
+          GALAXY_IMPORTER_CONFIG: "${{ env.source_path }}/tests/galaxy-importer.cfg"
+        working-directory: ${{ env.importer_path }}
