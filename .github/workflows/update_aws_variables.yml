@@ -1,0 +1,30 @@
+name: aws-variables
+on:
+  workflow_call:
+
+jobs:
+  user-agent:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Update aws user-agent variable
+        uses: ansible-network/github_actions/.github/actions/commit_to_pullrequest@main
+        with:
+          commit_message: "update aws user-agent variable with version from galaxy.yml"
+          python_libs: "pyyaml"
+          python_executable_url: "https://raw.githubusercontent.com/ansible-network/github_actions/main/scripts/update_aws_user_agent.py"
+          file_pattern: "plugins/*.py"
+
+  boto-constraints:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Update collection tests constraints
+        uses: ansible-network/github_actions/.github/actions/commit_to_pullrequest@main
+        with:
+          commit_message: "update botocore and boto3 tests constraints"
+          python_executable_url: "https://raw.githubusercontent.com/ansible-network/github_actions/main/scripts/update_aws_boto_constraints.py"
