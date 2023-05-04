@@ -14,7 +14,7 @@ jobs:
         with:
           commit_message: "update aws user-agent variable with version from galaxy.yml"
           python_libs: "pyyaml"
-          python_executable_url: "https://raw.githubusercontent.com/abikouo/github_actions/automate_aws_user_agent_variable/.github/scripts/update_aws_user_agent.py"
+          python_executable_url: "https://raw.githubusercontent.com/ansible-network/github_actions/main/scripts/update_aws_user_agent.py"
           file_pattern: "plugins/*.py"
 
   boto-constraints:
@@ -27,4 +27,4 @@ jobs:
         uses: ansible-network/github_actions/.github/actions/commit_to_pullrequest@main
         with:
           commit_message: "update botocore and boto3 tests constraints"
-          python_executable_url: "https://raw.githubusercontent.com/abikouo/github_actions/automate_aws_user_agent_variable/.github/scripts/update_aws_boto_constraints.py"
+          python_executable_url: "https://raw.githubusercontent.com/ansible-network/github_actions/main/scripts/update_aws_boto_constraints.py"
