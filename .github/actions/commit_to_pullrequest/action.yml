@@ -1,0 +1,66 @@
+name: commit to pull request
+description: |
+  checkout pull request, run provided script and push back changes
+  The action expects a python script to be executed
+
+inputs:
+  python_libs:
+    description: |
+      Required librairies to execute the python script
+      for example 'pyyaml urllib'
+    required: false
+    default: ""
+  python_executable_url:
+    description: URL of the script to download to update the repository
+    required: true
+  commit_message:
+    description: commit message
+    required: false
+    default: Apply automatic changes
+  file_pattern:
+    description: File pattern used for `git add`. For example `src/*.js`
+    required: false
+    default: "."
+outputs:
+  changes_detected:
+    description: Value is "true", if the repository was dirty and file changes have been detected. Value is "false", if no changes have been detected.
+    value: ${{ steps.commit.outputs.changes_detected }}
+  commit_hash:
+    description: Full hash of the created commit. Only present if the "changes_detected" output is "true".
+    value: ${{ steps.commit.outputs.commit_hash }}
+
+runs:
+  using: composite
+  steps:
+    - name: checkout fork repository
+      uses: actions/checkout@v3
+      with:
+        repository: ${{ github.event.pull_request.head.repo.full_name }}
+        ref: ${{ github.head_ref }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.9"
+
+    - name: Install required python librairies
+      run: pip install -U ${{ inputs.python_libs }}
+      shell: bash
+      if: inputs.python_libs != ''
+
+    - name: Download python script
+      run: >-
+        curl -o /tmp/update_repository.py ${{ inputs.python_executable_url }}
+      shell: bash
+
+    - name: Execute python script
+      run: >-
+        python /tmp/update_repository.py
+      shell: bash
+
+    - name: commit and push changes
+      id: commit
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: ${{ inputs.commit_message }}
+        file_pattern: ${{ inputs.file_pattern }}
