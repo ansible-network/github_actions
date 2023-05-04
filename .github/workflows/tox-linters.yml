@@ -1,0 +1,16 @@
+name: tox-linters
+on:
+  workflow_call:
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    name: Runs code linting tests
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v3
+
+      - name: Code linting
+        uses: abikouo/github_actions/.github/actions/tox@tox_linters
+        with:
+          path: "."
+          tox_envlist: "linters"

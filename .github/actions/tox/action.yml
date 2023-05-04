@@ -1,0 +1,117 @@
+name: tox
+description: Run tox specified environment
+
+inputs:
+  path:
+    description: |
+      The directory containng 'tox.ini' file in which the tox command is executed.
+    required: true
+  tox_extra_args:
+    description: extra args for tox command
+    required: false
+    default: "-vv --skip-missing-interpreters=false"
+  tox_envlist:
+    description: tox env list
+    required: false
+    default: ""
+  tox_config_file:
+    description: tox configuration file
+    required: false
+    default: ""
+  tox_environment:
+    description: |
+      list of environment variables to set when running ansible-test.
+    required: false
+    default: ""
+  tox_dependencies:
+    description: |
+      Path to dependencies to install into tox environment prior running command.
+      e.g: '/home/runner/goutelette /home/runner/collection_prep'
+    required: false
+  tox_constraints_file:
+    description: the location to the tox constraints file.
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Ensure 'tox.ini' is present
+      run: >-
+        if ! test -f "${{ inputs.path }}/tox.ini"; then
+          echo "Missing expected tox configuration file '${{ inputs.path }}/tox.ini'"
+          exit 1
+        fi
+      shell: bash
+
+    - name: setup python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.9"
+
+    - name: Install tox
+      run: pip install -U tox
+      shell: bash
+
+    - name: Emit tox command options
+      id: py-options
+      shell: bash
+      run: |
+        PY_OPTIONS=""
+        if [ ! -z "${TOX_CONFIG_FILE}" ]; then
+          PY_OPTIONS="${PY_OPTIONS} --tox-config-file ${TOX_CONFIG_FILE}"
+        fi
+        if [ ! -z "${TOX_ENV_LIST}" ]; then
+          PY_OPTIONS="${PY_OPTIONS} --tox-envname ${TOX_ENV_LIST}"
+        fi
+        if [ ! -z "${TOX_CONSTRAINTS}" ]; then
+          PY_OPTIONS="${PY_OPTIONS} --tox-constraints-file ${TOX_CONSTRAINTS}"
+        fi
+        if [ ! -z "${TOX_ENVIRONMENT}" ]; then
+          PY_OPTIONS="${PY_OPTIONS} --tox-env-vars ${TOX_ENVIRONMENT}"
+        fi
+        echo "python_args=${PY_OPTIONS}" >> $GITHUB_OUTPUT
+      env:
+        TOX_CONFIG_FILE: ${{ inputs.tox_config_file }}
+        TOX_ENV_LIST: ${{ inputs.tox_envlist }}
+        TOX_CONSTRAINTS: ${{ inputs.tox_constraints_file }}
+        TOX_ENVIRONMENT: ${{ inputs.tox_environment }}
+
+    - name: install dependencies packages
+      run: >-
+        python3 ${{ github.action_path }}/install_packages.py
+        --tox-project-dir ${{ inputs.path }}
+        ${{ steps.py-options.outputs.python_args }}
+        ${{ inputs.tox_dependencies }}
+      shell: bash
+      env:
+        TOX_EXTRA_ARGS: ${{ inputs.tox_extra_args }}
+      if: inputs.tox_dependencies != ''
+
+    - name: Emit tox command options
+      id: tox-options
+      shell: bash
+      run: |
+        TOX_CMD_OPTIONS=""
+        if [ ! -z "${TOX_CONFIG_FILE}" ]; then
+          TOX_CMD_OPTIONS="-c ${TOX_CONFIG_FILE}"
+        fi
+        if [ ! -z "${TOX_ENV_LIST}" ]; then
+          TOX_CMD_OPTIONS="${TOX_CMD_OPTIONS} -e ${TOX_ENV_LIST}"
+        fi
+        echo "tox_common_args=${TOX_CMD_OPTIONS}" >> $GITHUB_OUTPUT
+      env:
+        TOX_CONFIG_FILE: ${{ inputs.tox_config_file }}
+        TOX_ENV_LIST: ${{ inputs.tox_envlist }}
+
+    - name: Set environment variables
+      run: echo "${{ inputs.tox_environment }}" >> $GITHUB_ENV
+      shell: bash
+      if: inputs.tox_environment != ''
+
+    - name: Run tox
+      run: >-
+        tox
+        ${{ steps.tox-options.outputs.tox_common_args }}
+        ${{ inputs.tox_extra_args }}
+      shell: bash
+      working-directory: ${{ inputs.path }}
