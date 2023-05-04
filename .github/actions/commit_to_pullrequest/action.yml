@@ -6,7 +6,7 @@ description: |
 inputs:
   python_libs:
     description: |
-      Required librairies to execute the python script
+      Required libraries to execute the python script
       for example 'pyyaml urllib'
     required: false
     default: ""
@@ -43,7 +43,7 @@ runs:
       with:
         python-version: "3.9"
 
-    - name: Install required python librairies
+    - name: Install required python libraries
       run: pip install -U ${{ inputs.python_libs }}
       shell: bash
       if: inputs.python_libs != ''
