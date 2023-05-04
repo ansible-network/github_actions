@@ -36,7 +36,7 @@ jobs:
           ref: master
 
       - name: Create tox environment
-        uses: abikouo/github_actions/.github/actions/tox@tox_linters
+        uses: ansible-network/github_actions/.github/actions/tox@main
         with:
           path: ${{ env.importer_path }}
           tox_envlist: venv
