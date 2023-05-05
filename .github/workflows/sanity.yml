@@ -90,6 +90,13 @@ on:
           ]
         required: false
         type: string
+      unstable:
+        default: >-
+          [
+            "devel",
+          ]
+        required: false
+        type: string
 
 jobs:
   sanity:
@@ -118,7 +125,7 @@ jobs:
         exclude: ${{ fromJSON(inputs.matrix_exclude) }}
         include: ${{ fromJSON(inputs.matrix_include) }}
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.ansible-version == 'devel' }}
+    continue-on-error: ${{ contains(fromJSON(inputs.unstable), matrix.ansible-version) }}
 
     name: "py${{ matrix.python-version }} / ${{ matrix.os }} / ${{ matrix.ansible-version }}"
     steps:
