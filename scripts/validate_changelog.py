@@ -37,6 +37,7 @@ def is_module_or_plugin(ref: str) -> bool:
     """
     prefix_list = (
         "plugins/modules",
+        "plugins/module_utils",
         "plugins/action",
         "plugins/inventory",
         "plugins/lookup",
