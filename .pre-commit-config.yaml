@@ -74,6 +74,7 @@ repos:
           - PyYAML
           - pygithub
           - pytest
+          - semver
 
   - repo: local
     hooks:

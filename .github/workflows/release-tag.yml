@@ -1,0 +1,49 @@
+name: tagging
+
+on:
+  workflow_call:
+
+jobs:
+  push:
+    if: "github.event.pull_request.merged == true"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+        if: "contains(github.event.pull_request.labels.*.name, 'ok-to-tag')"
+
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+        if: "contains(github.event.pull_request.labels.*.name, 'ok-to-tag')"
+
+      - name: install python libraries
+        run: pip3 install yq pygithub packaging
+        shell: bash
+        if: "contains(github.event.pull_request.labels.*.name, 'ok-to-tag')"
+
+      - name: Extract version from galaxy.yml
+        id: extract-version
+        run: echo "release_tag=$(yq -r '.version' 'galaxy.yml')" >> $GITHUB_OUTPUT
+        shell: bash
+        if: "contains(github.event.pull_request.labels.*.name, 'ok-to-tag')"
+
+      - name: Download python script
+        run: >-
+          curl -o create_release_tag.py
+          https://raw.githubusercontent.com/abikouo/github_actions/release_v1/scripts/create_release_tag.py
+        if: ${{ steps.extract-version.outputs.release_tag != null }}
+
+      - name: Create Release tag
+        run: >-
+          python3 ./create_release_tag.py
+        env:
+          REPOSITORY_NAME: ${{ github.repository }}
+          RELEASE_TAG: ${{ steps.extract-version.outputs.release_tag }}
+          COMMIT_SHA: ${{ github.sha }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ steps.extract-version.outputs.release_tag != null }}

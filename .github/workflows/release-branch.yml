@@ -1,0 +1,66 @@
+name: Release
+
+on:
+  workflow_call:
+
+jobs:
+  release:
+    if: "contains(github.event.issue.labels.*.name, 'ok-to-release')"
+    env:
+      source_path: "./source"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install python required libraries
+        run: pip install -U pygithub semver tox
+        shell: bash
+
+      - name: Download python script
+        run: >-
+          curl -o create_release_branch.py
+          https://raw.githubusercontent.com/abikouo/github_actions/release_v1/scripts/create_release_branch.py
+
+      - name: Compute release version and create release branch
+        id: compute-version
+        run: >-
+          python3 ./create_release_branch.py
+        env:
+          REPOSITORY_NAME: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+        with:
+          path: ${{ env.source_path }}
+          fetch-depth: "0"
+        if: ${{ (steps.compute-version.outputs.release_version != '') && (steps.compute-version.outputs.release_branch != '') }}
+
+      - name: Prepare release
+        run: tox -e prepare_release -vv
+        shell: bash
+        working-directory: ${{ env.source_path }}
+        env:
+          RELEASE_VERSION: ${{ steps.compute-version.outputs.release_version }}
+        if: ${{ (steps.compute-version.outputs.release_version != '') && (steps.compute-version.outputs.release_branch != '') }}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: ${{ env.source_path }}
+          commit-message: "Release ${{ steps.compute-version.outputs.release_version }}"
+          base: ${{ steps.compute-version.outputs.release_branch }}
+          branch: "prepare_release_${{ steps.compute-version.outputs.release_version }}"
+          title: "Prepare release ${{ steps.compute-version.outputs.release_version }}"
+          body: |
+            Release ${{ steps.compute-version.outputs.release_version }}
+            Triggered by issue ${{ steps.compute-version.outputs.issue_url }}
