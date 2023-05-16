@@ -38,7 +38,7 @@ jobs:
           python3 ./create_release_branch.py
         env:
           REPOSITORY_NAME: ${{ github.repository }}
-          RELEASE_BRANCH: ${{ github.event.inputs.release_branch }}
+          RELEASE_BRANCH: ${{ inputs.release_branch }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout the repository
@@ -62,7 +62,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           path: ${{ env.source_path }}
           commit-message: "Release ${{ steps.compute-version.outputs.release_version }}"
-          base: ${{ github.event.inputs.release_branch }}
+          base: ${{ inputs.release_branch }}
           branch: "prepare_release_${{ steps.compute-version.outputs.release_version }}"
           title: "Prepare release ${{ steps.compute-version.outputs.release_version }}"
           body: |
