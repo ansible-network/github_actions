@@ -3,9 +3,6 @@
 
 import logging
 import os
-import re
-
-from typing import Optional
 
 import semver
 
@@ -40,20 +37,6 @@ def compute_next_release_version(release_tags: list[str], release_branch: str) -
     return str(myversion.bump_patch()) if minor_found else str(myversion)
 
 
-def get_release_branch(issue_title: str) -> Optional[str]:
-    """Determine target branch from an issue title.
-
-    :param issue_title: Issue title
-    :returns: A release expected branch
-    """
-    release_regex = re.compile(r"^\[Release\].*(stable\-[0-9]+\.[0-9]+).*", re.IGNORECASE)
-    result = None
-    match = release_regex.match(issue_title)
-    if match:
-        result = match.group(1)
-    return result
-
-
 def create_repository_branch(gh_repository: Repository.Repository, release_branch: str) -> None:
     """Create a branch on github repository.
 
@@ -76,22 +59,16 @@ def main() -> None:
     """Read boto constraints and update variables accordingly."""
     repository = os.environ.get("REPOSITORY_NAME") or ""
     access_token = os.environ.get("GITHUB_TOKEN")
-    issue_number = int(os.environ.get("ISSUE_NUMBER", ""))
+    release_branch = os.environ.get("RELEASE_BRANCH", "")
 
     logger.info("Repository name -> '%s'", repository)
     logger.info("Github token -> '%s'", access_token)
-    logger.info("Issue -> '%d'", issue_number)
+    logger.info("Release branch -> '%s'", release_branch)
 
     gh_client = Github(access_token)
     gh_repository = gh_client.get_repo(repository)
-    gh_issue = gh_repository.get_issue(issue_number)
-    issue_title = gh_issue.title
 
-    logger.info("Issue title -> '%s'", issue_title)
-    release_branch = get_release_branch(issue_title)
     if release_branch:
-        logger.info("Release branch name => %s", release_branch)
-
         repository_tags = [tag.name for tag in gh_repository.get_tags()]
         logger.info("Repository tags => %s", repository_tags)
 
@@ -102,8 +79,6 @@ def main() -> None:
             if github_output_file:
                 with open(github_output_file, "a", encoding="utf-8") as file_write:
                     file_write.write(f"release_version={release_version}\n")
-                    file_write.write(f"release_branch={release_branch}\n")
-                    file_write.write(f"issue_url={gh_issue.html_url}\n")
 
 
 if __name__ == "__main__":

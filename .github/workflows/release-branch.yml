@@ -1,11 +1,14 @@
 name: Release
 
 on:
-  workflow_call:
+  workflow_dispatch:
+    inputs:
+      release_branch:
+        description: "The branch to create release on"
+        required: true
 
 jobs:
   release:
-    if: "contains(github.event.issue.labels.*.name, 'ok-to-release')"
     env:
       source_path: "./source"
     runs-on: ubuntu-latest
@@ -34,7 +37,7 @@ jobs:
           python3 ./create_release_branch.py
         env:
           REPOSITORY_NAME: ${{ github.repository }}
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          RELEASE_BRANCH: ${{ github.event.inputs.release_branch }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout the repository
@@ -42,7 +45,7 @@ jobs:
         with:
           path: ${{ env.source_path }}
           fetch-depth: "0"
-        if: ${{ (steps.compute-version.outputs.release_version != '') && (steps.compute-version.outputs.release_branch != '') }}
+        if: ${{ (steps.compute-version.outputs.release_version != '') }}
 
       - name: Prepare release
         run: tox -e prepare_release -vv
@@ -50,7 +53,7 @@ jobs:
         working-directory: ${{ env.source_path }}
         env:
           RELEASE_VERSION: ${{ steps.compute-version.outputs.release_version }}
-        if: ${{ (steps.compute-version.outputs.release_version != '') && (steps.compute-version.outputs.release_branch != '') }}
+        if: ${{ (steps.compute-version.outputs.release_version != '') }}
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
@@ -58,9 +61,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           path: ${{ env.source_path }}
           commit-message: "Release ${{ steps.compute-version.outputs.release_version }}"
-          base: ${{ steps.compute-version.outputs.release_branch }}
+          base: ${{ github.event.inputs.release_branch }}
           branch: "prepare_release_${{ steps.compute-version.outputs.release_version }}"
           title: "Prepare release ${{ steps.compute-version.outputs.release_version }}"
           body: |
             Release ${{ steps.compute-version.outputs.release_version }}
-            Triggered by issue ${{ steps.compute-version.outputs.issue_url }}
