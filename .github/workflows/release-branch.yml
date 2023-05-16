@@ -24,7 +24,7 @@ jobs:
           python-version: "3.9"
 
       - name: Install python required libraries
-        run: pip install -U pygithub semver tox
+        run: pip install -U pygithub semver tox pyyaml
         shell: bash
 
       - name: Download python script
@@ -56,6 +56,21 @@ jobs:
           RELEASE_VERSION: ${{ steps.compute-version.outputs.release_version }}
         if: ${{ (steps.compute-version.outputs.release_version != '') }}
 
+      - name: Download python script used to update galaxy file
+        run: >-
+          curl -o update_galaxy_file.py
+          https://raw.githubusercontent.com/abikouo/github_actions/release_v2/scripts/update_galaxy_file.py
+        if: ${{ (steps.compute-version.outputs.release_version != '') }}
+
+      - name: Compute release version and create release branch
+        id: compute-version
+        run: >-
+          python3 ./update_galaxy_file.py
+        env:
+          COLLECTION_PATH: ${{ env.source_path }}
+          RELEASE_VERSION: ${{ steps.compute-version.outputs.release_version }}
+        if: ${{ (steps.compute-version.outputs.release_version != '') }}
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
@@ -67,3 +82,4 @@ jobs:
           title: "Prepare release ${{ steps.compute-version.outputs.release_version }}"
           body: |
             Release ${{ steps.compute-version.outputs.release_version }}
+        if: ${{ (steps.compute-version.outputs.release_version != '') }}
