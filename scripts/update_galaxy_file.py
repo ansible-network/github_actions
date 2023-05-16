@@ -29,10 +29,8 @@ def main() -> None:
                 info = yaml.safe_load(file_desc)
             if "version" in info and info.get("version") != release_version:
                 info["version"] = release_version
-                with PosixPath(collection_path / file_name).open(
-                    "w", encoding="utf-8"
-                ) as file_write:
-                    file_write.write(yaml.dump(info, default_flow_style=False))
+                with (collection_path / file_name).open("w", encoding="utf-8") as file_write:
+                    yaml.dump(info, file_write, default_flow_style=False)
                 logger.info("galaxy file <%s> updated.", file_name)
             else:
                 logger.info(
