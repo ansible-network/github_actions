@@ -36,7 +36,7 @@ jobs:
       - name: Download python script
         run: >-
           curl -o create_release_tag.py
-          https://raw.githubusercontent.com/abikouo/github_actions/release_v1/scripts/create_release_tag.py
+          https://raw.githubusercontent.com/abikouo/github_actions/release_v2/scripts/create_release_tag.py
         if: ${{ steps.extract-version.outputs.release_tag != null }}
 
       - name: Create Release tag

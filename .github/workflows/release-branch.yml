@@ -30,7 +30,7 @@ jobs:
       - name: Download python script
         run: >-
           curl -o create_release_branch.py
-          https://raw.githubusercontent.com/abikouo/github_actions/release_v1/scripts/create_release_branch.py
+          https://raw.githubusercontent.com/abikouo/github_actions/release_v2/scripts/create_release_branch.py
 
       - name: Compute release version and create release branch
         id: compute-version
