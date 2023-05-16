@@ -1,11 +1,12 @@
 name: Release
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       release_branch:
-        description: "The branch to create release on"
+        description: The release base branch
         required: true
+        type: string
 
 jobs:
   release:
