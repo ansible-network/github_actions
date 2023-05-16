@@ -63,7 +63,6 @@ jobs:
         if: ${{ (steps.compute-version.outputs.release_version != '') }}
 
       - name: Compute release version and create release branch
-        id: compute-version
         run: >-
           python3 ./update_galaxy_file.py
         env:
