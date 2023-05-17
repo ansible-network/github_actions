@@ -16,6 +16,7 @@ on:
         description: Prefix name of the release to create.
         type: string
     secrets:
+      # due to https://github.com/ad-m/github-push-action/issues/32 we are not using default GITHUB_TOKEN
       gh_token:
         required: true
 
