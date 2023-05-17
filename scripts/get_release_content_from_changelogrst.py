@@ -2,7 +2,6 @@
 """Script to read release content from CHANGELOG.rst file."""
 
 import logging
-import os
 import re
 
 from argparse import ArgumentParser
@@ -50,10 +49,8 @@ def main() -> None:
                 "[%s] ******** Release content ********\n%s", release_version, release_content
             )
             release_content = "\n".join(data[start:end])
-            output_file = os.environ.get("GITHUB_OUTPUT") or ""
-            if output_file:
-                with open(output_file, "a", encoding="utf-8") as file_write:
-                    file_write.write(f"release_content={release_content}\n")
+            with open("release_content.txt", "w", encoding="utf-8") as file_write:
+                file_write.write(release_content)
 
 
 if __name__ == "__main__":

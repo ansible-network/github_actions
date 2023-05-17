@@ -61,9 +61,15 @@ jobs:
 
       - name: Parse release content
         id: read-release
+        continue-on-error: true
         run: |
           curl -o get_release_content_from_changelogrst.py https://raw.githubusercontent.com/abikouo/github_actions/release_v2/scripts/get_release_content_from_changelogrst.py
           python3 ./get_release_content_from_changelogrst.py --release-version ${{ steps.read-tag.outputs.release_tag }}
+          M_RELEASE_CONTENT=$(cat release_content.txt)
+          echo "RELEASE_CONTENT<<EOF" >> $GITHUB_ENV
+          echo "$M_RELEASE_CONTENT" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          rm -f release_content.txt
         if: "contains(github.event.pull_request.labels.*.name, 'ok-to-tag')"
 
       - name: display release content
@@ -77,7 +83,7 @@ jobs:
         with:
           tag_name: ${{ steps.read-tag.outputs.release_tag }}
           release_name: "${{ inputs.release_prefix }} ${{ steps.read-tag.outputs.release_tag }}"
-          body: ${{ steps.read-release.outputs.release_content }}
+          body: ${{ env.RELEASE_CONTENT }}
           draft: false
           prerelease: false
         if: ${{ inputs.release_publish }}
