@@ -2,6 +2,19 @@ name: tagging
 
 on:
   workflow_call:
+    inputs:
+      branch_name:
+        description: The branch name to create tag from.
+        required: true
+        type: string
+      release_publish:
+        default: true
+        description: Publish a new github release.
+        type: boolean
+      release_prefix:
+        default: "Release"
+        description: Prefix name of the release to create.
+        type: string
     secrets:
       gh_token:
         required: true
@@ -17,6 +30,9 @@ jobs:
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.branch_name }}
+          token: ${{ secrets.gh_token }}
         if: "contains(github.event.pull_request.labels.*.name, 'ok-to-tag')"
 
       - name: setup python
@@ -26,28 +42,37 @@ jobs:
         if: "contains(github.event.pull_request.labels.*.name, 'ok-to-tag')"
 
       - name: install python libraries
-        run: pip3 install yq pygithub packaging
+        run: pip3 install yq
         shell: bash
         if: "contains(github.event.pull_request.labels.*.name, 'ok-to-tag')"
 
-      - name: Extract version from galaxy.yml
-        id: extract-version
+      - name: extract tag name from 'galaxy.yml'
+        id: read-tag
         run: echo "release_tag=$(yq -r '.version' 'galaxy.yml')" >> $GITHUB_OUTPUT
         shell: bash
         if: "contains(github.event.pull_request.labels.*.name, 'ok-to-tag')"
 
-      - name: Download python script
-        run: >-
-          curl -o create_release_tag.py
-          https://raw.githubusercontent.com/abikouo/github_actions/release_v2/scripts/create_release_tag.py
-        if: ${{ steps.extract-version.outputs.release_tag != null }}
+      - name: create git tag and push to Github
+        run: |
+          git tag ${{ steps.read-tag.outputs.release_tag }}
+          git push origin ${{ steps.read-tag.outputs.release_tag }}
+        if: "contains(github.event.pull_request.labels.*.name, 'ok-to-tag')"
 
-      - name: Create Release tag
-        run: >-
-          python3 ./create_release_tag.py
+      - name: Parse release content
+        id: read-release
+        run: |
+          curl -o get_release_content_from_changelogrst.py https://raw.githubusercontent.com/abikouo/github_actions/release_v2/scripts/get_release_content_from_changelogrst.py
+          python3 ./get_release_content_from_changelogrst.py --release-version ${{ steps.read-tag.outputs.release_tag }}
+        if: "contains(github.event.pull_request.labels.*.name, 'ok-to-tag')"
+
+      - name: create release
+        uses: actions/create-release@v1
         env:
-          REPOSITORY_NAME: ${{ github.repository }}
-          RELEASE_TAG: ${{ steps.extract-version.outputs.release_tag }}
-          COMMIT_SHA: ${{ github.sha }}
           GITHUB_TOKEN: ${{ secrets.gh_token }}
-        if: ${{ steps.extract-version.outputs.release_tag != null }}
+        with:
+          tag_name: ${{ steps.read-tag.outputs.release_tag }}
+          release_name: "${{ inputs.release_prefix }} ${{ steps.read-tag.outputs.release_tag }}"
+          body: ${{ steps.read-release.outputs.release_content }}
+          draft: false
+          prerelease: false
+        if: ${{ (inputs.release_publish) && (steps.read-release.outputs.release_content != '') }}
