@@ -76,4 +76,4 @@ jobs:
           body: ${{ steps.read-release.outputs.release_content }}
           draft: false
           prerelease: false
-        if: ${{ (inputs.release_publish) && (steps.read-release.outputs.release_content != '') }}
+        if: ${{ steps.read-release.outputs.release_content != '' }}
