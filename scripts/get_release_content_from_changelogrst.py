@@ -44,13 +44,16 @@ def main() -> None:
                 end = idx
                 break
             idx += 1
-        release_content = "\n".join(data[start:]) if not end else "\n".join(data[start:end])
-        logger.info("[%s] ******** Release content ********\n%s", release_version, release_content)
-        release_content = "\n".join(data[start:end])
-        output_file = os.environ.get("GITHUB_OUTPUT") or ""
-        if output_file:
-            with open(output_file, "a", encoding="utf-8") as file_write:
-                file_write.write(f"release_content={release_content}\n")
+        if start != -1:
+            release_content = "\n".join(data[start:]) if not end else "\n".join(data[start:end])
+            logger.info(
+                "[%s] ******** Release content ********\n%s", release_version, release_content
+            )
+            release_content = "\n".join(data[start:end])
+            output_file = os.environ.get("GITHUB_OUTPUT") or ""
+            if output_file:
+                with open(output_file, "a", encoding="utf-8") as file_write:
+                    file_write.write(f"release_content={release_content}\n")
 
 
 if __name__ == "__main__":
