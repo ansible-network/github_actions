@@ -66,6 +66,10 @@ jobs:
           python3 ./get_release_content_from_changelogrst.py --release-version ${{ steps.read-tag.outputs.release_tag }}
         if: "contains(github.event.pull_request.labels.*.name, 'ok-to-tag')"
 
+      - name: display release content
+        run: echo '${{ steps.read-release.outputs.release_content }}'
+        shell: bash
+
       - name: create release
         uses: actions/create-release@v1
         env:
@@ -76,4 +80,4 @@ jobs:
           body: ${{ steps.read-release.outputs.release_content }}
           draft: false
           prerelease: false
-        if: ${{ steps.read-release.outputs.release_content != '' }}
+        if: ${{ inputs.release_publish }}
