@@ -5,8 +5,8 @@ on:
     inputs:
       branch_name:
         description: The branch name to create tag from.
-        required: true
         type: string
+        default: ${{ github.base_ref }}
       release_publish:
         default: true
         description: Publish a new github release.
