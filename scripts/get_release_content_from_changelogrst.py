@@ -44,11 +44,8 @@ def main() -> None:
                 end = idx
                 break
             idx += 1
-        logger.info(
-            "[%s] ******** Release content ********\n%s",
-            release_version,
-            "\n".join(data[start:end]),
-        )
+        release_content = "\n".join(data[start:]) if not end else "\n".join(data[start:end])
+        logger.info("[%s] ******** Release content ********\n%s", release_version, release_content)
         release_content = "\n".join(data[start:end])
         output_file = os.environ.get("GITHUB_OUTPUT") or ""
         if output_file:
