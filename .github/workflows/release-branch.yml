@@ -30,7 +30,7 @@ jobs:
       - name: Download python script
         run: >-
           curl -o create_release_branch.py
-          https://raw.githubusercontent.com/abikouo/github_actions/release_v2/scripts/create_release_branch.py
+          https://raw.githubusercontent.com/ansible-network/github_actions/main/scripts/create_release_branch.py
 
       - name: Compute release version and create release branch
         id: compute-version
@@ -59,7 +59,7 @@ jobs:
       - name: Download python script used to update galaxy file
         run: >-
           curl -o update_galaxy_file.py
-          https://raw.githubusercontent.com/abikouo/github_actions/release_v2/scripts/update_galaxy_file.py
+          https://raw.githubusercontent.com/ansible-network/github_actions/main/scripts/update_galaxy_file.py
         if: ${{ (steps.compute-version.outputs.release_version != '') }}
 
       - name: Compute release version and create release branch
