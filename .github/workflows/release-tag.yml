@@ -53,24 +53,18 @@ jobs:
         shell: bash
         if: "contains(github.event.pull_request.labels.*.name, 'ok-to-tag')"
 
-      - name: create git tag and push to Github
+      - name: create tag
         run: |
-          git tag ${{ steps.read-tag.outputs.release_tag }}
-          git push origin ${{ steps.read-tag.outputs.release_tag }}
+          curl -o create_github_tag.py https://raw.githubusercontent.com/abikouo/github_actions/release_v2/scripts/create_github_tag.py
+          python3 ./create_github_tag.py --repository ${{ github.repository }} --tag ${{ steps.read-tag.outputs.release_tag }} --branch ${{ inputs.branch_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.gh_token }}
         if: "contains(github.event.pull_request.labels.*.name, 'ok-to-tag')"
 
-      - name: Download script to create release
-        run: >-
-          curl -o create_github_release.py
-          https://raw.githubusercontent.com/abikouo/github_actions/release_v2/scripts/create_github_release.py
-        shell: bash
-
       - name: Parse release content
-        run: >-
-          python3 ./create_github_release.py
-          --repository ${{ github.repository }}
-          --release-tag ${{ steps.read-tag.outputs.release_tag }}
-          --release-name "${{ inputs.release_prefix }} ${{ steps.read-tag.outputs.release_tag }}"
+        run: |
+          curl -o create_github_release.py https://raw.githubusercontent.com/abikouo/github_actions/release_v2/scripts/create_github_release.py
+          python3 ./create_github_release.py --repository ${{ github.repository }} --release-tag ${{ steps.read-tag.outputs.release_tag }} --release-name "${{ inputs.release_prefix }} ${{ steps.read-tag.outputs.release_tag }}"
         env:
           GITHUB_TOKEN: ${{ secrets.gh_token }}
         if: ${{ (inputs.release_publish) && contains(github.event.pull_request.labels.*.name, 'ok-to-tag') }}
