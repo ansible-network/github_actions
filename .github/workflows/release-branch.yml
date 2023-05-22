@@ -1,0 +1,84 @@
+name: Release
+
+on:
+  workflow_call:
+    inputs:
+      release_branch:
+        description: The release base branch
+        required: true
+        type: string
+
+jobs:
+  release:
+    env:
+      source_path: "./source"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install python required libraries
+        run: pip install -U pygithub semver tox pyyaml
+        shell: bash
+
+      - name: Download python script
+        run: >-
+          curl -o create_release_branch.py
+          https://raw.githubusercontent.com/abikouo/github_actions/release_v2/scripts/create_release_branch.py
+
+      - name: Compute release version and create release branch
+        id: compute-version
+        run: >-
+          python3 ./create_release_branch.py
+        env:
+          REPOSITORY_NAME: ${{ github.repository }}
+          RELEASE_BRANCH: ${{ inputs.release_branch }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+        with:
+          path: ${{ env.source_path }}
+          fetch-depth: "0"
+        if: ${{ (steps.compute-version.outputs.release_version != '') }}
+
+      - name: Prepare release
+        run: tox -e prepare_release -vv
+        shell: bash
+        working-directory: ${{ env.source_path }}
+        env:
+          RELEASE_VERSION: ${{ steps.compute-version.outputs.release_version }}
+        if: ${{ (steps.compute-version.outputs.release_version != '') }}
+
+      - name: Download python script used to update galaxy file
+        run: >-
+          curl -o update_galaxy_file.py
+          https://raw.githubusercontent.com/abikouo/github_actions/release_v2/scripts/update_galaxy_file.py
+        if: ${{ (steps.compute-version.outputs.release_version != '') }}
+
+      - name: Compute release version and create release branch
+        run: >-
+          python3 ./update_galaxy_file.py
+        env:
+          COLLECTION_PATH: ${{ env.source_path }}
+          RELEASE_VERSION: ${{ steps.compute-version.outputs.release_version }}
+        if: ${{ (steps.compute-version.outputs.release_version != '') }}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: ${{ env.source_path }}
+          commit-message: "Release ${{ steps.compute-version.outputs.release_version }}"
+          base: ${{ inputs.release_branch }}
+          branch: "prepare_release_${{ steps.compute-version.outputs.release_version }}"
+          title: "Prepare release ${{ steps.compute-version.outputs.release_version }}"
+          body: |
+            Release ${{ steps.compute-version.outputs.release_version }}
+        if: ${{ (steps.compute-version.outputs.release_version != '') }}
