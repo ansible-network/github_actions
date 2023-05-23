@@ -1,0 +1,57 @@
+name: create pull request to Github repository
+description: |
+  Create pull request on Github repository.
+
+inputs:
+  token:
+    description: The Github token to use to create pull request.
+    required: true
+  repository:
+    description: The Github repository
+    required: false
+    default: ${{ github.repository }}
+  head_branch:
+    description: The pull request head branch.
+    required: true
+  base_branch:
+    description: The pull request base, default to the repository default branch.
+    required: false
+  title:
+    description: The pull request title.
+    required: true
+  body:
+    description: The pull request body.
+    required: true
+
+outputs:
+  url:
+    description: The html url of the pull request
+    value: ${{ steps.create.outputs.url }}
+  number:
+    description: The number of the pull request
+    value: ${{ steps.create.outputs.number }}
+
+runs:
+  using: composite
+  steps:
+    - name: setup python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.9"
+
+    - name: Install python required libraries
+      run: pip install -U pygithub
+      shell: bash
+
+    - name: create pull request
+      id: create
+      run: >-
+        python ${{ github.action_path }}/run.py
+        --repository "${{ inputs.repository }}"
+        --head "${{ inputs.head_branch }}"
+        --base "${{ inputs.base_branch }}"
+        --title "${{ inputs.title }}"
+        --body "${{ inputs.body }}"
+      env:
+        GITHUB_TOKEN: "${{ inputs.token }}"
+      shell: bash

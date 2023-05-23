@@ -3,82 +3,89 @@ name: Release
 on:
   workflow_call:
     inputs:
-      release_branch:
-        description: The release base branch
+      version:
+        description: The release version to create.
         required: true
         type: string
 
 jobs:
   release:
-    env:
-      source_path: "./source"
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: write
 
     steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: "0"
+
+      - name: Validate version format
+        run: |-
+          python -c "import os, re, sys;
+          version=os.environ.get('RELEASE_VERSION');
+          print('version <%s> is matching expecting format' % version) if re.match(r'^[0-9]+\.[0-9]+\.[0-9]+$', version) else sys.exit(1)"
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+
+      - name: Create release branch on Github repository
+        id: create-branch
+        run: |
+          R_BRANCH="stable-$(echo ${RELEASE_VERSION} | cut -d '.' -f1)"
+          D_BRANCH=$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
+          echo "release_branch=$R_BRANCH" >> $GITHUB_OUTPUT
+          git checkout $D_BRANCH
+          git checkout -b $R_BRANCH && git push origin $R_BRANCH || git checkout $R_BRANCH
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_VERSION: ${{ inputs.version }}
+
       - name: setup python
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
 
-      - name: Install python required libraries
-        run: pip install -U pygithub semver tox pyyaml
+      - name: Install required python modules
+        run: pip3 install tox yq
         shell: bash
-
-      - name: Download python script
-        run: >-
-          curl -o create_release_branch.py
-          https://raw.githubusercontent.com/ansible-network/github_actions/main/scripts/create_release_branch.py
-
-      - name: Compute release version and create release branch
-        id: compute-version
-        run: >-
-          python3 ./create_release_branch.py
-        env:
-          REPOSITORY_NAME: ${{ github.repository }}
-          RELEASE_BRANCH: ${{ inputs.release_branch }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Checkout the repository
-        uses: actions/checkout@v3
-        with:
-          path: ${{ env.source_path }}
-          fetch-depth: "0"
-        if: ${{ (steps.compute-version.outputs.release_version != '') }}
 
       - name: Prepare release
         run: tox -e prepare_release -vv
         shell: bash
-        working-directory: ${{ env.source_path }}
         env:
-          RELEASE_VERSION: ${{ steps.compute-version.outputs.release_version }}
-        if: ${{ (steps.compute-version.outputs.release_version != '') }}
+          RELEASE_VERSION: ${{ inputs.version }}
 
-      - name: Download python script used to update galaxy file
-        run: >-
-          curl -o update_galaxy_file.py
-          https://raw.githubusercontent.com/ansible-network/github_actions/main/scripts/update_galaxy_file.py
-        if: ${{ (steps.compute-version.outputs.release_version != '') }}
-
-      - name: Compute release version and create release branch
-        run: >-
-          python3 ./update_galaxy_file.py
+      - name: Update galaxy.yml file
+        run: yq -yi ".version = \"$RELEASE_VERSION\"" galaxy.yml
+        shell: bash
         env:
-          COLLECTION_PATH: ${{ env.source_path }}
-          RELEASE_VERSION: ${{ steps.compute-version.outputs.release_version }}
-        if: ${{ (steps.compute-version.outputs.release_version != '') }}
+          RELEASE_VERSION: ${{ inputs.version }}
+
+      - name: Push changes to branch on Github repository
+        id: push-changes
+        run: |
+          git checkout -b "prepare_release_${RELEASE_VERSION}"
+          git add -A
+          git -c user.name="$GIT_USER_NAME" -c user.email="$GIT_USER_EMAIL" commit -m "Release ${{ inputs.version }}" --author="$GIT_AUTHOR"
+          git push origin "prepare_release_${RELEASE_VERSION}"
+          echo "created_branch=prepare_release_${RELEASE_VERSION}" >> $GITHUB_OUTPUT
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_USER_NAME: "github-actions[bot]"
+          GIT_USER_EMAIL: "41898282+github-actions[bot]@users.noreply.github.com"
+          GIT_AUTHOR: "${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>"
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
+        uses: abikouo/github_actions/.github/actions/create_pullrequest@release_v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          path: ${{ env.source_path }}
-          commit-message: "Release ${{ steps.compute-version.outputs.release_version }}"
-          base: ${{ inputs.release_branch }}
-          branch: "prepare_release_${{ steps.compute-version.outputs.release_version }}"
-          title: "Prepare release ${{ steps.compute-version.outputs.release_version }}"
-          body: |
-            Release ${{ steps.compute-version.outputs.release_version }}
-        if: ${{ (steps.compute-version.outputs.release_version != '') }}
+          repository: ${{ github.repository }}
+          base_branch: ${{ steps.create-branch.outputs.release_branch }}
+          head_branch: ${{ steps.push-changes.outputs.created_branch }}
+          title: "Prepare release ${{ inputs.version }}"
+          body: "Automatic changes for Release ${{ inputs.version }}"
