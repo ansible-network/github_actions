@@ -1,6 +1,10 @@
 name: aws-variables
 on:
   workflow_call:
+    secrets:
+      GH_TOKEN:
+        description: The Github token to use.
+        required: false
 
 jobs:
   user-agent:
@@ -16,6 +20,7 @@ jobs:
           python_libs: "pyyaml"
           python_executable_url: "https://raw.githubusercontent.com/ansible-network/github_actions/main/scripts/update_aws_user_agent.py"
           file_pattern: "plugins/*.py"
+          token: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}
 
   boto-constraints:
     runs-on: ubuntu-latest
@@ -28,3 +33,4 @@ jobs:
         with:
           commit_message: "update botocore and boto3 tests constraints"
           python_executable_url: "https://raw.githubusercontent.com/ansible-network/github_actions/main/scripts/update_aws_boto_constraints.py"
+          token: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN }}

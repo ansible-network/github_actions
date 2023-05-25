@@ -4,6 +4,9 @@ description: |
   The action expects a python script to be executed
 
 inputs:
+  token:
+    description: The Github token to use to perform commit.
+    required: true
   python_libs:
     description: |
       Required libraries to execute the python script
@@ -25,9 +28,6 @@ outputs:
   changes_detected:
     description: Value is "true", if the repository was dirty and file changes have been detected. Value is "false", if no changes have been detected.
     value: ${{ steps.commit.outputs.changes_detected }}
-  commit_hash:
-    description: Full hash of the created commit. Only present if the "changes_detected" output is "true".
-    value: ${{ steps.commit.outputs.commit_hash }}
 
 runs:
   using: composite
@@ -58,9 +58,21 @@ runs:
         python /tmp/update_repository.py
       shell: bash
 
-    - name: commit and push changes
+    - name: Commit and push changes
       id: commit
-      uses: stefanzweifel/git-auto-commit-action@v4
-      with:
-        commit_message: ${{ inputs.commit_message }}
-        file_pattern: ${{ inputs.file_pattern }}
+      run: |
+        if [[ -n $(git status -s) ]]; then
+          echo -e "changes detected\n$(git status -s)"
+          git add -A ${{ inputs.file_pattern }}
+          git -c user.name="$GIT_USER_NAME" -c user.email="$GIT_USER_EMAIL" commit -m "${{ inputs.commit_message }}" --author="$GIT_AUTHOR"
+          git push origin ${{ github.head_ref }}
+          echo "changes_detected=true" >> $GITHUB_OUTPUT
+        else
+          echo "changes_detected=false" >> $GITHUB_OUTPUT
+        fi
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+        GIT_USER_NAME: "github-actions[bot]"
+        GIT_USER_EMAIL: "41898282+github-actions[bot]@users.noreply.github.com"
+        GIT_AUTHOR: "${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>"

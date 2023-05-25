@@ -7,6 +7,10 @@ on:
         description: The release version to create.
         required: true
         type: string
+    secrets:
+      GH_TOKEN:
+        description: The Github token to use
+        required: true
 
 jobs:
   release:
@@ -40,7 +44,7 @@ jobs:
           git checkout -b $R_BRANCH && git push origin $R_BRANCH || git checkout $R_BRANCH
         shell: bash
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           RELEASE_VERSION: ${{ inputs.version }}
 
       - name: setup python
@@ -75,15 +79,15 @@ jobs:
         shell: bash
         env:
           RELEASE_VERSION: ${{ inputs.version }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           GIT_USER_NAME: "github-actions[bot]"
           GIT_USER_EMAIL: "41898282+github-actions[bot]@users.noreply.github.com"
           GIT_AUTHOR: "${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>"
 
       - name: Create Pull Request
-        uses: abikouo/github_actions/.github/actions/create_pullrequest@release_v4
+        uses: ansible-network/github_actions/.github/actions/create_pullrequest@main
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_TOKEN }}
           repository: ${{ github.repository }}
           base_branch: ${{ steps.create-branch.outputs.release_branch }}
           head_branch: ${{ steps.push-changes.outputs.created_branch }}
