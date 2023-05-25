@@ -26,7 +26,7 @@ def update_user_agent(src: PosixPath, var_name: str, galaxy_version: str) -> boo
     variable_regex = rf"^{var_name} = [\"|'](.*)[\"|']"
     new_content = []
     updated = False
-    logger.info("********** Parsing file => %s *************", src.stem)
+    logger.info("********** Parsing file => %s *************", src)
     with src.open() as file_handler:
         for line in file_handler.read().split("\n"):
             match = re.match(variable_regex, line)

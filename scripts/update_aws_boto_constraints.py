@@ -57,7 +57,8 @@ def update_tests_constraints(boto3_version: str, botocore_version: str) -> None:
     """
     boto_values = {"boto3": boto3_version, "botocore": botocore_version}
     for file in ("tests/unit/constraints.txt", "tests/integration/constraints.txt"):
-        update_single_file(file, boto_values)
+        if PosixPath(file).exists():
+            update_single_file(file, boto_values)
 
     min_boto_values = {
         "MINIMUM_BOTO3_VERSION": boto3_version,

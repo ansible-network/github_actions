@@ -67,7 +67,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.gh_token }}
 
       - name: Create Pull Request from Release branch to default branch
-        uses: abikouo/github_actions/.github/actions/create_pullrequest@release_v4
+        uses: ansible-network/github_actions/.github/actions/create_pullrequest@main
         with:
           token: ${{ secrets.gh_token }}
           repository: ${{ github.repository }}
