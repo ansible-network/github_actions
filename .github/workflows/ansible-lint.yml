@@ -6,7 +6,7 @@ on:
         description: The Github reference for repository ansible/ansible-lint.
         required: false
         type: string
-        default: 'main'
+        default: "main"
 
 jobs:
   ansible-lint:
