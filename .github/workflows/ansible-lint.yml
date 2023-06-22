@@ -1,11 +1,18 @@
 name: ansible-lint
 on:
   workflow_call:
+    inputs:
+      action_ref:
+        description: The Github reference for repository ansible/ansible-lint.
+        required: false
+        type: string
+        default: 'main'
 
 jobs:
   ansible-lint:
     runs-on: ubuntu-latest
     steps:
       - uses: ansible-network/github_actions/.github/actions/checkout_dependency@main
+
       - name: Run ansible-lint
-        uses: ansible/ansible-lint-action@main
+        uses: ansible/ansible-lint-action@${{ inputs.action_ref }}
