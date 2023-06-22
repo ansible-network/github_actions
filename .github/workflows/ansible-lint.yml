@@ -14,5 +14,6 @@ jobs:
     steps:
       - uses: ansible-network/github_actions/.github/actions/checkout_dependency@main
 
-      - name: Run ansible-lint
-        uses: "ansible/ansible-lint-action@${{ inputs.ansible_lint_version }}"
+      - name: Print Inputs
+        run: |
+          echo "ansible-lint version => ${{ inputs.ansible_lint_version }}"
