@@ -15,4 +15,6 @@ jobs:
       - uses: ansible-network/github_actions/.github/actions/checkout_dependency@main
 
       - name: Run ansible-lint
-        uses: ansible/ansible-lint-action@"${{ inputs.ansible_lint_version }}"
+        uses: ansible/ansible-lint-action@$ANSIBLE_LINT_VERSION
+        env:
+          ANSIBLE_LINT_VERSION: ${{ inputs.ansible_lint_version }}
