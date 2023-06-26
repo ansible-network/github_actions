@@ -152,10 +152,6 @@ jobs:
         run: ansible-galaxy collection install --pre ${{ inputs.collection_pre_install }} -p /home/runner/collections/
         if: ${{ inputs.collection_pre_install != '' && startswith(matrix.ansible-version, '2.9') != true }}
 
-      - name: Pre install collections dependencies first so the collection install does not
-        run: ansible-galaxy collection install --pre ${{ inputs.collection_pre_install }} -p /home/runner/collections/
-        if: inputs.collection_pre_install != ''
-
       - name: Read collection metadata from galaxy.yml
         id: identify
         uses: ansible-network/github_actions/.github/actions/identify_collection@main
