@@ -143,7 +143,7 @@ jobs:
 
       - name: Pre install collections dependencies first so the collection install does not
         run: ansible-galaxy collection install --pre ${{ inputs.collection_pre_install }} -p /home/runner/collections
-        if: inputs.collection_pre_install != ''
+        if: ${{ inputs.collection_pre_install != '' && matrix.ansible-version != 'stable-2.9' }}
 
       - name: Read collection metadata from galaxy.yml
         id: identify
@@ -158,6 +158,7 @@ jobs:
           source_path: ${{ env.source_directory }}
           collection_path: ${{ steps.identify.outputs.collection_path }}
           tar_file: ${{ steps.identify.outputs.tar_file }}
+          ansible_version: ${{ matrix.ansible-version }}
 
       - name: Print the ansible version
         run: ansible --version

@@ -18,7 +18,11 @@ inputs:
       The collection tarball when built
       If not set, this will be determined by the action
     default: ""
-
+  ansible_version:
+    description: |
+      Ansible Core version from the workflow.
+    required: false
+    default: ""
 outputs:
   collection_path:
     description: The final collection path
@@ -62,6 +66,7 @@ runs:
 
     - name: Install collection python requirements
       if: ${{ inputs.install_python_dependencies == 'true' }}
+
       run: python3 -m pip install -r requirements.txt -r test-requirements.txt
       shell: bash
       working-directory: ${{ inputs.source_path }}
@@ -78,10 +83,17 @@ runs:
       shell: bash
       working-directory: ${{ inputs.source_path }}
 
-    - name: Install collection and dependencies
+    - name: Install collection and dependencies (with --pre flag)
       run: ansible-galaxy collection install ./${{ steps.identify.outputs.tar_file || inputs.tar_file }} --pre -p /home/runner/collections
       shell: bash
       working-directory: ${{ inputs.source_path }}
+      if: ${{ inputs.ansible_version != "stable-2.9" }}
+
+    - name: Install collection and dependencies (without --pre flag)
+      run: ansible-galaxy collection install ./${{ steps.identify.outputs.tar_file || inputs.tar_file }} -p /home/runner/collections
+      shell: bash
+      working-directory: ${{ inputs.source_path }}
+      if: ${{ inputs.ansible_version == "stable-2.9" }}
 
     - name: Copy the galaxy.yml from source to destination, needed for pytest-ansible-units
       run: cp galaxy.yml ${{ steps.identify.outputs.collection_path || inputs.collection_path }}/galaxy.yml
