@@ -2,6 +2,10 @@ name: Integration tests
 on:
   workflow_call:
     inputs:
+      collection_pre_install:
+        required: false
+        type: string
+        default: ""
       cml_lab:
         default: tests/integration/labs/single.yaml
         required: false
@@ -71,6 +75,10 @@ jobs:
 
       - name: Install ansible-core (${{ matrix.ansible-version }})
         run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
+
+      - name: Pre install collections dependencies first so the collection install does not
+        run: ansible-galaxy collection install --pre ${{ inputs.collection_pre_install }} -p /home/runner/collections
+        if: inputs.collection_pre_install != ''
 
       - name: Read collection metadata from galaxy.yml
         id: identify

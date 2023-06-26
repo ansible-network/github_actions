@@ -79,7 +79,7 @@ runs:
       working-directory: ${{ inputs.source_path }}
 
     - name: Install collection and dependencies
-      run: ansible-galaxy collection install ./${{ steps.identify.outputs.tar_file || inputs.tar_file }} -p /home/runner/collections
+      run: ansible-galaxy collection install ./${{ steps.identify.outputs.tar_file || inputs.tar_file }} --pre -p /home/runner/collections
       shell: bash
       working-directory: ${{ inputs.source_path }}
 

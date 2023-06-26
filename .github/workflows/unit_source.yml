@@ -3,8 +3,9 @@ on:
   workflow_call:
     inputs:
       collection_pre_install:
-        required: true
+        required: false
         type: string
+        default: ""
       matrix_exclude:
         # https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix
         # 2.12 supports Python 3.8-3.10
@@ -86,15 +87,15 @@ jobs:
       - name: Install ansible-core (${{ matrix.ansible-version }})
         run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
 
+      - name: Pre install collections dependencies first so the collection install does not
+        run: ansible-galaxy collection install --pre ${{ inputs.collection_pre_install }} -p /home/runner/collections
+        if: inputs.collection_pre_install != ''
+
       - name: Read collection metadata from galaxy.yml
         id: identify
         uses: ansible-network/github_actions/.github/actions/identify_collection@main
         with:
           source_path: ${{ env.source_directory }}
-
-      - name: Pre install collections dependencies first so the collection install does not
-        run: ansible-galaxy collection install --pre ${{ inputs.collection_pre_install }} -p /home/runner/collections
-        if: inputs.collection_pre_install != ''
 
       - name: Build and install the collection
         uses: ansible-network/github_actions/.github/actions/build_install_collection@main
