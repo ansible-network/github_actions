@@ -22,7 +22,7 @@ on:
 
 jobs:
   push:
-    if: "github.event.pull_request.merged == true"
+    if: ${{ github.event.pull_request.merged == true }} and ${{ contains(github.event.pull_request.labels.*.name, 'ok-to-tag') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -34,24 +34,20 @@ jobs:
         with:
           ref: ${{ inputs.branch_name }}
           token: ${{ secrets.gh_token }}
-        if: "contains(github.event.pull_request.labels.*.name, 'ok-to-tag')"
 
       - name: setup python
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-        if: "contains(github.event.pull_request.labels.*.name, 'ok-to-tag')"
 
       - name: install python libraries
         run: pip3 install yq pygithub
         shell: bash
-        if: "contains(github.event.pull_request.labels.*.name, 'ok-to-tag')"
 
       - name: extract tag name from 'galaxy.yml'
         id: read-tag
         run: echo "release_tag=$(yq -r '.version' 'galaxy.yml')" >> $GITHUB_OUTPUT
         shell: bash
-        if: "contains(github.event.pull_request.labels.*.name, 'ok-to-tag')"
 
       - name: create and push tag to Github repository
         id: push-tag
@@ -82,4 +78,4 @@ jobs:
           python3 ./create_github_release.py --repository ${{ github.repository }} --release-tag ${{ steps.read-tag.outputs.release_tag }} --release-name "${{ inputs.release_prefix }} ${{ steps.read-tag.outputs.release_tag }}"
         env:
           GITHUB_TOKEN: ${{ secrets.gh_token }}
-        if: ${{ (inputs.release_publish) && contains(github.event.pull_request.labels.*.name, 'ok-to-tag') }}
+        if: ${{ inputs.release_publish }}
