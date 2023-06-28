@@ -89,6 +89,7 @@ runs:
       working-directory: ${{ inputs.source_path }}
       if: ${{ inputs.ansible_version != "stable-2.9" }}
 
+
     - name: Install collection and dependencies (without --pre flag)
       run: ansible-galaxy collection install ./${{ steps.identify.outputs.tar_file || inputs.tar_file }} -p /home/runner/collections
       shell: bash
