@@ -6,6 +6,10 @@ on:
         required: false
         type: string
         default: ""
+      install_pre_release:
+        required: false
+        type: boolean
+        default: false
       matrix_exclude:
         # https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix
         # 2.9 supports Python 3.5-3.8
@@ -158,6 +162,7 @@ jobs:
           source_path: ${{ env.source_directory }}
           collection_path: ${{ steps.identify.outputs.collection_path }}
           tar_file: ${{ steps.identify.outputs.tar_file }}
+          install_pre_releases: ${{ inputs.install_pre_release }}
 
       - name: Print the ansible version
         run: ansible --version
