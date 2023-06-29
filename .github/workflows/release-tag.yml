@@ -24,16 +24,17 @@ jobs:
   push:
     if: ${{ github.event.pull_request.merged == true }} and ${{ contains(github.event.pull_request.labels.*.name, 'ok-to-tag') }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-
+    env:
+      GH_BRANCH: ${{ inputs.branch_name }}
+      GH_TOKEN: ${{ secrets.gh_token }}
+      GH_PUBLISH_RELEASE: ${{ inputs.release_prefix }}
+      GH_RELEASE_PREFIX: ${{ inputs.release_prefix }}}
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
         with:
-          ref: ${{ inputs.branch_name }}
-          token: ${{ secrets.gh_token }}
+          ref: ${{ env.GH_BRANCH }}
+          token: ${{ env.GH_TOKEN }}
 
       - name: setup python
         uses: actions/setup-python@v4
@@ -52,30 +53,30 @@ jobs:
       - name: create and push tag to Github repository
         id: push-tag
         run: |
-          git tag ${RELEASE_TAG}
-          git push origin ${RELEASE_TAG}
+          # git tag ${RELEASE_TAG}
+          # git push origin ${RELEASE_TAG}
           # read repository default branch
           GIT_DEFAULT_BRANCH=$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
           echo "default_branch=$GIT_DEFAULT_BRANCH" >> $GITHUB_OUTPUT
         shell: bash
         env:
           RELEASE_TAG: ${{ steps.read-tag.outputs.release_tag }}
-          GITHUB_TOKEN: ${{ secrets.gh_token }}
+          GITHUB_TOKEN: ${{ env.GH_TOKEN }}
 
       - name: Create Pull Request from Release branch to default branch
         uses: ansible-network/github_actions/.github/actions/create_pullrequest@main
         with:
-          token: ${{ secrets.gh_token }}
+          token: ${{ env.GH_TOKEN }}
           repository: ${{ github.repository }}
           base_branch: ${{ steps.push-tag.outputs.default_branch }}
-          head_branch: ${{ inputs.branch_name }}
+          head_branch: ${{ env.GH_BRANCH }}
           title: "Push changes for release '${{ steps.read-tag.outputs.release_tag }}' on '${{ steps.push-tag.outputs.default_branch }}' branch"
           body: "Automatic changes for Release ${{ steps.read-tag.outputs.release_tag }} on Repository default branch"
 
-      - name: Parse release content
-        run: |
-          curl -o create_github_release.py https://raw.githubusercontent.com/ansible-network/github_actions/main/scripts/create_github_release.py
-          python3 ./create_github_release.py --repository ${{ github.repository }} --release-tag ${{ steps.read-tag.outputs.release_tag }} --release-name "${{ inputs.release_prefix }} ${{ steps.read-tag.outputs.release_tag }}"
-        env:
-          GITHUB_TOKEN: ${{ secrets.gh_token }}
-        if: ${{ inputs.release_publish }}
+      # - name: Parse release content
+      #   run: |
+      #     curl -o create_github_release.py https://raw.githubusercontent.com/ansible-network/github_actions/main/scripts/create_github_release.py
+      #     python3 ./create_github_release.py --repository ${{ github.repository }} --release-tag ${{ steps.read-tag.outputs.release_tag }} --release-name "${{ env.GH_RELEASE_PREFIX }} ${{ steps.read-tag.outputs.release_tag }}"
+      #   env:
+      #     GITHUB_TOKEN: ${{ env.GH_TOKEN }}
+      #   if: ${{ env.GH_PUBLISH_RELEASE }}
