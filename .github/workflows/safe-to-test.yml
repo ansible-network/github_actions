@@ -3,11 +3,13 @@ on:
   workflow_call:
     secrets:
       GH_TOKEN:
-        required: true
+        required: false
 
 jobs:
   confirm:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN  }}
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
@@ -18,13 +20,13 @@ jobs:
         continue-on-error: true
         env:
           API_URL: /repos/${{ github.repository }}/collaborators/${{ github.event.pull_request.user.login }}
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
         if: github.event.label.name != 'safe to test'
 
       - name: If collaborator, add the label
         run: gh pr edit $PR_NUMBER --add-label "safe to test"
         env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.number }}
         if: steps.authorization.outcome == 'success'
 
@@ -32,7 +34,7 @@ jobs:
         id: removed
         run: gh pr edit $PR_NUMBER --remove-label "safe to test"
         env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.number }}
         if: >-
           steps.authorization.outcome != 'success' &&
@@ -44,5 +46,5 @@ jobs:
           gh api -H "Accept: application/vnd.github.v3+json" $API_URL
           --jq .labels | grep 'safe to test'
         env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
           API_URL: /repos/${{ github.repository }}/issues/${{ github.event.number }}
