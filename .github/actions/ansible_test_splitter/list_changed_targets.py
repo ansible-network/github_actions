@@ -88,6 +88,7 @@ class ListChangedTargets:
                 collection.add_target_to_plan(plugin_file_name)
 
         for whc in [WhatHaveChanged(path, self.base_ref) for path in self.collections_to_test]:
+            print(f"changes file for collection [{whc.collection_name}] => {whc.changed_files()}")
             listed_changes[whc.collection_name] = {
                 "modules": [],
                 "inventory": [],
