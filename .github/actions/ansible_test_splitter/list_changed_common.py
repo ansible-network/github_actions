@@ -173,9 +173,8 @@ class WhatHaveChanged:
         :returns: a list of pathlib.PosixPath
         """
         if not self.files:
-            stdout = run_command(
-                command=f"git diff origin/{self.base_ref} --name-only", chdir=self.collection_path
-            )
+            changed_files_cmd = f"git diff origin/{self.base_ref} --name-only"
+            stdout = run_command(command=changed_files_cmd, chdir=self.collection_path)
             self.files = [PosixPath(p) for p in stdout.split("\n") if p]
         return self.files
 
