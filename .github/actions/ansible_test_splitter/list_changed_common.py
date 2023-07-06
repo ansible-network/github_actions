@@ -174,6 +174,7 @@ class WhatHaveChanged:
         """
         if not self.files:
             changed_files_cmd = f"git diff origin/{self.base_ref} --name-only"
+            print(f"Command for changed files => {changed_files_cmd}")
             stdout = run_command(command=changed_files_cmd, chdir=self.collection_path)
             self.files = [PosixPath(p) for p in stdout.split("\n") if p]
         return self.files
