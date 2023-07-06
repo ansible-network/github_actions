@@ -229,6 +229,13 @@ class WhatHaveChanged:
         """
         yield from self._path_matches("plugins/modules/")
 
+    def roles(self) -> Generator[PosixPath, None, None]:
+        """List the roles impacted by the change.
+
+        :yields: path to a role change
+        """
+        yield from self._path_matches("roles/")
+
     def _util_matches(
         self, base_path: str, import_path: str
     ) -> Generator[tuple[PosixPath, str], None, None]:
