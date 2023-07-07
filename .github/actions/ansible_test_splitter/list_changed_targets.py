@@ -79,7 +79,7 @@ class ListChangedTargets:
                 plugin_file_name = file_name
             elif plugin_type == "roles":
                 file_name = str(ref_path)
-                plugin_file_name = f"role/{file_name}"
+                plugin_file_name = f"role/{ref_path}"
             else:
                 file_name = PosixPath(ref_path).stem
                 plugin_file_name = f"{plugin_type}_{PosixPath(ref_path).stem}"
