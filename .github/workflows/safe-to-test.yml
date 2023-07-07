@@ -10,17 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN  }}
-      GH_REPOSITORY_ROLES: >-
-        [
-          "write",
-          "maintain",
-          "admin"
-        ]
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
 
-      - name: Get user Role on repository
+      - name: Check if the PR author is a collaborator
         id: authorization
         run: |
           user_role=$(gh api --jq .permission -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" $GH_API_URL)
