@@ -21,7 +21,7 @@ MIN_BOTO3_RE = re.compile(r"MINIMUM_BOTO3_VERSION( *)=( *)[\"|'][0-9\.]+[\"|']")
 def replace_vars(values: dict[str, str], line: str) -> str:
     """Replace a variable from a string.
 
-    :param values: A dictionary of values to search into strin.
+    :param values: A dictionary of values to search into string.
     :param line: The string to replace values in.
     :returns: The updated string.
     """
