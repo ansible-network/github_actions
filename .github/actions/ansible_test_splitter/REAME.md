@@ -69,12 +69,12 @@ _Example_:
     |___tests
         |___integration
             |___targets
-                |___random
+                |___lookup_random
                 |___test_random
                     |___aliases (contains this line lookup_random)
 ```
 
-For any change on `plugins/lookup/random.py`, this action will produce `test_random` and `test_random` as impacted targets.
+For any change on `plugins/lookup/random.py`, this action will produce `lookup_random` and `test_random` as impacted targets.
 
 ## Debugging
 
