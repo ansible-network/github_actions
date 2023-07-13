@@ -15,7 +15,7 @@ on:
         # 2.15 supports Python 3.9-3.11
         # 2.16 supports Python 3.10-3.11
         # https://docs.ansible.com/ansible/devel/roadmap/ROADMAP_2_16.html
-        # milestone is 2.15 until 2023-05-01
+        # milestone is 2.16 until after 2.16 branches from devel
         # devel is 2.16 until 2023-09-18
         default: >-
           [
@@ -50,6 +50,10 @@ on:
             {
               "ansible-version": "milestone",
               "python-version": "3.8"
+            },
+            {
+              "ansible-version": "milestone",
+              "python-version": "3.9"
             },
             {
               "ansible-version": "devel",
