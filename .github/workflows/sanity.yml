@@ -9,7 +9,6 @@ on:
       matrix_exclude:
         # https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix
         # 2.9 supports Python 3.5-3.8
-        # 2.12 supports Python 3.8-3.10
         # 2.13 supports Python 3.8-3.10
         # 2.14 supports Python 3.9-3.11
         # 2.15 supports Python 3.9-3.11
@@ -29,14 +28,6 @@ on:
             },
             {
               "ansible-version": "stable-2.9",
-              "python-version": "3.11"
-            },
-            {
-              "ansible-version": "stable-2.12",
-              "python-version": "3.7"
-            },
-            {
-              "ansible-version": "stable-2.12",
               "python-version": "3.11"
             },
             {
@@ -123,7 +114,6 @@ jobs:
           - ubuntu-latest
         ansible-version:
           - stable-2.9
-          - stable-2.12
           - stable-2.13
           - stable-2.14
           - stable-2.15
