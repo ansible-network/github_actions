@@ -173,9 +173,9 @@ class WhatHaveChanged:
         :returns: a list of pathlib.PosixPath
         """
         if not self.files:
-            stdout = run_command(
-                command=f"git diff origin/{self.base_ref} --name-only", chdir=self.collection_path
-            )
+            changed_files_cmd = f"git diff origin/{self.base_ref} --name-only"
+            print(f"Command for changed files => {changed_files_cmd}")
+            stdout = run_command(command=changed_files_cmd, chdir=self.collection_path)
             self.files = [PosixPath(p) for p in stdout.split("\n") if p]
         return self.files
 
@@ -228,6 +228,15 @@ class WhatHaveChanged:
         :yields: path to a module plugin change
         """
         yield from self._path_matches("plugins/modules/")
+
+    def roles(self) -> Generator[str, None, None]:
+        """List the roles impacted by the change.
+
+        :yields: path to a role change
+        """
+        for changed_file in self.changed_files():
+            if str(changed_file).startswith("roles/"):
+                yield str(changed_file).split("/", maxsplit=2)[1]
 
     def _util_matches(
         self, base_path: str, import_path: str

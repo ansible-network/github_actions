@@ -77,6 +77,9 @@ class ListChangedTargets:
             elif plugin_type == "modules":
                 file_name = PosixPath(ref_path).stem
                 plugin_file_name = file_name
+            elif plugin_type == "roles":
+                file_name = str(ref_path)
+                plugin_file_name = f"role/{ref_path}"
             else:
                 file_name = PosixPath(ref_path).stem
                 plugin_file_name = f"{plugin_type}_{PosixPath(ref_path).stem}"
@@ -85,6 +88,7 @@ class ListChangedTargets:
                 collection.add_target_to_plan(plugin_file_name)
 
         for whc in [WhatHaveChanged(path, self.base_ref) for path in self.collections_to_test]:
+            print(f"changed file for collection [{whc.collection_name}] => {whc.changed_files()}")
             listed_changes[whc.collection_name] = {
                 "modules": [],
                 "inventory": [],
@@ -93,6 +97,7 @@ class ListChangedTargets:
                 "plugin_utils": [],
                 "lookup": [],
                 "targets": [],
+                "roles": [],
             }
             for path in whc.modules():
                 _add_changed_target(whc.collection_name, path, "modules")
@@ -112,6 +117,8 @@ class ListChangedTargets:
                 _add_changed_target(whc.collection_name, path, "lookup")
             for target in whc.targets():
                 _add_changed_target(whc.collection_name, target, "targets")
+            for role in whc.roles():
+                _add_changed_target(whc.collection_name, role, "roles")
 
         print("----------- Listed Changes -----------\n", json.dumps(listed_changes, indent=2))
         return {x: make_unique(y["targets"]) for x, y in listed_changes.items()}
