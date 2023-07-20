@@ -2,6 +2,7 @@
 """Define collection module for list_changed_targets executable."""
 
 import ast
+import json
 import os
 import re
 import subprocess
@@ -460,7 +461,7 @@ class ElGrandeSeparator:
         self.total_jobs = number_jobs
         self.targets_per_slot = 10
 
-    def output(self) -> str:
+    def output(self) -> dict[str, str]:
         """Produce output for the targets to test.
 
         :returns: a string describing the output
@@ -470,7 +471,10 @@ class ElGrandeSeparator:
             slots = [f"{col.collection_name}-{i+1}" for i in range(self.total_jobs)]
             for batch in self.build_up_batches(slots, col):
                 batches.append(batch)
-        return ";".join([f"{x}:{','.join(y)}" for x, y in batches])
+        raw_string = ";".join([f"{x}:{','.join(y)}" for x, y in batches])
+        raw_json = json.dumps({x: " ".join(y) for x, y in batches})
+        jobs = json.dumps([x for x, _ in batches])
+        return {"raw": raw_string, "raw_json": raw_json, "jobs": jobs}
 
     def build_up_batches(
         self, slots: list[str], my_collection: Collection

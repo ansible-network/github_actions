@@ -14,8 +14,14 @@ inputs:
     default: "3"
 outputs:
   test_targets:
-    description: The list of targets to test
+    description: The list of targets to test as concatenate string
     value: ${{ steps.splitter.outputs.test_targets }}
+  test_targets_json:
+    description: The list of targets to test as json string
+    value: ${{ steps.splitter.outputs.test_targets_json }}
+  test_jobs:
+    description: The list of generate keys
+    value: ${{ steps.splitter.outputs.test_jobs }}
 
 runs:
   using: composite

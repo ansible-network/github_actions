@@ -116,7 +116,7 @@ class ListChangedTargets:
         print("----------- Listed Changes -----------\n", json.dumps(listed_changes, indent=2))
         return {x: make_unique(y["targets"]) for x, y in listed_changes.items()}
 
-    def run(self) -> str:
+    def run(self) -> dict[str, str]:
         """List changes and divide targets into chunk.
 
         :returns: resulting string of targets divide into chunks
@@ -149,8 +149,10 @@ def write_variable_to_github_output(name: str, value: str) -> None:
 
 def main() -> None:
     """Perform main process of the module."""
-    output = ListChangedTargets().run()
-    write_variable_to_github_output("test_targets", output)
+    result = ListChangedTargets().run()
+    write_variable_to_github_output("test_targets", result.get("raw", ""))
+    write_variable_to_github_output("test_targets_json", result.get("raw_json", ""))
+    write_variable_to_github_output("test_jobs", result.get("jobs", "[]"))
 
 
 if __name__ == "__main__":
