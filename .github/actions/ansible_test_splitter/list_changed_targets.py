@@ -150,6 +150,7 @@ def write_variable_to_github_output(name: str, value: str) -> None:
 def main() -> None:
     """Perform main process of the module."""
     result = ListChangedTargets().run()
+    print("----------- change targets result -----------\n", json.dumps(result, indent=2))
     write_variable_to_github_output("test_targets", result.get("raw", ""))
     write_variable_to_github_output("test_targets_json", result.get("raw_json", ""))
     write_variable_to_github_output("test_jobs", result.get("jobs", "[]"))
