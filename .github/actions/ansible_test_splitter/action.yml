@@ -12,10 +12,19 @@ inputs:
     description: The total number of jobs to share targets on
     required: false
     default: "3"
+  base_ref:
+    description: The git base branch to compare with.
+    required: false
 outputs:
   test_targets:
-    description: The list of targets to test
+    description: The list of targets to test as concatenate string
     value: ${{ steps.splitter.outputs.test_targets }}
+  test_targets_json:
+    description: The list of targets to test as json string
+    value: ${{ steps.splitter.outputs.test_targets_json }}
+  test_jobs:
+    description: The list of generate keys
+    value: ${{ steps.splitter.outputs.test_jobs }}
 
 runs:
   using: composite
@@ -42,5 +51,5 @@ runs:
         COLLECTIONS_TO_TEST: "${{ inputs.collections_to_test }}"
         TOTAL_JOBS: "${{ inputs.total_jobs }}"
         PULL_REQUEST_BODY: "${{ github.event.pull_request.body }}"
-        PULL_REQUEST_BASE_REF: "${{ github.event.pull_request.base.ref }}"
+        PULL_REQUEST_BASE_REF: "${{ inputs.base_ref || github.event.pull_request.base.ref }}"
       shell: bash
