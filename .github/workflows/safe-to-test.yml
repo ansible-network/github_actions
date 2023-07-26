@@ -16,35 +16,40 @@ jobs:
 
       - name: Check if the PR author is a collaborator
         id: authorization
-        run: 'gh api -H "Accept: application/vnd.github.v3+json" $API_URL'
-        continue-on-error: true
+        run: |
+          user_role=$(gh api --jq .permission -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" $GH_API_URL)
+          roles=("write maintain admin")
+          [[ "${roles[*]} " =~ "${user_role} " ]] && collaborator=true || collaborator=false
+          echo "collaborator=${collaborator}" >> $GITHUB_OUTPUT
         env:
-          API_URL: /repos/${{ github.repository }}/collaborators/${{ github.event.pull_request.user.login }}
-          GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
-        if: github.event.label.name != 'safe to test'
+          GH_API_URL: "/repos/${{ github.repository }}/collaborators/${{ github.event.pull_request.user.login }}/permission"
 
-      - name: If collaborator, add the label
-        run: gh pr edit $PR_NUMBER --add-label "safe to test"
+      # Add 'safe to test' label for collaborators
+      - name: Add safe label for User with required roles
+        run: gh pr edit ${{ github.event.number }} --add-label "safe to test"
+        if: ${{ steps.authorization.outputs.collaborator == 'true' }}
+
+      # Remove 'safe to test' for non collaborators
+      - name: Get pull request labels
+        id: read-label
+        run: |
+          SAFE_LABEL=$(gh api --jq '.[] | select(.name == "safe to test") | .name' -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" $GH_API_URL)
+          echo "safe_label=$SAFE_LABEL" >> $GITHUB_OUTPUT
         env:
-          GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.number }}
-        if: steps.authorization.outcome == 'success'
+          GH_API_URL: /repos/${{ github.repository }}/issues/${{ github.event.number }}/labels
+        if: ${{ steps.authorization.outputs.collaborator == 'false' }}
 
       - name: Remove the 'safe to test', not a collaborator, PR was updated or not just added
-        id: removed
-        run: gh pr edit $PR_NUMBER --remove-label "safe to test"
-        env:
-          GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.number }}
+        run: gh pr edit ${{ github.event.number }} --remove-label "safe to test"
         if: >-
-          steps.authorization.outcome != 'success' &&
+          steps.authorization.outputs.collaborator == 'false' &&
+          steps.read-label.outputs.safe_label != '' &&
           github.event.label.name != 'safe to test' &&
-          ( github.event.action == 'synchronize' || github.event.action == 'reopened' )
+          (github.event.action == 'synchronize' || github.event.action == 'reopened')
 
       - name: Fail if not now labeled
         run: >-
           gh api -H "Accept: application/vnd.github.v3+json" $API_URL
           --jq .labels | grep 'safe to test'
         env:
-          GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
           API_URL: /repos/${{ github.repository }}/issues/${{ github.event.number }}
