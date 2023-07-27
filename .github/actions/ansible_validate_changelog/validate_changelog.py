@@ -54,6 +54,9 @@ def is_module_or_plugin(ref: str) -> bool:
         "plugins/terminal",
         "plugins/test",
         "plugins/vars",
+        "roles/",
+        "playbooks/",
+        "meta/runtime.yml",
     )
     return ref.startswith(prefix_list)
 
