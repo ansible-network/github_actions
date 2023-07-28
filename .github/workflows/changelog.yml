@@ -6,30 +6,12 @@ jobs:
     runs-on: ubuntu-latest
     name: Require a changelog
     if: "!contains(github.event.pull_request.labels.*.name, 'skip-changelog')"
-    env:
-      PY_COLORS: "1"
-      source_directory: "./source"
     steps:
       - name: Checkout the collection repository
         uses: actions/checkout@v3
         with:
-          path: ${{ env.source_directory }}
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: "0"
 
-      - name: setup python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-
-      - name: Download python script
-        run: curl -o /tmp/validate_changelog.py https://raw.githubusercontent.com/ansible-network/github_actions/main/scripts/validate_changelog.py
-
-      - name: Install python required libraries
-        run: pip install -U pyyaml
-
-      - name: Ensure a valid changelog entry exists
-        run: >-
-          python /tmp/validate_changelog.py
-          --ref ${{ github.event.pull_request.base.ref }}
-        working-directory: ${{ env.source_directory }}
+      - name: Validate changelog
+        uses: ansible-network/github_actions/.github/actions/ansible_validate_changelog@main
