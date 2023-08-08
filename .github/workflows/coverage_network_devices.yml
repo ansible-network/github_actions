@@ -30,7 +30,7 @@ jobs:
           python-version: ${{ env.python_version }}
 
       - name: Install ansible-core (${{ env.ansible-version }})
-        run: python3 -m pip install ansible-core
+        run: python3 -m pip install ansible-core pytest pytest-cov pytest-ansible-units pytest-forked pytest-xdist
 
       - name: Read collection metadata from galaxy.yml
         id: identify
@@ -54,12 +54,11 @@ jobs:
 
       - name: Run Coverage tests
         run: |
-          ansible-test units --python ${{ env.python_version }} --coverage --requirements
-          ansible-test coverage xml
+          pytest tests -v --cov-report xml --cov=./
         working-directory: ${{ steps.identify.outputs.collection_path }}
 
       - name: Upload coverage report to Codecov
         uses: codecov/codecov-action@v3
         with:
           directory: ${{ steps.identify.outputs.collection_path }}
-          fail_ci_if_error: true
+          fail_ci_if_error: false
