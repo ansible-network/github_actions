@@ -14,6 +14,10 @@ inputs:
     description: tox env list
     required: false
     default: ""
+  tox_labellist:
+    description: tox label list
+    required: false
+    default: ""
   tox_config_file:
     description: tox configuration file
     required: false
@@ -63,6 +67,9 @@ runs:
         if [ ! -z "${TOX_ENV_LIST}" ]; then
           PY_OPTIONS="${PY_OPTIONS} --tox-envname ${TOX_ENV_LIST}"
         fi
+        if [ ! -z "${TOX_LABEL_LIST}" ]; then
+          PY_OPTIONS="${PY_OPTIONS} --tox-labelname ${TOX_LABEL_LIST}"
+        fi
         if [ ! -z "${TOX_CONSTRAINTS}" ]; then
           PY_OPTIONS="${PY_OPTIONS} --tox-constraints-file ${TOX_CONSTRAINTS}"
         fi
@@ -73,6 +80,7 @@ runs:
       env:
         TOX_CONFIG_FILE: ${{ inputs.tox_config_file }}
         TOX_ENV_LIST: ${{ inputs.tox_envlist }}
+        TOX_LABEL_LIST: ${{ inputs.tox_labellist }}
         TOX_CONSTRAINTS: ${{ inputs.tox_constraints_file }}
         TOX_ENVIRONMENT: ${{ inputs.tox_environment }}
 
@@ -98,9 +106,13 @@ runs:
         if [ ! -z "${TOX_ENV_LIST}" ]; then
           TOX_CMD_OPTIONS="${TOX_CMD_OPTIONS} -e ${TOX_ENV_LIST}"
         fi
+        if [ ! -z "${TOX_LABEL_LIST}" ]; then
+          TOX_CMD_OPTIONS="${TOX_CMD_OPTIONS} -m ${TOX_LABEL_LIST}"
+        fi
         echo "tox_common_args=${TOX_CMD_OPTIONS}" >> $GITHUB_OUTPUT
       env:
         TOX_CONFIG_FILE: ${{ inputs.tox_config_file }}
+        TOX_LABEL_LIST: ${{ inputs.tox_labellist }}
         TOX_ENV_LIST: ${{ inputs.tox_envlist }}
 
     - name: Set environment variables

@@ -1,0 +1,28 @@
+name: tox
+on:
+  workflow_call:
+    inputs:
+      envname:
+        description: Tox environment name to use to limit the run
+        required: false
+        type: string
+        default: ""
+      labelname:
+        description: Tox label to use to limit the run
+        required: false
+        type: string
+        default: ""
+jobs:
+  tox:
+    runs-on: ubuntu-latest
+    name: Run Tox based code tests
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v3
+
+      - name: Run tests
+        uses: ansible-network/github_actions/.github/actions/tox@main
+        with:
+          path: "."
+          tox_envlist: ${{ inputs.envname }}
+          tox_labellist: ${{ inputs.labelname }}

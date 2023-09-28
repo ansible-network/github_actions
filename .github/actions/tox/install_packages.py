@@ -27,6 +27,7 @@ logger.setLevel(logging.DEBUG)
 def run_tox_command(
     project_dir: PosixPath,
     env_name: Optional[str],
+    label_name: Optional[str],
     config_file: Optional[PosixPath],
     env_vars: Optional[dict[Any, Any]],
     extra_args: list[str],
@@ -35,6 +36,7 @@ def run_tox_command(
 
     :param project_dir: The location of the project containing tox.ini file.
     :param env_name: An optional tox env name.
+    :param label_name: An optional tox label name.
     :param config_file: An optional tox configuration file.
     :param env_vars: An optional dictionary of environment to set when running command.
     :param extra_args: Tox extra args.
@@ -43,6 +45,8 @@ def run_tox_command(
     tox_cmd = ["tox"]
     if env_name:
         tox_cmd.extend(["-e", env_name])
+    if label_name:
+        tox_cmd.extend(["-m", label_name])
     if config_file:
         tox_cmd.extend(["-c", str(config_file)])
     if extra_args:
@@ -320,12 +324,15 @@ def main() -> None:
     parser.add_argument(
         "--tox-config-file", type=PosixPath, help="the location of the tox configuration file"
     )
-    parser.add_argument("--tox-envname", help="the tox env name. e.g: env1=value1\nenv2=value2")
+    parser.add_argument("--tox-envname", help="the tox env name.")
+    parser.add_argument("--tox-labelname", help="the tox label name.")
     parser.add_argument(
         "--tox-project-dir", default=".", help="the location of the project containing tox.ini file"
     )
     parser.add_argument(
-        "--tox-env-vars", default="", help="the environment to set when running tox command."
+        "--tox-env-vars",
+        default="",
+        help="the environment to set when running tox command. e.g: env1=value1\nenv2=value2",
     )
     parser.add_argument(
         "--tox-constraints-file", type=PosixPath, help="the location to the tox constraints file."
@@ -352,13 +359,23 @@ def main() -> None:
     if tox_extra_args:
         extra_args.append(tox_extra_args)
     run_tox_command(
-        args.tox_project_dir, args.tox_envname, args.tox_config_file, tox_environment, extra_args
+        args.tox_project_dir,
+        args.tox_envname,
+        args.tox_labelname,
+        args.tox_config_file,
+        tox_environment,
+        extra_args,
     )
 
     # show environment config
     extra_args = ["--showconfig"]
     tox_raw_config = run_tox_command(
-        args.tox_project_dir, args.tox_envname, args.tox_config_file, tox_environment, extra_args
+        args.tox_project_dir,
+        args.tox_envname,
+        args.tox_labelname,
+        args.tox_config_file,
+        tox_environment,
+        extra_args,
     )
     logger.info("Show config => %s", tox_raw_config)
 
