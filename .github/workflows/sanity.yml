@@ -19,78 +19,17 @@ on:
         default: >-
           [
             {
-              "ansible-version": "stable-2.9",
+              "ansible-version": "stable-2.16",
               "python-version": "3.9"
-            },
-            {
-              "ansible-version": "stable-2.9",
-              "python-version": "3.10"
-            },
-            {
-              "ansible-version": "stable-2.9",
-              "python-version": "3.11"
-            },
-            {
-              "ansible-version": "stable-2.13",
-              "python-version": "3.7"
-            },
-            {
-              "ansible-version": "stable-2.13",
-              "python-version": "3.11"
-            },
-            {
-              "ansible-version": "stable-2.14",
-              "python-version": "3.7"
-            },
-            {
-              "ansible-version": "stable-2.14",
-              "python-version": "3.8"
-            },
-            {
-              "ansible-version": "stable-2.15",
-              "python-version": "3.7"
-            },
-            {
-              "ansible-version": "stable-2.15",
-              "python-version": "3.8"
-            },
-            {
-              "ansible-version": "milestone",
-              "python-version": "3.7"
-            },
-            {
-              "ansible-version": "milestone",
-              "python-version": "3.8"
             },
             {
               "ansible-version": "milestone",
               "python-version": "3.9"
-            },
-            {
-              "ansible-version": "devel",
-              "python-version": "3.7"
-            },
-            {
-              "ansible-version": "devel",
-              "python-version": "3.8"
             },
             {
               "ansible-version": "devel",
               "python-version": "3.9"
             }
-          ]
-        required: false
-        type: string
-      matrix_include:
-        # python 3.6 is not available after ubuntu-20.04
-        # python 3.6 is not supported on ansible 2.12+
-        default: >-
-          [
-            {
-              "os": "ubuntu-20.04",
-              "ansible-version": "stable-2.9",
-              "python-version": "3.6"
-            },
           ]
         required: false
         type: string
@@ -113,15 +52,12 @@ jobs:
         os:
           - ubuntu-latest
         ansible-version:
-          - stable-2.9
-          - stable-2.13
           - stable-2.14
           - stable-2.15
+          - stable-2.16
           - milestone
           - devel
         python-version:
-          - "3.7"
-          - "3.8"
           - "3.9"
           - "3.10"
           - "3.11"

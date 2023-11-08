@@ -18,28 +18,12 @@ on:
         default: >-
           [
             {
-              "ansible-version": "stable-2.13",
-              "python-version": "3.11"
-            },
-            {
-              "ansible-version": "stable-2.14",
-              "python-version": "3.8"
-            },
-            {
-              "ansible-version": "stable-2.15",
-              "python-version": "3.8"
-            },
-            {
-              "ansible-version": "milestone",
-              "python-version": "3.8"
+              "ansible-version": "table-2.16",
+              "python-version": "3.9"
             },
             {
               "ansible-version": "milestone",
               "python-version": "3.9"
-            },
-            {
-              "ansible-version": "devel",
-              "python-version": "3.8"
             },
             {
               "ansible-version": "devel",
@@ -60,13 +44,12 @@ jobs:
       matrix:
         ansible-version:
           # ansible 2.9 does install from git
-          - stable-2.13
           - stable-2.14
           - stable-2.15
+          - stable-2.16
           - milestone
           - devel
         python-version:
-          - "3.8"
           - "3.9"
           - "3.10"
           - "3.11"
