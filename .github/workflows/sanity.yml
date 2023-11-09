@@ -36,14 +36,7 @@ on:
       matrix_include:
         # python 3.6 is not available after ubuntu-20.04
         # python 3.6 is not supported on ansible 2.12+
-        default: >-
-          [
-            {
-              "os": "ubuntu-20.04",
-              "ansible-version": "stable-2.9",
-              "python-version": "3.6"
-            },
-          ]
+        default: []
         required: false
         type: string
       unstable:
