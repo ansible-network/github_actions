@@ -8,16 +8,22 @@ on:
         default: ""
       matrix_exclude:
         # https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix
-        # 2.9 supports Python 3.5-3.8
-        # 2.13 supports Python 3.8-3.10
         # 2.14 supports Python 3.9-3.11
         # 2.15 supports Python 3.9-3.11
-        # 2.16 supports Python 3.10-3.11
-        # https://docs.ansible.com/ansible/devel/roadmap/ROADMAP_2_16.html
-        # milestone is 2.16 until after 2.16 branches from devel
-        # devel is 2.16 until 2023-09-18
+        # 2.16 supports Python 3.10-3.12
+        # https://docs.ansible.com/ansible/devel/roadmap/ROADMAP_2_17.html
+        # milestone is 2.17 until after 2.17 branches from devel
+        # devel is 2.17 until 2024-04-01
         default: >-
           [
+            {
+              "ansible-version": "stable-2.14",
+              "python-version": "3.12"
+            },
+            {
+              "ansible-version": "stable-2.15",
+              "python-version": "3.12"
+            },
             {
               "ansible-version": "stable-2.16",
               "python-version": "3.9"
@@ -34,8 +40,6 @@ on:
         required: false
         type: string
       matrix_include:
-        # python 3.6 is not available after ubuntu-20.04
-        # python 3.6 is not supported on ansible 2.12+
         default: []
         required: false
         type: string
@@ -67,6 +71,7 @@ jobs:
           - "3.9"
           - "3.10"
           - "3.11"
+          - "3.12"
         exclude: ${{ fromJSON(inputs.matrix_exclude) }}
         include: ${{ fromJSON(inputs.matrix_include) }}
     runs-on: ${{ matrix.os }}
