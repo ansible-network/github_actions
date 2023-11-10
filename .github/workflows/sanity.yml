@@ -33,6 +33,10 @@ on:
               "python-version": "3.9"
             },
             {
+              "ansible-version": "milestone",
+              "python-version": "3.12"
+            },
+            {
               "ansible-version": "devel",
               "python-version": "3.9"
             }
