@@ -32,6 +32,11 @@ on:
               "ansible-version": "milestone",
               "python-version": "3.9"
             },
+            # remove this when milestone is next forwarded
+            {
+              "ansible-version": "milestone",
+              "python-version": "3.12"
+            },
             {
               "ansible-version": "devel",
               "python-version": "3.9"
