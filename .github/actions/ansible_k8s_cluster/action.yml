@@ -4,7 +4,7 @@ description: Setup Kubernetes cluster.
 inputs:
   configure_registry:
     description: |
-      Wether the action should create a local docker registry witht the cluster.
+      Whether the action should create a local docker registry with the cluster.
     required: false
     default: "false"
   registry_name:
