@@ -1,0 +1,126 @@
+name: Setup Kubernetes cluster
+description: Setup Kubernetes cluster.
+
+inputs:
+  configure_registry:
+    description: |
+      Wether the action should create a local docker registry witht the cluster.
+    required: false
+    default: "false"
+  registry_name:
+    description: The name of the container registry.
+    required: false
+    default: "kind-registry"
+  registry_port:
+    description: The mapping port on the localhost for the docker registry.
+    required: false
+    default: "5001"
+  registry_username:
+    description: The user name to connect to the local registry.
+    required: false
+  registry_password:
+    description: The user password to connect to the local registry.
+    required: false
+    default: "test123!"
+
+runs:
+  using: composite
+  steps:
+    - name: Create Kubernetes cluster without local registry
+      uses: helm/kind-action@v1.4.0
+      if: ${{ inputs.configure_registry != 'true' }}
+
+    - name: Setup docker
+      uses: docker-practice/actions-setup-docker@master
+      if: ${{ inputs.configure_registry == 'true' }}
+
+    - name: Create registry container unless it already exists
+      run: |
+        if [ "$(docker inspect -f '{{.State.Running}}' "${{ inputs.registry_name }}" 2>/dev/null || true)" != 'true' ]; then
+          docker run \
+          -d --restart=always \
+          -p "127.0.0.1:${{ inputs.registry_port }}:5000" \
+          --network bridge \
+          --name "${{ inputs.registry_name }}" \
+          registry:2
+        fi
+      shell: bash
+      if: ${{ inputs.configure_registry == 'true' && inputs.registry_username == '' }}
+
+    - name: Create credentials for cluster authentication
+      run: echo "${{ inputs.registry_password }}" | htpasswd -i -c htpasswd ${{ inputs.registry_username }}
+      shell: bash
+      if: ${{ inputs.configure_registry == 'true' && inputs.registry_username != '' }}
+
+    - name: Create registry container unless it already exists
+      run: |
+        if [ "$(docker inspect -f '{{.State.Running}}' "${{ inputs.registry_name }}" 2>/dev/null || true)" != 'true' ]; then
+          docker run \
+          -d --restart=always \
+          -p "127.0.0.1:${{ inputs.registry_port }}:5000" \
+          -v "${PWD}:/auth" \
+          -e "REGISTRY_AUTH=htpasswd" \
+          -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" \
+          -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd \
+          --network bridge \
+          --name "${{ inputs.registry_name }}" \
+          registry:2
+        fi
+      shell: bash
+      if: ${{ inputs.configure_registry == 'true' && inputs.registry_username == '' }}
+
+    - name: Install kind
+      uses: helm/kind-action@v1.4.0
+      with:
+        install_only: "true"
+      if: ${{ inputs.configure_registry == 'true' }}
+
+    - name: Create kind cluster with containerd registry config dir enabled
+      run: |
+        cat <<EOF | kind create cluster --config=-
+        kind: Cluster
+        apiVersion: kind.x-k8s.io/v1alpha4
+        containerdConfigPatches:
+        - |-
+          [plugins."io.containerd.grpc.v1.cri".registry]
+            config_path = "/etc/containerd/certs.d"
+        EOF
+      shell: bash
+      if: ${{ inputs.configure_registry == 'true' }}
+
+    - name: Add the registry config to the nodes
+      run: |
+        for node in $(kind get nodes); do
+          docker exec "${node}" mkdir -p "${DOCKER_REGISTRY_DIR}"
+          cat <<EOF | docker exec -i "${node}" cp /dev/stdin "${DOCKER_REGISTRY_DIR}/hosts.toml"
+        [host."http://${{ inputs.registry_name }}:5000"]
+        EOF
+        done
+      shell: bash
+      env:
+        DOCKER_REGISTRY_DIR: "/etc/containerd/certs.d/localhost:${{ inputs.registry_port }}"
+      if: ${{ inputs.configure_registry == 'true' }}
+
+    - name: Connect the registry to the cluster network if not already connected
+      run: |
+        if [ "$(docker inspect -f='{{json .NetworkSettings.Networks.kind}}' "${{ inputs.registry_name }}")" = 'null' ]; then
+          docker network connect "kind" "${{ inputs.registry_name }}"
+        fi
+      shell: bash
+      if: ${{ inputs.configure_registry == 'true' }}
+
+    - name: Document the local registry
+      run: |
+        cat <<EOF | kubectl apply -f -
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: local-registry-hosting
+          namespace: kube-public
+        data:
+          localRegistryHosting.v1: |
+            host: "localhost:${{ inputs.registry_port }}"
+            help: "https://kind.sigs.k8s.io/docs/user/local-registry/"
+        EOF
+      shell: bash
+      if: ${{ inputs.configure_registry == 'true' }}
