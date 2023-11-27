@@ -8,38 +8,29 @@ on:
         default: ""
       matrix_exclude:
         # https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix
-        # 2.13 supports Python 3.8-3.10
         # 2.14 supports Python 3.9-3.11
         # 2.15 supports Python 3.9-3.11
-        # 2.16 supports Python 3.10-3.11
-        # https://docs.ansible.com/ansible/devel/roadmap/ROADMAP_2_16.html
-        # milestone is 2.16 until after 2.16 branches from devel
-        # devel is 2.16 until 2023-09-18
+        # 2.16 supports Python 3.10-3.12
+        # https://docs.ansible.com/ansible/devel/roadmap/ROADMAP_2_17.html
+        # milestone is 2.17 until after 2.17 branches from devel
+        # devel is 2.17 until 2024-04-01
         default: >-
           [
             {
-              "ansible-version": "stable-2.13",
-              "python-version": "3.11"
-            },
-            {
               "ansible-version": "stable-2.14",
-              "python-version": "3.8"
+              "python-version": "3.12"
             },
             {
               "ansible-version": "stable-2.15",
-              "python-version": "3.8"
+              "python-version": "3.12"
             },
             {
-              "ansible-version": "milestone",
-              "python-version": "3.8"
+              "ansible-version": "stable-2.16",
+              "python-version": "3.9"
             },
             {
               "ansible-version": "milestone",
               "python-version": "3.9"
-            },
-            {
-              "ansible-version": "devel",
-              "python-version": "3.8"
             },
             {
               "ansible-version": "devel",
@@ -60,16 +51,16 @@ jobs:
       matrix:
         ansible-version:
           # ansible 2.9 does install from git
-          - stable-2.13
           - stable-2.14
           - stable-2.15
+          - stable-2.16
           - milestone
           - devel
         python-version:
-          - "3.8"
           - "3.9"
           - "3.10"
           - "3.11"
+          - "3.12"
         exclude: ${{ fromJSON(inputs.matrix_exclude) }}
     continue-on-error: ${{ matrix.ansible-version == 'devel' }}
 
@@ -86,6 +77,20 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+
+      # ansible-pylibssh does not have cp312 wheels
+      # when building from sdist libssh-dev needs to be installed
+      # extra install step starts
+      - name: Install build toolchain and openssl headers on Linux
+        shell: bash
+        run: sudo apt update && sudo apt install build-essential libssl-dev
+        if: ${{ matrix.python-version == 3.12 }}
+
+      - name: Install catchsegv and libssh headers on Linux for cythonize+coverage
+        shell: bash
+        run: sudo apt update && sudo apt install libssh-dev
+        if: ${{ matrix.python-version == 3.12 }}
+      # extra install step ends
 
       - name: Install ansible-core (${{ matrix.ansible-version }})
         run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
