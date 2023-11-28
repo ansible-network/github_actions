@@ -43,6 +43,10 @@ on:
               "python-version": "3.8"
             },
             {
+              "ansible-version": "stable-2.16",
+              "python-version": "3.9"
+            },
+            {
               "ansible-version": "milestone",
               "python-version": "3.8"
             },
