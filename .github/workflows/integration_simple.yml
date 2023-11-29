@@ -8,8 +8,6 @@ on:
         type: string
       matrix_exclude:
         # https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix
-        # 2.9 supports Python 3.5-3.8
-        # 2.13 supports Python 3.8-3.10
         # 2.14 supports Python 3.9-3.11
         # 2.15 supports Python 3.9-3.11
         # 2.16 supports Python 3.10-3.11
@@ -19,48 +17,16 @@ on:
         default: >-
           [
             {
-              "ansible-version": "stable-2.9",
-              "python-version": "3.9"
-            },
-            {
-              "ansible-version": "stable-2.9",
-              "python-version": "3.10"
-            },
-            {
-              "ansible-version": "stable-2.9",
-              "python-version": "3.11"
-            },
-            {
               "ansible-version": "stable-2.13",
               "python-version": "3.11"
             },
             {
-              "ansible-version": "stable-2.14",
-              "python-version": "3.8"
-            },
-            {
-              "ansible-version": "stable-2.15",
-              "python-version": "3.8"
-            },
-            {
               "ansible-version": "stable-2.16",
               "python-version": "3.9"
             },
             {
-              "ansible-version": "stable-2.16",
-              "python-version": "3.8"
-            },
-            {
-              "ansible-version": "milestone",
-              "python-version": "3.8"
-            },
-            {
               "ansible-version": "milestone",
               "python-version": "3.9"
-            },
-            {
-              "ansible-version": "devel",
-              "python-version": "3.8"
             },
             {
               "ansible-version": "devel",
@@ -87,8 +53,6 @@ jobs:
       fail-fast: false
       matrix:
         ansible-version:
-          - stable-2.9
-          - stable-2.13
           - stable-2.14
           - stable-2.15
           - stable-2.16
@@ -96,7 +60,6 @@ jobs:
           - devel
         python-version:
           # ansible-navigator supports python 3.8+
-          - "3.8"
           - "3.9"
           - "3.10"
           - "3.11"
