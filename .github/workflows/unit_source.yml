@@ -50,7 +50,6 @@ jobs:
       fail-fast: false
       matrix:
         ansible-version:
-          # ansible 2.9 does install from git
           - stable-2.14
           - stable-2.15
           - stable-2.16
