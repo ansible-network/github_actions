@@ -44,7 +44,8 @@ on:
         required: false
         type: string
       matrix_include:
-        default: ""
+        default: >-
+          []
         required: false
         type: string
 
