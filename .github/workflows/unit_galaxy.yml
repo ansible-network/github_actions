@@ -44,14 +44,7 @@ on:
         required: false
         type: string
       matrix_include:
-        default: >-
-          [
-            {
-              "os": "ubuntu-20.04",
-              "ansible-version": "stable-2.14",
-              "python-version": "3.9"
-            },
-          ]
+        default: ""
         required: false
         type: string
 
