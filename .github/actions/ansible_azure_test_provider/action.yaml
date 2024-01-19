@@ -1,0 +1,45 @@
+name: ansible-azure-test-provider
+description: create file cloud-config-azure.ini in order to run ansible-test
+inputs:
+  collection_path:
+    description: Path to the collection to create file in.
+    required: true
+  ansible_core_ci_key:
+    description: ansible core ci key
+    required: true
+  stage:
+    description: session stage
+    default: "prod"
+  session_id:
+    description: Azure session identifier
+    default: ${{ github.head_ref }}
+
+outputs:
+  configuration_file:
+    description: Azure session details
+    value: ${{ inputs.collection_path }}/tests/integration/cloud-config-azure.ini
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Python '3.9'
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.9"
+
+    - name: install python required modules
+      run: pip install requests
+      shell: bash
+
+    - name: Generate SSH Key
+      run: ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
+      shell: bash
+
+    - name: create Azure session file
+      run: |
+        python3 ${{ github.action_path }}/create_session.py
+      shell: bash
+      env:
+        ANSIBLE_CORE_CI_KEY: ${{ inputs.ansible_core_ci_key }}
+        ANSIBLE_CORE_CI_STAGE: "prod"
+        ANSIBLE_TEST_CLOUD_CONFIG_FILE: "${{ inputs.collection_path }}/tests/integration/cloud-config-azure.ini"
