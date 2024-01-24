@@ -16,7 +16,11 @@ def main() -> None:
 
     :raises ValueError: when ANSIBLE_CORE_CI_KEY environment variable is missing or empty
     """
-    ansible_core_ci_key = os.environ.get("ANSIBLE_CORE_CI_KEY") or ""
+    try:
+        ansible_core_ci_key = os.environ["ANSIBLE_CORE_CI_KEY"]
+    except KeyError:
+        sys.stderr.write("Missing mandatory environment variable ANSIBLE_CORE_CI_KEY.\n")
+        sys.exit(1)
     ansible_core_ci_stage = os.environ.get("ANSIBLE_CORE_CI_STAGE") or "prod"
     headers = {"Content-Type": "application/json"}
     ansible_ssh_public_key_path = os.environ.get(
@@ -37,14 +41,13 @@ def main() -> None:
             }
         },
     }
-    if ansible_core_ci_key == "":
-        raise ValueError("ANSIBLE_CORE_CI_KEY environment variable is empty or missing")
     session_id = "".join(secrets.choice("0123456789abcdef") for i in range(32))
     endpoint_url = (
         f"https://ansible-core-ci.testing.ansible.com/{ansible_core_ci_stage}/azure/{session_id}"
     )
     response = requests.put(endpoint_url, data=json.dumps(data), headers=headers, timeout=30)
     if response.status_code != 200:
+        sys.stderr.write("Unexpected http status code received from server. Expected (200) Received (%s)" % response.status_code)
         sys.exit(1)
 
     # create ansible-test credential file
