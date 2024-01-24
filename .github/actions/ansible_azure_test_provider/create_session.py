@@ -12,10 +12,7 @@ import requests
 
 
 def main() -> None:
-    """Request new azure session credentials.
-
-    :raises ValueError: when ANSIBLE_CORE_CI_KEY environment variable is missing or empty
-    """
+    """Request new azure session credentials."""
     try:
         ansible_core_ci_key = os.environ["ANSIBLE_CORE_CI_KEY"]
     except KeyError:
@@ -48,8 +45,7 @@ def main() -> None:
     response = requests.put(endpoint_url, data=json.dumps(data), headers=headers, timeout=30)
     if response.status_code != 200:
         sys.stderr.write(
-            "Unexpected http status code received from server. Expected (200) Received (%s)"
-            % response.status_code
+            f"HTTP Status Code error - Expected (200) Received ({response.status_code})"
         )
         sys.exit(1)
 
