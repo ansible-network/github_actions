@@ -120,5 +120,5 @@ jobs:
         run: python3 -m pip list
 
       - name: Run unit tests
-        run: python -m pytest tests/unit --showlocals
+        run: python -m pytest tests/unit --showlocals --ansible-host-pattern localhost
         working-directory: ${{ steps.identify.outputs.collection_path }}
