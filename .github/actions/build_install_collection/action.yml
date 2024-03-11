@@ -39,6 +39,7 @@ runs:
       working-directory: ${{ inputs.source_path }}
 
     - run: python3 --version
+      shell: bash
 
     - name: check if bindep.txt exists
       id: bindep_check
