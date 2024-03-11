@@ -38,6 +38,8 @@ runs:
       shell: bash
       working-directory: ${{ inputs.source_path }}
 
+    - run: python3 --version
+
     - name: check if bindep.txt exists
       id: bindep_check
       shell: bash
@@ -69,11 +71,9 @@ runs:
     - name: Install collection python requirements
       if: ${{ inputs.install_python_dependencies == 'true' }}
 
-      run: python3 -m pip install -r requirements.txt -r test-requirements.txt
+      run: python${{ matrix.python-version }} -m pip install -r requirements.txt -r test-requirements.txt
       shell: bash
       working-directory: ${{ inputs.source_path }}
-      with:
-        python-version: ${{ inputs.python_version }}
 
     - name: identify collection (final installation path and tarball name)
       id: identify
