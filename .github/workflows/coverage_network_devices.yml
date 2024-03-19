@@ -54,7 +54,7 @@ jobs:
 
       - name: Run Coverage tests
         run: |
-          pytest tests -v --cov-report xml --cov=./
+          pytest tests -v --cov-report xml --cov=./tests/unit
         working-directory: ${{ steps.identify.outputs.collection_path }}
 
       - name: Upload coverage report to Codecov
