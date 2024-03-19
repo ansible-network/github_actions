@@ -7,7 +7,7 @@
   "isort.check": true,
   "[python]": {
     "editor.codeActionsOnSave": {
-      "source.organizeImports": "explicit"
+      "source.organizeImports": true
     }
   },
   "prettier.enable": true
