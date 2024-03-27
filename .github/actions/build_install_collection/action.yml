@@ -5,6 +5,8 @@ inputs:
   install_python_dependencies:
     description: "Install collection python dependencies"
     required: true
+  python_version:
+    default: "3.9"
   source_path:
     description: "Path to the collection source"
     required: true
@@ -67,7 +69,7 @@ runs:
     - name: Install collection python requirements
       if: ${{ inputs.install_python_dependencies == 'true' }}
 
-      run: python3 -m pip install -r requirements.txt -r test-requirements.txt
+    - run: python${{ matrix.python-version }} -m pip install -r requirements.txt -r test-requirements.txt
       shell: bash
       working-directory: ${{ inputs.source_path }}
 
