@@ -41,7 +41,7 @@ jobs:
       fail-fast: false
       matrix:
         ansible-version:
-          - stable-2.14
+          - stable-2.16
           # - stable-2.15
           # - milestone
           # - devel
