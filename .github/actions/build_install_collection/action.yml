@@ -5,8 +5,6 @@ inputs:
   install_python_dependencies:
     description: "Install collection python dependencies"
     required: true
-  python_version:
-    default: "3.9"
   source_path:
     description: "Path to the collection source"
     required: true
