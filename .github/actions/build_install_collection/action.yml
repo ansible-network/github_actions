@@ -5,8 +5,6 @@ inputs:
   install_python_dependencies:
     description: "Install collection python dependencies"
     required: true
-  python_version:
-    default: "3.9"
   source_path:
     description: "Path to the collection source"
     required: true
@@ -38,9 +36,6 @@ runs:
       shell: bash
       working-directory: ${{ inputs.source_path }}
 
-    - run: python3 --version
-      shell: bash
-
     - name: check if bindep.txt exists
       id: bindep_check
       shell: bash
@@ -53,7 +48,7 @@ runs:
       working-directory: ${{ inputs.source_path }}
 
     - name: Install bindep from pypi
-      run: sudo python3 -m pip install bindep
+      run:  pyversion=${matrix.python-version:-"3"} sudo python${{ pyversion }} -m pip install bindep
       shell: bash
       if: steps.bindep_check.outputs.file_exists == 'true'
 
@@ -72,7 +67,7 @@ runs:
     - name: Install collection python requirements
       if: ${{ inputs.install_python_dependencies == 'true' }}
 
-      run: python${{ matrix.python-version }} -m pip install -r requirements.txt -r test-requirements.txt
+    - run: pyversion=${matrix.python-version:-"3"} python${{ pyversion }} -m pip install -r requirements.txt -r test-requirements.txt
       shell: bash
       working-directory: ${{ inputs.source_path }}
 
@@ -93,7 +88,6 @@ runs:
       shell: bash
       working-directory: ${{ inputs.source_path }}
       if: ${{ inputs.ansible_version != 'stable-2.9' }}
-
 
     - name: Install collection and dependencies (without --pre flag)
       run: ansible-galaxy collection install ./${{ steps.identify.outputs.tar_file || inputs.tar_file }} -p /home/runner/collections
