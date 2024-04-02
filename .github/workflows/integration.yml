@@ -102,7 +102,6 @@ jobs:
         if: steps.identify.outputs.dependency != '' && matrix.dependency-source == 'github'
         uses: ansible-network/github_actions/.github/actions/build_install_collection@main
         with:
-          python-version: ${{ matrix.python-version }}
           install_python_dependencies: true
           source_path: ${{ env.dependency_directory }}
           collection_path: ${{ steps.identify-dependency.outputs.collection_path }}
