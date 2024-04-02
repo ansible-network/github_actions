@@ -48,7 +48,7 @@ runs:
       working-directory: ${{ inputs.source_path }}
 
     - name: Install bindep from pypi
-      run:  |
+      run: |
         if ${{ matrix.python-version }}; then
           python${{ matrix.python-version }} -m pip install bindep
         else
@@ -80,7 +80,6 @@ runs:
         fi
       shell: bash
       working-directory: ${{ inputs.source_path }}
-
 
     - name: identify collection (final installation path and tarball name)
       id: identify
