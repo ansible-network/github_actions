@@ -48,7 +48,7 @@ runs:
       working-directory: ${{ inputs.source_path }}
 
     - name: Install bindep from pypi
-      run:  pyversion=${matrix.python-version:-"3"} sudo python${{ pyversion }} -m pip install bindep
+      run: sudo python3 -m pip install bindep
       shell: bash
       if: steps.bindep_check.outputs.file_exists == 'true'
 
@@ -66,10 +66,14 @@ runs:
 
     - name: Install collection python requirements
       if: ${{ inputs.install_python_dependencies == 'true' }}
-
-    - run: pyversion=${matrix.python-version:-"3"} python${{ pyversion }} -m pip install -r requirements.txt -r test-requirements.txt
+      run: |
+        if ${{ matrix.python-version != ''}}; then
+          python${{ matrix.python-version }} -m pip install -r requirements.txt -r test-requirements.txt
+        else
+          python3 -m pip install -r requirements.txt -r test-requirements.txt
+        fi
       shell: bash
-      working-directory: ${{ inputs.source_path }}
+      working-directory: ${{ inputs.source_path }}     
 
     - name: identify collection (final installation path and tarball name)
       id: identify
