@@ -120,7 +120,7 @@ jobs:
         run: python${{ matrix.python-version }} -m pip list
 
       - name: Install the integration test dependency
-        run: python${{ matrix.python-version }} -m pip install git+https://github.com/ashwini-mhatre/pytest-ansible-network-integration.git
+        run: python${{ matrix.python-version }} -m pip install git+https://github.com/ansible-network/pytest-ansible-network-integration.git
 
       - name: Clear current lab id if any
         run: 'cml clear'
