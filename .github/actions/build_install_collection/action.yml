@@ -52,7 +52,7 @@ runs:
         if ${{ matrix.python-version != ''}}; then
           python${{ matrix.python-version }} -m pip install bindep
         else
-          sudo python3 -m pip install bindep
+          python3 -m pip install bindep
         fi
       shell: bash
       if: steps.bindep_check.outputs.file_exists == 'true'
