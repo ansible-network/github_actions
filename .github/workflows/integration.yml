@@ -96,7 +96,7 @@ jobs:
         run: python3 -m pip install git+https://github.com/ansible-network/pytest-ansible-network-integration.git
 
       - name: Clear current lab id if any
-        run: 'cml clear'
+        run: "cml clear"
         continue-on-error: true
         env:
           CML_VERIFY_CERT: False
