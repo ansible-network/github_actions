@@ -65,13 +65,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install wheel now for faster builds
-        run: python3-m pip install wheel --upgrade
+        run: python3 -m pip install wheel --upgrade
 
       - name: Install ansible-core (${{ matrix.ansible-version }})
-        run: |
-          python${{ matrix.python-version }} -m pip install \
-          https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz \
-          --disable-pip-version-check
+        run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
 
       - name: Pre install collections dependencies first so the collection install does not
         run: ansible-galaxy collection install --pre ${{ inputs.collection_pre_install }} -p /home/runner/collections
@@ -92,8 +89,8 @@ jobs:
           tar_file: ${{ steps.identify.outputs.tar_file }}
           ansible_version: ${{ matrix.ansible-version }}
 
-      - name: Print the python dependencies
-        run: python3 -m pip list
+      - name: Print the ansible version
+        run: ansible --version
 
       - name: Install the integration test dependency
         run: python3 -m pip install git+https://github.com/ansible-network/pytest-ansible-network-integration.git
