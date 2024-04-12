@@ -6,6 +6,10 @@ on:
         required: false
         type: string
         default: ""
+      lab_title:
+        required: false
+        type: string
+        default: ""
       cml_lab:
         default: tests/integration/labs/single.yaml
         required: false
@@ -103,6 +107,11 @@ jobs:
           VIRL_HOST: ${{ secrets.virl_host }}
           VIRL_PASSWORD: ${{ secrets.virl_password }}
           VIRL_USERNAME: admin
+
+      - name: Add PR number to the lab file
+        run: >-
+          sed -i "s/title: ${{ inputs.network_os }}/title: ${{ inputs.lab_title }}/" ${{ inputs.cml_lab }}
+        working-directory: ${{ steps.identify.outputs.collection_path }}
 
       - name: Run integration tests
         run: >-
