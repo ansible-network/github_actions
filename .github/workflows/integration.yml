@@ -9,7 +9,7 @@ on:
       lab_title:
         required: false
         type: string
-        default: ""
+        default: ${{ github.event.repository.name }}
       cml_lab:
         default: tests/integration/labs/single.yaml
         required: false
@@ -113,7 +113,7 @@ jobs:
           if [[ "${{ github.event_name }}" == 'pull_request_target' ]]; then
             echo "CLABTITLE=${{ inputs.lab_title }}_PR${{ github.event.pull_request.number }}" >> $GITHUB_ENV
           elif [[ "${{ github.event_name }}" == 'workflow_dispatch' ]]; then
-            shashort=$(echo ${{ github.sha }} | cut -c 1-30)
+            shashort=$(git rev-parse --short ${{ github.sha }})
             uuidval=$(uuidgen | cut -c 1-8)
             echo "CLABTITLE=${{ inputs.lab_title }}_${shashort}_${uuidval}" >> $GITHUB_ENV
           fi
