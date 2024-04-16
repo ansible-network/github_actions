@@ -6,6 +6,10 @@ on:
         required: false
         type: string
         default: ""
+      lab_title:
+        required: false
+        type: string
+        default: ""
       cml_lab:
         default: tests/integration/labs/single.yaml
         required: false
@@ -103,6 +107,24 @@ jobs:
           VIRL_HOST: ${{ secrets.virl_host }}
           VIRL_PASSWORD: ${{ secrets.virl_password }}
           VIRL_USERNAME: admin
+
+      - name: Create the lab title
+        run: |
+          if [[ "${{ github.event_name }}" == 'pull_request_target' ]]; then
+            echo "CLABTITLE=${{ inputs.lab_title }}_PR${{ github.event.pull_request.number }}" >> $GITHUB_ENV
+          elif [[ "${{ github.event_name }}" == 'workflow_dispatch' ]]; then
+            shashort=$(echo ${{ github.sha }} | cut -c 1-30)
+            uuidval=$(uuidgen | cut -c 1-8)
+            echo "CLABTITLE=${{ inputs.lab_title }}_${shashort}_${uuidval}" >> $GITHUB_ENV
+          fi
+
+      - name: Print the lab title
+        run: echo ${{ env.CLABTITLE }}
+
+      - name: Add Lab Title to the lab file
+        run: >-
+          sed -i "s/title: ${{ inputs.network_os }}/title: ${{ env.CLABTITLE }}/" ${{ inputs.cml_lab }}
+        working-directory: ${{ steps.identify.outputs.collection_path }}
 
       - name: Run integration tests
         run: >-
