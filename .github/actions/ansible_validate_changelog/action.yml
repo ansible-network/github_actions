@@ -11,6 +11,11 @@ inputs:
     description: The pull request base ref.
     required: false
     default: ${{ github.event.pull_request.base.ref }}
+  custom_paths:
+    description: |
+      A comma-separated list of custom paths from which any modified file
+      will require a changelog.
+    default: ""
 
 runs:
   using: composite
@@ -29,5 +34,6 @@ runs:
       run: >-
         python3 ${{ github.action_path }}/validate_changelog.py
         --ref ${{ inputs.base_ref }}
+        --custom-paths ${{ inputs.custom_paths }}
       shell: bash
       working-directory: ${{ inputs.path }}

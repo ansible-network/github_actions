@@ -1,6 +1,14 @@
 name: Changelog required
 on:
   workflow_call:
+    inputs:
+      custom_paths:
+        description: |
+          A comma-separated list of custom paths from which any modified file
+          will require a changelog.
+        required: false
+        type: string
+        default: ""
 jobs:
   changelog:
     runs-on: ubuntu-latest
@@ -15,3 +23,5 @@ jobs:
 
       - name: Validate changelog
         uses: ansible-network/github_actions/.github/actions/ansible_validate_changelog@main
+        with:
+          custom_paths: ${{ inputs.custom_paths }}
