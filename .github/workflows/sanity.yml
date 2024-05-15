@@ -68,7 +68,6 @@ jobs:
         os:
           - ubuntu-latest
         ansible-version:
-          - stable-2.14
           - stable-2.15
           - stable-2.16
           - milestone
