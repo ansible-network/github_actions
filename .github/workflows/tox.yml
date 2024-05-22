@@ -12,22 +12,31 @@ on:
         required: false
         type: string
         default: ""
+      checkout_ref:
+        description: Repository reference to pass to checkout action
+        required: false
+        type: string
+        default: ""
+      checkout_fetch_depth:
+        description: Fetch depth to pass to checkout action
+        required: false
+        type: string
+        default: "0"
 jobs:
   tox:
     runs-on: ubuntu-latest
     name: Run Tox based code tests
     steps:
       - name: Code checkout
-        if: ${{ ! github.event.pull_request.head.sha }}
+        if: ${{ ! inputs.checkout_ref }}
         uses: actions/checkout@v3
 
       - name: Code checkout with parameters
-        if: ${{ github.event.pull_request.head.sha }}
+        if: ${{ inputs.checkout_ref }}
         uses: actions/checkout@v3
         with:
-          path: ${{ env.source_directory }}
-          ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: "0"
+          ref: ${{ inputs.checkout_ref }}
+          fetch-depth: ${{ inputs.checkout_fetch_depth }}
 
       - name: Run tests
         uses: ansible-network/github_actions/.github/actions/tox@main
