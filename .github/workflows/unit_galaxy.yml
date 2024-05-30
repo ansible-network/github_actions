@@ -8,7 +8,6 @@ on:
         default: ""
       matrix_exclude:
         # https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix
-        # 2.14 supports Python 3.9-3.11
         # 2.15 supports Python 3.9-3.11
         # 2.16 supports Python 3.10-3.11
         # https://docs.ansible.com/ansible/devel/roadmap/ROADMAP_2_16.html
@@ -16,10 +15,6 @@ on:
         # devel is 2.16 until 2023-09-18
         default: >-
           [
-            {
-              "ansible-version": "stable-2.14",
-              "python-version": "3.12"
-            },
             {
               "ansible-version": "stable-2.15",
               "python-version": "3.12"
@@ -60,7 +55,6 @@ jobs:
         os:
           - ubuntu-latest
         ansible-version:
-          - stable-2.14
           - stable-2.15
           - stable-2.16
           - milestone

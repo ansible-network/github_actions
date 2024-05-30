@@ -8,7 +8,6 @@ on:
         default: ""
       matrix_exclude:
         # https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix
-        # 2.14 supports Python 3.9-3.11
         # 2.15 supports Python 3.9-3.11
         # 2.16 supports Python 3.10-3.12
         # https://docs.ansible.com/ansible/devel/roadmap/ROADMAP_2_17.html
@@ -17,10 +16,6 @@ on:
         # remove 3.12/milestone from matrix_exclude when milestone is next forwarded
         default: >-
           [
-            {
-              "ansible-version": "stable-2.14",
-              "python-version": "3.12"
-            },
             {
               "ansible-version": "stable-2.15",
               "python-version": "3.12"
