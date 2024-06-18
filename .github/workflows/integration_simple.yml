@@ -17,10 +17,6 @@ on:
         default: >-
           [
             {
-              "ansible-version": "stable-2.13",
-              "python-version": "3.11"
-            },
-            {
               "ansible-version": "stable-2.16",
               "python-version": "3.9"
             },
@@ -31,7 +27,19 @@ on:
             {
               "ansible-version": "devel",
               "python-version": "3.9"
-            }
+            },
+            {
+              "ansible-version": "devel",
+              "python-version": "3.10"
+            },
+            {
+              "ansible-version": "milestone",
+              "python-version": "3.10"
+            },
+            {
+              "ansible-version": "stable-2.15",
+              "python-version": "3.12"
+             }
           ]
         required: false
         type: string
