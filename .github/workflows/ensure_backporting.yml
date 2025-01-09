@@ -1,0 +1,15 @@
+name: Ensure Backporting
+on:
+  workflow_call:
+    secrets:
+      GH_TOKEN:
+        required: false
+
+jobs:
+  labelling:
+    runs-on: ubuntu-latest
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'mergeit') && !contains(github.event.pull_request.labels.*.name, 'do_not_backport') }}
+    steps:
+      - uses: abikouo/github_actions/.github/actions/ensure_backporting@ensure_backporting_1
+        with:
+          token: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN  }}

@@ -1,0 +1,26 @@
+name: ensure backport labels
+description: |
+  A Github action to ensure that a Pull request contains backport labels.
+
+inputs:
+  token:
+    description: The Github token to use to perform operations.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Install required python libraries
+      run: pip install -U requests
+      shell: bash
+
+    - name: Run
+      run: python ${{ github.action_path }}/add_labels.py --repository ${{ github.repository }} --issue-id ${{ github.event.number }}
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
