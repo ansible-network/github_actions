@@ -10,6 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ contains(github.event.pull_request.labels.*.name, 'mergeit') && !contains(github.event.pull_request.labels.*.name, 'do_not_backport') }}
     steps:
-      - uses: abikouo/github_actions/.github/actions/ensure_backporting@ensure_backporting_1
+      - uses: ansible-network/github_actions/.github/actions/ensure_backporting@main
         with:
           token: ${{ secrets.GH_TOKEN || secrets.GITHUB_TOKEN  }}
