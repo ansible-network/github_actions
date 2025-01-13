@@ -1,0 +1,61 @@
+---
+name: Apply backporting labels
+author: Mark Chappell (tremble)
+branding:
+  icon: git-branch
+  color: gray-dark
+description: |
+  Applies backporting labels to a PR.
+
+inputs:
+  purge_labels:
+    description: Whether to purge existing labels
+    required: false
+    default: false
+  purge_prefix:
+    description: The prefix used when purging labels
+    required: false
+    default: 'backport-'
+  label_to_add:
+    description: The label(s) to be applied to the PR
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Strip existing labels and add new labels
+      id: label-strip-add
+      # If breaking_changes or major_changes are pushed, then we always apply do_not_backport
+      # and strip any existing backport-* labels
+      if: ${{ inputs.purge_labels }}
+      shell: bash {0}
+      run: |
+        # If this includes breaking changes, then set the do_not_backport label and remove all
+        # labels starting with "backport-".
+        CURRENT_LABELS=$(
+          gh pr -R "${GITHUB_REPOSITORY}" view "${{ github.event.pull_request.number }}" \
+            --json labels \
+            --jq '[.labels[] | select(.name | startswith("${{ inputs.purge_prefix }}"))] | map(.name) | join(",")'
+        )
+        echo "Apply '${{ inputs.label_to_add }}' (remove '${CURRENT_LABELS}')"
+        if [[ -n ${CURRENT_LABELS} ]] ; then
+          gh pr -R "${GITHUB_REPOSITORY}" edit "${{ github.event.pull_request.number }}" \
+            --add-label ${{ inputs.label_to_add }} \
+            --remove-label "${CURRENT_LABELS}"
+        else
+          gh pr -R "${GITHUB_REPOSITORY}" edit "${{ github.event.pull_request.number }}" \
+            --add-label ${{ inputs.label_to_add }}
+        fi
+      env:
+        GH_TOKEN: ${{ github.token }}
+
+    - name: Apply labels
+      id: label-add
+      if: ${{ ! inputs.purge_labels }}
+      shell: bash {0}
+      run: |
+        echo "Apply '${{ inputs.label_to_add }}'"
+        gh pr -R "${GITHUB_REPOSITORY}" edit "${{ github.event.pull_request.number }}" \
+          --add-label ${{ inputs.label_to_add }}
+      env:
+        GH_TOKEN: ${{ github.token }}
