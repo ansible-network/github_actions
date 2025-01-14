@@ -1,0 +1,107 @@
+---
+name: Apply labels for backporting
+
+on:
+  workflow_call:
+    inputs:
+      label_major_release:
+        default: "do_not_backport"
+        required: false
+        type: string
+        description: |
+          The label to apply if the PR includes a change that would necessitate a major release.
+      label_minor_release:
+        required: true
+        type: string
+        description: |
+          The label to apply if the PR only includes a change that would necessitate a minor
+          release.  This will also be applied by default if the PR doesn't necessitate a major
+          release.
+      label_bugfix_release:
+        required: true
+        type: string
+        description: |
+          The label to apply if the PR only includes a bugfix or security release.
+      label_skip:
+        default: "do_not_backport"
+        required: false
+        type: string
+        description: |
+          If this label has been applied, then the PR will not be re-assessed.
+      label_mergeit:
+        default: "mergeit"
+        required: false
+        type: string
+        description: |
+          Which label will be used to trigger labelling for minor/bugfix backporting.
+          We look for major releases when a change is pushed, and minor/bugfixes when the PR
+          has been approved for merging and the mergeit label has been applied to trigger
+          the merge.
+
+jobs:
+  changelog-types:
+    # We always skip if do_not_backport has previously been applied.
+    # Otherwise, if someone applies 'mergeit', opens the PR, or pushes a new commit
+    # we'll examine the contents of changelog fragments to try to guess the best backport strategy.
+    if: ${{
+      ! contains(github.event.pull_request.labels.*.name, inputs.label_skip)
+      && (
+      (github.event.action == 'labeled' && github.event.label.name == inputs.label_mergeit)
+      || (github.event.action == 'synchronize')
+      || (github.event.action == 'opened')
+      )
+      }}
+    permissions:
+      pull-requests: read
+    runs-on: ubuntu-latest
+    outputs:
+      no_backport: ${{ steps.evaluate.outputs.major_release }}
+      bugfix: ${{ steps.evaluate.outputs.bugfix_release }}
+      minor_only: ${{ steps.evaluate.outputs.minor_release }}
+    steps:
+      - name: Evaluate change types
+        id: evaluate
+        uses: ansible-network/github_actions/.github/actions/changelog_evaluator@main
+
+  changelog-labeling:
+    permissions:
+      pull-requests: write
+    runs-on: ubuntu-latest
+    needs:
+      - changelog-types
+    steps:
+      - name: Strip tags for backporting and apply do_not_backport
+        id: no-backport
+        # If breaking_changes or major_changes are pushed, then we always apply do_not_backport
+        # and strip any existing backport-* labels
+        if: ${{ needs.changelog-types.outputs.no_backport == '0' }}
+        uses: ansible-network/github_actions/.github/actions/changelog_labeller@main
+        with:
+          purge_labels: true
+          label_to_add: ${{ inputs.label_major_release }}
+
+      - name: Apply tag for backporting to at least the most recent major release
+        id: minor-only
+        if: ${{
+          (github.event.action == 'labeled' && github.event.label.name == inputs.label_mergeit )
+          && ! ( needs.changelog-types.outputs.no_backport == '0' )
+          && (
+          ( needs.changelog-types.outputs.minor_only == '0' )
+          || ! (needs.changelog-types.outputs.bugfix == '0' )
+          )
+          }}
+        uses: ansible-network/github_actions/.github/actions/changelog_labeller@main
+        with:
+          label_to_add: ${{ inputs.label_minor_release }}
+
+      - name: Apply tag for backporting to at least the two most recent major releases
+        id: security-or-bugfix
+        if: ${{
+          (github.event.action == 'labeled' && github.event.label.name == inputs.label_mergeit )
+          && ! ( needs.changelog-types.outputs.no_backport == '0' )
+          && ! ( needs.changelog-types.outputs.minor_only == '0' )
+          && ( needs.changelog-types.outputs.bugfix == '0' )
+          }}
+        uses: ansible-network/github_actions/.github/actions/changelog_labeller@main
+        with:
+          label_to_add: ${{ inputs.label_minor_release }},${{ inputs.label_bugfix_release }}

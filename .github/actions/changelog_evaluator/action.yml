@@ -1,0 +1,54 @@
+---
+name: Changelog based PR evaluator
+author: Mark Chappell (tremble)
+branding:
+  icon: git-branch
+  color: gray-dark
+description: |
+  This action evaluates the contents of changelog fragments in "changelogs/fragments/" to assess
+  which branches it may be appropriate to backport a change to.
+
+  A PR is evaluated as needing a "major release" if it includes at least one of "major_changes",
+  "breaking_changes", or "removed_features".
+
+  A PR is evaluated as needing a "minor release" if it includes at least one of "minor_changes" or
+  "deprecated_features".
+
+  A PR is evaluated as being a "bugfix" PR if it includes at least one of "bugfixes" or
+  "security_fixes".
+
+  The output values of this action are "bash-ian" booleans ("0" == True, anything else == False)
+
+outputs:
+  major_release:
+    description: Whether the changelogs indicate that a major release would be needed.
+    value: ${{ steps.evaluate.outputs.major }}
+  minor_release:
+    description: Whether the changelogs indicate that a minor release would be needed.
+    value: ${{ steps.evaluate.outputs.minor }}
+  bugfix_release:
+    description: Whether the changelogs indicate that a the PR includes bugfixes.
+    value: ${{ steps.evaluate.outputs.bugfix }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v2
+      id: checkout
+    - name: Fetch change types from changelog fragments
+      id: evaluate
+      shell: bash {0}
+      run: |
+        gh pr -R "${GITHUB_REPOSITORY}" diff "${{ github.event.pull_request.number }}" --name-only | \
+          grep -E '^changelogs/fragments/' | \
+          while read -r line
+            do cat "${line}" | \
+              python -c 'import sys, yaml; change = yaml.safe_load(sys.stdin.read()) ; print("\n".join(change.keys()));' \
+              | tee -a all-changelog-types
+          done
+        # Beware, these are bash-ian booleans: "true == 0"
+        grep -qE '(release_summary|breaking_changes|major_changes|removed_features)' all-changelog-types ; echo "major=${?}" >>${GITHUB_OUTPUT}
+        grep -qE '(deprecated_features|minor_changes)' all-changelog-types ; echo "minor=${?}" >>${GITHUB_OUTPUT}
+        grep -qE '(bugfixes|security_fixes)' all-changelog-types ; echo "bugfix=${?}" >>${GITHUB_OUTPUT}
+      env:
+        GH_TOKEN: ${{ github.token }}
