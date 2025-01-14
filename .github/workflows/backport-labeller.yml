@@ -5,7 +5,7 @@ on:
   workflow_call:
     inputs:
       label_major_release:
-        default: 'do_not_backport'
+        default: "do_not_backport"
         required: false
         type: string
         description: |
@@ -23,13 +23,13 @@ on:
         description: |
           The label to apply if the PR only includes a bugfix or security release.
       label_skip:
-        default: 'do_not_backport'
+        default: "do_not_backport"
         required: false
         type: string
         description: |
           If this label has been applied, then the PR will not be re-assessed.
       label_mergeit:
-        default: 'mergeit'
+        default: "mergeit"
         required: false
         type: string
         description: |
@@ -44,12 +44,12 @@ jobs:
     # Otherwise, if someone applies 'mergeit', opens the PR, or pushes a new commit
     # we'll examine the contents of changelog fragments to try to guess the best backport strategy.
     if: ${{
-        ! contains(github.event.pull_request.labels.*.name, inputs.label_skip)
-        && (
-          (github.event.action == 'labeled' && github.event.label.name == inputs.label_mergeit)
-          || (github.event.action == 'synchronize')
-          || (github.event.action == 'opened')
-        )
+      ! contains(github.event.pull_request.labels.*.name, inputs.label_skip)
+      && (
+      (github.event.action == 'labeled' && github.event.label.name == inputs.label_mergeit)
+      || (github.event.action == 'synchronize')
+      || (github.event.action == 'opened')
+      )
       }}
     permissions:
       pull-requests: read
@@ -86,8 +86,8 @@ jobs:
           (github.event.action == 'labeled' && github.event.label.name == inputs.label_mergeit )
           && ! ( needs.changelog-types.outputs.no_backport == '0' )
           && (
-            ( needs.changelog-types.outputs.minor_only == '0' )
-            || ! (needs.changelog-types.outputs.bugfix == '0' )
+          ( needs.changelog-types.outputs.minor_only == '0' )
+          || ! (needs.changelog-types.outputs.bugfix == '0' )
           )
           }}
         uses: ansible-network/github_actions/.github/actions/changelog_labeller@main

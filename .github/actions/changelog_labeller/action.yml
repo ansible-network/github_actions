@@ -15,7 +15,7 @@ inputs:
   purge_prefix:
     description: The prefix used when purging labels
     required: false
-    default: 'backport-'
+    default: "backport-"
   label_to_add:
     description: The label(s) to be applied to the PR
     required: true
