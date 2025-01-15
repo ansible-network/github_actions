@@ -35,6 +35,8 @@ runs:
   steps:
     - uses: actions/checkout@v2
       id: checkout
+      with:
+        ref: refs/pull/${{ github.event.number }}/merge
     - name: Fetch change types from changelog fragments
       id: evaluate
       shell: bash {0}
