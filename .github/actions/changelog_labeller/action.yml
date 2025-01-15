@@ -11,13 +11,16 @@ inputs:
   purge_labels:
     description: Whether to purge existing labels
     required: false
+    type: boolean
     default: false
   purge_prefix:
     description: The prefix used when purging labels
     required: false
+    type: string
     default: "backport-"
   label_to_add:
     description: The label(s) to be applied to the PR
+    type: string
     required: true
 
 runs:
@@ -27,7 +30,7 @@ runs:
       id: label-strip-add
       # If breaking_changes or major_changes are pushed, then we always apply do_not_backport
       # and strip any existing backport-* labels
-      if: ${{ inputs.purge_labels }}
+      if: ${{ fromJSON(inputs.purge_labels) }}
       shell: bash {0}
       run: |
         # If this includes breaking changes, then set the do_not_backport label and remove all
@@ -51,7 +54,7 @@ runs:
 
     - name: Apply labels
       id: label-add
-      if: ${{ ! inputs.purge_labels }}
+      if: ${{ ! fromJSON(inputs.purge_labels) }}
       shell: bash {0}
       run: |
         echo "Apply '${{ inputs.label_to_add }}'"
