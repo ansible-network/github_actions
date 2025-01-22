@@ -15,10 +15,10 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Set up Python '3.9'
+    - name: Set up Python '3.12'
       uses: actions/setup-python@v4
       with:
-        python-version: "3.9"
+        python-version: "3.12"
 
     - name: install PyGithub
       run: |
