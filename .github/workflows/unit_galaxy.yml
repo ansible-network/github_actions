@@ -23,36 +23,16 @@ on:
               "python-version": "3.10"
             },
             {
-              "ansible-version": "devel",
-              "python-version": "3.9"
-            },
-            {
               "ansible-version": "milestone",
               "python-version": "3.10"
             },
             {
-              "ansible-version": "milestone",
-              "python-version": "3.9"
-            },
-            {
               "ansible-version": "stable-2.18",
               "python-version": "3.10"
-            },
-            {
-              "ansible-version": "stable-2.18",
-              "python-version": "3.9"
-            },
-            {
-              "ansible-version": "stable-2.17",
-              "python-version": "3.9"
             },
             {
               "ansible-version": "stable-2.17",
               "python-version": "3.13"
-            },
-            {
-              "ansible-version": "stable-2.16",
-              "python-version": "3.9"
             },
             {
               "ansible-version": "stable-2.16",
@@ -90,14 +70,16 @@ jobs:
         os:
           - ubuntu-latest
         ansible-version:
-          - stable-2.15
+          # ansible-core 2.15 reached EOL on November 2024
           - stable-2.16
           - stable-2.17
           - stable-2.18
           - milestone
           - devel
         python-version:
-          - "3.9"
+          # 2.16 supports Python 3.10-3.11
+          # 2.17 supports Python 3.10-3.12
+          # 2.18 supports Python 3.11-3.13
           - "3.10"
           - "3.11"
           - "3.12"
