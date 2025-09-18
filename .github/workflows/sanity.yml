@@ -30,14 +30,6 @@ on:
               "python-version": "3.10"
             },
             {
-              "ansible-version": "milestone",
-              "python-version": "3.11"
-            },
-            {
-              "ansible-version": "milestone",
-              "python-version": "3.10"
-            },
-            {
               "ansible-version": "stable-2.20",
               "python-version": "3.11"
             },
@@ -113,7 +105,6 @@ jobs:
           - stable-2.18
           - stable-2.19
           - stable-2.20
-          - milestone
           - devel
         python-version:
           # 2.16 supports Python 3.10-3.11
