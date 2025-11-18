@@ -144,6 +144,9 @@ jobs:
         run: sudo apt update && sudo apt install libssh-dev
         if: ${{ matrix.python-version >= 3.12 }}
       # extra install step ends
+      - name: Install ansible-compat, for tests
+        shell: bash
+        run: python -m pip install ansible-compat
 
       - name: Install ansible-core (${{ matrix.ansible-version }})
         run: python3 -m pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz --disable-pip-version-check
