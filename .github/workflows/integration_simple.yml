@@ -56,7 +56,7 @@ on:
             {
               "ansible-version": "stable-2.18",
               "python-version": "3.14"
-            },            
+            },
             {
               "ansible-version": "stable-2.18",
               "python-version": "3.10"
