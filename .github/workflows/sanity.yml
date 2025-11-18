@@ -97,6 +97,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        os:
+          - ubuntu-latest
         ansible-version:
           # ansible-core 2.15 reached EOL on November 2024
           # ansible-core 2.16 will reach EOL on May 2025
