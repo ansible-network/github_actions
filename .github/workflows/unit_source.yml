@@ -27,6 +27,18 @@ on:
             },
             {
               "ansible-version": "devel",
+              "python-version": "3.14"
+            },
+            {
+              "ansible-version": "milestone",
+              "python-version": "3.14"
+            },
+            {
+              "ansible-version": "stable-2.20",
+              "python-version": "3.14"
+            },
+            {
+              "ansible-version": "devel",
               "python-version": "3.10"
             },
             {
