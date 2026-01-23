@@ -39,10 +39,11 @@ def main() -> None:
         raise ValueError("ANSIBLE_CORE_CI_KEY environment variable is empty or missing")
     logger.info("data -> %s", json.dumps(data).replace(ansible_core_ci_key, "*******"))
     session_id = "".join(random.choice("0123456789abcdef") for _ in range(32))
-    endpoint_url = (
-        f"https://ansible-core-ci.testing.ansible.com/{ansible_core_ci_stage}/aws/{session_id}"
+    endpoint_url = f"https://api.ci.core.ansible.com/{ansible_core_ci_stage}/aws/{session_id}"
+    endpoint_url_masked = (
+        f"https://api.ci.core.ansible.com/{ansible_core_ci_stage}/aws/<Session ID REDACTED>"
     )
-    logger.info("Endpoint URL -> '%s'", endpoint_url)
+    logger.info("Endpoint URL -> '%s'", endpoint_url_masked)
     response = requests.put(endpoint_url, data=json.dumps(data), headers=headers, timeout=10)
     logger.info("Status: [%d]", response.status_code)
     if response.status_code != 200:
