@@ -281,9 +281,15 @@ class Target:
 
         :param target_path: path to the target
         """
-        self.path = target_path
-        self.lines = [line.split("#")[0] for line in target_path.read_text().split("\n") if line]
-        self.name = target_path.parent.name
+        self.name = target_path.stem
+        self.lines = []
+        aliases_path = PosixPath(target_path / "aliases")
+        if aliases_path.exists():
+            self.lines = [
+                line.split("#")[0]
+                for line in aliases_path.read_text(encoding="utf-8").split("\n")
+                if line
+            ]
         self.exec_time = 0
 
     def is_alias_of(self, name: str) -> bool:
@@ -386,40 +392,45 @@ class Collection:
 
         :yields: a collection target
         """
-        for alias in self.collection_path.glob("tests/integration/targets/*/aliases"):
+        for alias in self.collection_path.glob("tests/integration/targets/*"):
             yield Target(alias)
 
-    def _is_target_already_added(self, target_name: str) -> bool:
-        """Return true if the target is already part of the test plan.
+    def is_candidate_target(self, target: Target) -> bool:
+        """Return true if the target is not ignored and not not already part of the test plan.
 
-        :param target_name: target name being checked
-        :returns: whether the target is already part of the test plan or not
+        :param target: target name being checked
+        :returns: Whether the target should be added to the test plan.
         """
-        for target_src in self._my_test_plan:
-            if target_src.is_alias_of(target_name):
-                return True
-        return False
+        return not target.is_ignored() and not any(
+            target.name == t.name for t in self._my_test_plan
+        )
 
-    def add_target_to_plan(self, target_name: str, is_direct: bool = True) -> None:
+    def add_target_to_plan(self, target_name: str) -> None:
         """Add specific target to the test plan.
 
         :param target_name: target name being added
-        :param is_direct: whether it is a direct target or an alias
         """
-        if not self._is_target_already_added(target_name):
-            for plan_target in self.targets():
-                if plan_target.is_disabled():
-                    continue
-                # For indirect targets we want to skip "ignored" tests
-                if not is_direct and plan_target.is_ignored():
-                    continue
-                if plan_target.is_alias_of(target_name):
-                    self._my_test_plan.append(plan_target)
+        # add the integration test target to the plan
+        for t in self.targets():
+            if t.name == target_name:
+                print(f"...target = {target_name} - is_candidate = {self.is_candidate_target(t)}")
+                if self.is_candidate_target(t):
+                    self._my_test_plan.append(t)
+                return
+
+        # Trying to impacted target for modified role, lookup, inventory, modules...
+        if target_name.startswith("modules_"):
+            target_name = target_name.split("_", maxsplit=1)[1]
+        # add all the targets with the exact name matching the target name or having
+        # the target name in their aliases
+        for t in self.targets():
+            if t.is_alias_of(target_name) and self.is_candidate_target(t):
+                self._my_test_plan.append(t)
 
     def cover_all(self) -> None:
         """Cover all the targets available."""
         for cover_target in self.targets():
-            self.add_target_to_plan(cover_target.name, is_direct=False)
+            self.add_target_to_plan(cover_target.name)
 
     def cover_module_utils(self, pymodule: str, names: list[str]) -> None:
         """Track the targets to run follow up to a module_utils changed.
@@ -440,7 +451,7 @@ class Collection:
 
         for mod, mod_imports in self.modules_import.items():
             if any(util in mod_imports for util in u_candidates):
-                self.add_target_to_plan(mod, is_direct=False)
+                self.add_target_to_plan(mod)
 
     def slow_targets_to_test(self) -> list[str]:
         """List collection slow targets.

@@ -147,44 +147,56 @@ def build_collection(aliases: list[Any]) -> Collection:
         return mycollection
 
 
-def build_alias(name: str, text: str) -> MagicMock:
-    """Build target alias.
+def create_test_content(path: PosixPath, aliases: str = "") -> PosixPath:
+    """Create integration test target.
 
-    :param name: collection name
-    :param text: alias file content
-    :returns: Mock target
+    :param path: The path to the target
+    :param aliases: the content of the aliases file
+    :returns: the path to the target.
     """
-    m_alias_file = MagicMock()
-    m_alias_file.read_text.return_value = text
-    m_alias_file.parent.name = name
-    return m_alias_file
+    path.mkdir()
+    if aliases:
+        file = path / "aliases"
+        file.write_text(aliases)
+    return path
 
 
-def test_c_targets() -> None:
-    """Test add targets method from Collection class."""
+def test_c_targets(tmp_path: PosixPath) -> None:
+    """Test add targets method from Collection class.
+
+    :param tmp_path: python temporary path fixture
+    """
     mycollection = build_collection([])
     assert not list(mycollection.targets())
 
-    mycollection = build_collection([build_alias("a", "ec2\n")])
+    a = tmp_path / "a"
+    mycollection = build_collection([create_test_content(a, "ec2\n")])
     assert len(list(mycollection.targets())) == 1
     assert list(mycollection.targets())[0].name == "a"
     assert list(mycollection.targets())[0].is_alias_of("ec2")
 
-    mycollection = build_collection([build_alias("a", "#ec2\n")])
+    b = tmp_path / "b"
+    mycollection = build_collection([create_test_content(b, "#ec2\n")])
     assert len(list(mycollection.targets())) == 1
-    assert list(mycollection.targets())[0].name == "a"
+    assert list(mycollection.targets())[0].name == "b"
     assert list(mycollection.targets())[0].execution_time() == 180
 
-    mycollection = build_collection([build_alias("a", "time=30\n")])
+    c = tmp_path / "c"
+    mycollection = build_collection([create_test_content(c, "time=30\n")])
     assert len(list(mycollection.targets())) == 1
-    assert list(mycollection.targets())[0].name == "a"
+    assert list(mycollection.targets())[0].name == "c"
     assert list(mycollection.targets())[0].execution_time() == 30
 
 
-def test_2_targets_for_one_module() -> None:
-    """Test 2 targets."""
+def test_2_targets_for_one_module(tmp_path: PosixPath) -> None:
+    """Test 2 targets.
+
+    :param tmp_path: python temporary path fixture
+    """
+    a = tmp_path / "a"
+    b = tmp_path / "b"
     collection = build_collection(
-        [build_alias("a", "ec2_instance\n"), build_alias("b", "ec2_instance\n")]
+        [create_test_content(a, "ec2_instance\n"), create_test_content(b, "ec2_instance\n")]
     )
     assert collection.regular_targets_to_test() == []
     collection.add_target_to_plan("ec2_instance")
@@ -192,45 +204,42 @@ def test_2_targets_for_one_module() -> None:
 
 
 @patch("list_changed_common.read_collection_name")
-def test_c_disabled_unstable(m_read_collection_name: MagicMock) -> None:
+def test_c_disabled_unstable(tmp_path: PosixPath) -> None:
     """Test disable/unstable targets.
 
-    :param m_read_collection_name: read_collection_name patched method
+    :param tmp_path: python temporary path fixture
     """
-    m_read_collection_name.return_value = "some.collection"
-    collection = Collection(PosixPath("nowhere"))
-    m_c_path = MagicMock()
-    collection.collection_path = m_c_path
-    m_c_path.glob.return_value = [
-        build_alias("a", "disabled\n"),
-        build_alias("b", "unstable\n"),
-    ]
+    a = tmp_path / "a"
+    b = tmp_path / "b"
+    collection = build_collection(
+        [create_test_content(a, "disabled\n"), create_test_content(b, "unstable\n")]
+    )
+    collection.collection_path = tmp_path
 
     # all, we should ignore the disabled,unstable jobs
     collection.cover_all()
     assert len(collection.regular_targets_to_test()) == 0
     # if the module is targets, we continue to ignore the disabled
-    collection.add_target_to_plan("a")
+    collection.add_target_to_plan("modules_a")
     assert len(collection.regular_targets_to_test()) == 0
-    # unstable targets should not be triggered if they were pulled in as a dependency
-    collection.add_target_to_plan("b", is_direct=False)
+    collection.add_target_to_plan("modules_b")
     assert len(collection.regular_targets_to_test()) == 0
-    # but the unstable is ok when directly triggered
-    collection.add_target_to_plan("b")
-    assert len(collection.regular_targets_to_test()) == 1
 
 
 @patch("list_changed_common.read_collection_name")
-def test_c_slow_regular_targets(m_read_collection_name: MagicMock) -> None:
+def test_c_slow_regular_targets(m_read_collection_name: MagicMock, tmp_path: PosixPath) -> None:
     """Test targets* methods from Collection class.
 
     :param m_read_collection_name: read_collection_name patched method
+    :param tmp_path: python temporary path fixture
     """
     m_read_collection_name.return_value = "some.collection"
+    tortue = tmp_path / "inventory_tortue"
+    lapin = tmp_path / "lapin"
     collection = build_collection(
         [
-            build_alias("tortue", "slow\nec2\n#s3\n"),
-            build_alias("lapin", "notslow\ncarrot\n\n"),
+            create_test_content(tortue, "slow\nec2\n#s3\n"),
+            create_test_content(lapin, "notslow\ncarrot\n\n"),
         ]
     )
 
@@ -241,12 +250,17 @@ def test_c_slow_regular_targets(m_read_collection_name: MagicMock) -> None:
     assert len(collection.slow_targets_to_test()) == 1
 
 
-def test_c_inventory_targets() -> None:
-    """Test targets methods from Collection class."""
+def test_c_inventory_targets(tmp_path: PosixPath) -> None:
+    """Test targets methods from Collection class.
+
+    :param tmp_path: python temporary path fixture
+    """
+    inventory_tortue = tmp_path / "inventory_tortue"
+    lapin = tmp_path / "lapin"
     col = build_collection(
         [
-            build_alias("inventory_tortue", "slow\nec2\n#s3\n"),
-            build_alias("lapin", "notslow\ninventory_carrot\n\n"),
+            create_test_content(inventory_tortue, "slow\nec2\n#s3\n"),
+            create_test_content(lapin, "notslow\ninventory_carrot\n\n"),
         ]
     )
     col.cover_all()
@@ -257,34 +271,45 @@ def test_c_inventory_targets() -> None:
 
 
 @patch("list_changed_common.read_collection_name")
-def test_c_with_cover(m_read_collection_name: MagicMock) -> None:
+def test_c_with_cover(m_read_collection_name: MagicMock, tmp_path: PosixPath) -> None:
     """Test add_target_to_plan method from Collection class.
 
     :param m_read_collection_name: read_collection_name patched method
+    :param tmp_path: python temporary path fixture
     """
     m_read_collection_name.return_value = "some.collection"
     collection = Collection(PosixPath("nowhere"))
     m_c_path = MagicMock()
     collection.collection_path = m_c_path
 
+    tortue = tmp_path / "tortue"
+    lapin = tmp_path / "lapin"
     m_c_path.glob.return_value = [
-        build_alias("tortue", "slow\nec2\n#s3\n"),
-        build_alias("lapin", "carrot\n\n"),
+        create_test_content(tortue, "slow\nec2\n#s3\n"),
+        create_test_content(lapin, "carrot\n\n"),
     ]
     collection.add_target_to_plan("ec2")
     assert len(collection.slow_targets_to_test()) == 1
     assert collection.regular_targets_to_test() == []
 
 
-def test_splitter_with_time() -> None:
-    """Test splitter method from class ElGrandeSeparator."""
+def test_splitter_with_time(tmp_path: PosixPath) -> None:
+    """Test splitter method from class ElGrandeSeparator.
+
+    :param tmp_path: python temporary path fixture
+    """
+    a = tmp_path / "a"
+    b = tmp_path / "b"
+    c = tmp_path / "c"
+    d = tmp_path / "d"
+    e = tmp_path / "e"
     collection_1 = build_collection(
         [
-            build_alias("a", "time=50m\n"),
-            build_alias("b", "time=10m\n"),
-            build_alias("c", "time=180\n"),
-            build_alias("d", "time=140s  \n"),
-            build_alias("e", "time=70\n"),
+            create_test_content(a, "time=50m\n"),
+            create_test_content(b, "time=10m\n"),
+            create_test_content(c, "time=180\n"),
+            create_test_content(d, "time=140s  \n"),
+            create_test_content(e, "time=70\n"),
         ]
     )
     collection_1.cover_all()
@@ -295,18 +320,22 @@ def test_splitter_with_time() -> None:
         ("slot1", ["b", "c", "d", "e"]),
     ]
 
+    a0 = tmp_path / "a0"
+    b0 = tmp_path / "b0"
+    c0 = tmp_path / "c0"
+    d0 = tmp_path / "d0"
     collection_2 = build_collection(
         [
-            build_alias("a", "time=50m\n"),
-            build_alias("b", "time=50m\n"),
-            build_alias("c", "time=18\n"),
-            build_alias("d", "time=5m\n"),
+            create_test_content(a0, "time=50m\n"),
+            create_test_content(b0, "time=50m\n"),
+            create_test_content(c0, "time=18\n"),
+            create_test_content(d0, "time=5m\n"),
         ]
     )
     collection_2.cover_all()
     egs = ElGrandeSeparator([collection_2], ANY)
     result = list(egs.build_up_batches([f"slot{i}" for i in range(3)], collection_2))
-    assert result == [("slot0", ["a"]), ("slot1", ["b"]), ("slot2", ["d", "c"])]
+    assert result == [("slot0", ["a0"]), ("slot1", ["b0"]), ("slot2", ["d0", "c0"])]
 
 
 @patch("list_changed_common.read_collection_name")

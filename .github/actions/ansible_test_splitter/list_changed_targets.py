@@ -74,9 +74,6 @@ class ListChangedTargets:
         ) -> None:
             if plugin_type == "targets":
                 file_name, plugin_file_name = str(ref_path), str(ref_path)
-            elif plugin_type == "modules":
-                file_name = PosixPath(ref_path).stem
-                plugin_file_name = file_name
             elif plugin_type == "roles":
                 file_name = str(ref_path)
                 plugin_file_name = f"role/{ref_path}"
@@ -119,6 +116,12 @@ class ListChangedTargets:
                 _add_changed_target(whc.collection_name, target, "targets")
             for role in whc.roles():
                 _add_changed_target(whc.collection_name, role, "roles")
+
+        print("----------- Test plan      -----------")
+        for collection in collections:
+            print(
+                collection.collection_name, " -> ", json.dumps(collection.test_plan_names, indent=2)
+            )
 
         print("----------- Listed Changes -----------\n", json.dumps(listed_changes, indent=2))
         return {x: make_unique(y["targets"]) for x, y in listed_changes.items()}
