@@ -396,7 +396,7 @@ class Collection:
             yield Target(alias)
 
     def is_candidate_target(self, target: Target) -> bool:
-        """Return true if the target is not ignored and not not already part of the test plan.
+        """Return true if the target is not ignored and not already part of the test plan.
 
         :param target: target name being checked
         :returns: Whether the target should be added to the test plan.
