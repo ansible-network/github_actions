@@ -73,7 +73,7 @@ runs:
 
     - name: identify collection (final installation path and tarball name)
       id: identify
-      uses: ./.github/actions/identify_collection
+      uses: abikouo/github_actions/.github/actions/identify_collection@build_install_031926
       with:
         source_path: ${{ inputs.source_path }}
       if: ${{ (inputs.collection_path == '') || (inputs.tar_file == '') }}
