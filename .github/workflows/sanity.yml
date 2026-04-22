@@ -14,11 +14,12 @@ on:
         # 2.18 supports Python 3.11-3.13
         # 2.19 supports Python 3.11-3.13
         # 2.20 supports Python 3.12-3.14
+        # 2.21 supports Python 3.12-3.14
         # support for Python 3.14 added and 3.11 removed in 2.20 for control node
         # target node supported Python 3.8-3.13 as of 2.18 and 2.19
         # target node supported Python 3.9-3.14 as of 2.20
-        # milestone is and devel is switched to 2.21
-        # https://docs.ansible.com/ansible/devel/roadmap/ROADMAP_2_20.html
+        # milestone is and devel is switched to 2.22
+        # https://docs.ansible.com/ansible/devel/roadmap/ROADMAP_2_21.html
         default: >-
           [
             {
@@ -27,6 +28,14 @@ on:
             },
             {
               "ansible-version": "devel",
+              "python-version": "3.10"
+            },
+            {
+              "ansible-version": "stable-2.21",
+              "python-version": "3.11"
+            },
+            {
+              "ansible-version": "stable-2.21",
               "python-version": "3.10"
             },
             {
@@ -101,18 +110,23 @@ jobs:
           - ubuntu-latest
         ansible-version:
           # ansible-core 2.15 reached EOL on November 2024
-          # ansible-core 2.16 will reach EOL on May 2025
+          # ansible-core 2.16 reached EOL on May 2025
+          # ansible-core 2.17 reached EOL on November 2025
+          # However, we are keeping 2.16 and 2.17 in the matrix as multiple collections still support them
+          # ansible-core 2.18 will reach EOL on May 2026
           - stable-2.16
           - stable-2.17
           - stable-2.18
           - stable-2.19
           - stable-2.20
+          - stable-2.21
           - devel
         python-version:
           # 2.16 supports Python 3.10-3.11
           # 2.17 supports Python 3.10-3.12
           # 2.18 and 2.19 supports Python 3.11-3.13
           # 2.20 supports Python 3.12-3.14
+          # 2.21 supports Python 3.12-3.14
           - "3.10"
           - "3.11"
           - "3.12"
