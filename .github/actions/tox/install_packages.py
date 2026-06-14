@@ -24,7 +24,7 @@ logger = logging.getLogger("install_sibling")
 logger.setLevel(logging.DEBUG)
 
 
-# pylint: disable-next=too-many-arguments
+# pylint: disable-next=too-many-arguments,too-many-positional-arguments
 def run_tox_command(
     project_dir: PosixPath,
     env_name: Optional[str],
