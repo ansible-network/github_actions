@@ -10,7 +10,6 @@ from pathlib import PosixPath
 
 from github import Github
 
-
 FORMAT = "[%(asctime)s] - %(message)s"
 logging.basicConfig(format=FORMAT)
 logger = logging.getLogger(__file__)
