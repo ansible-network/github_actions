@@ -1,0 +1,154 @@
+---
+name: Ansible Molecule (CISSHGO)
+"on":
+  workflow_call:
+    inputs:
+      python_version:
+        required: false
+        type: string
+        default: "3.12"
+      ansible_version:
+        required: false
+        type: string
+        default: "stable-2.20"
+      collection_pre_install:
+        description: >-
+          Space-separated list of collections to install via ansible-galaxy
+          (e.g. git+https://github.com/ansible-collections/ansible.netcommon.git)
+        required: false
+        type: string
+        default: ""
+      molecule_scenarios_path:
+        description: >-
+          Path (relative to collection root) containing molecule scenario dirs
+        required: false
+        type: string
+        default: "extensions/molecule"
+      ssh_backends:
+        description: >-
+          JSON array of SSH backends to test (e.g. '["libssh", "paramiko"]')
+        required: false
+        type: string
+        default: '["libssh", "paramiko"]'
+
+jobs:
+  molecule-discover:
+    name: Discover molecule scenarios
+    runs-on: ubuntu-latest
+    outputs:
+      scenarios: ${{ steps.list.outputs.scenarios }}
+      cisshgo_version: ${{ steps.list.outputs.cisshgo_version }}
+    steps:
+      - name: Checkout collection
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: List scenarios
+        id: list
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "${{ inputs.molecule_scenarios_path }}"
+          mapfile -t dirs < <(
+            find . -mindepth 2 -maxdepth 2 -name molecule.yml -printf '%h\n' \
+              | sed 's|^\./||' \
+              | grep -Ev '^(_shared|cisshgo_fixtures)(/|$)' \
+              | sort
+          )
+          if [ ${#dirs[@]} -eq 0 ]; then
+            echo "::error::no molecule scenarios discovered under ${{ inputs.molecule_scenarios_path }}"
+            exit 1
+          fi
+          json=$(printf '%s\n' "${dirs[@]}" | jq -R . | jq -sc .)
+          echo "scenarios=${json}" >> "$GITHUB_OUTPUT"
+          ver=$(tr -d '[:space:]' < cisshgo_fixtures/CISSHGO_VERSION)
+          echo "cisshgo_version=${ver}" >> "$GITHUB_OUTPUT"
+          echo "Discovered scenarios: ${dirs[*]}"
+          echo "Pinned cisshgo: ${ver}"
+
+  molecule:
+    name: "molecule (${{ matrix.network_cli_ssh_type }}): ${{ matrix.scenario }}"
+    needs: molecule-discover
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        scenario: ${{ fromJson(needs.molecule-discover.outputs.scenarios) }}
+        network_cli_ssh_type: ${{ fromJson(inputs.ssh_backends) }}
+        python-version: ["${{ inputs.python_version }}"]
+        ansible-version: ["${{ inputs.ansible_version }}"]
+    env:
+      PYTHONHASHSEED: "0"
+      ANSIBLE_FORCE_COLOR: "1"
+      PY_COLORS: "1"
+      CISSHGO_VERSION: ${{ needs.molecule-discover.outputs.cisshgo_version }}
+    steps:
+      - name: Checkout collection
+        uses: actions/checkout@v4
+        with:
+          path: checkout
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install Ansible + molecule + SSH deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install \
+            "https://github.com/ansible/ansible/archive/${{ matrix.ansible-version }}.tar.gz" \
+            "molecule>=24.0" \
+            "paramiko" \
+            "ansible-pylibssh>=1.1.0"
+
+      - name: Install collection dependencies
+        if: inputs.collection_pre_install != ''
+        run: |
+          ansible-galaxy collection install ${{ inputs.collection_pre_install }} --force
+
+      - name: Install collection from checkout
+        run: ansible-galaxy collection install "${GITHUB_WORKSPACE}/checkout" --force
+
+      - name: Show versions
+        run: |
+          ansible --version
+          molecule --version
+          python --version
+
+      - name: Determine molecule working directory
+        id: mol-dir
+        run: echo "workdir=$(dirname ${{ inputs.molecule_scenarios_path }})" >> "$GITHUB_OUTPUT"
+
+      - name: Run molecule scenario
+        working-directory: checkout/${{ steps.mol-dir.outputs.workdir }}
+        run: molecule test -s "${{ matrix.scenario }}" -- -e ansible_network_cli_ssh_type=${{ matrix.network_cli_ssh_type }}
+
+      - name: Upload cisshgo + molecule logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: molecule-${{ matrix.scenario }}-${{ matrix.network_cli_ssh_type }}-logs
+          path: |
+            /tmp/cisshgo-*.log
+            checkout/${{ inputs.molecule_scenarios_path }}/${{ matrix.scenario }}/molecule.log
+          if-no-files-found: ignore
+          retention-days: 7
+
+  molecule-summary:
+    name: Molecule summary
+    if: always()
+    needs: [molecule-discover, molecule]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if any scenario failed
+        if: needs.molecule.result != 'success'
+        run: |
+          echo "::error::one or more molecule scenarios failed"
+          exit 1
+      - name: All molecule scenarios passed
+        run: echo "OK"
