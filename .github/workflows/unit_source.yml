@@ -17,7 +17,8 @@ on:
         # support for Python 3.14 added and 3.11 removed in 2.20 for control node
         # target node supported Python 3.8-3.13 as of 2.18 and 2.19
         # target node supported Python 3.9-3.14 as of 2.20
-        # milestone is and devel is switched to 2.21
+        # milestone and devel is switched to 2.22
+        # 2.22 supports Python 3.13-3.15
         # https://docs.ansible.com/ansible/devel/roadmap/ROADMAP_2_20.html
         default: >-
           [
