@@ -22,7 +22,6 @@ from list_changed_common import read_targets_to_test
 from list_changed_common import read_test_all_the_targets
 from list_changed_common import read_total_jobs
 
-
 MY_MODULE = """
 from ..module_utils.core import AnsibleAWSModule
 from ipaddress import ipaddress
