@@ -17,7 +17,6 @@ from tempfile import NamedTemporaryFile
 from typing import Any
 from typing import Optional
 
-
 FORMAT = "[%(asctime)s] - %(message)s"
 logging.basicConfig(format=FORMAT)
 logger = logging.getLogger("install_sibling")
