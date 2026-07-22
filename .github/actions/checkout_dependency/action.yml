@@ -46,3 +46,4 @@ runs:
         path: ${{ inputs.path }}
         ref: ${{ steps.resolve-dependency.outputs.merge_commit_sha || inputs.ref }}
         fetch-depth: ${{ inputs.fetch-depth }}
+        allow-unsafe-pr-checkout: true
