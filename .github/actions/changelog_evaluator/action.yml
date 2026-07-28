@@ -33,10 +33,12 @@ outputs:
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       id: checkout
       with:
         ref: refs/pull/${{ github.event.number }}/merge
+        persist-credentials: false
+        allow-unsafe-pr-checkout: true
     - name: Fetch change types from changelog fragments
       id: evaluate
       shell: bash {0}
