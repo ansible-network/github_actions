@@ -21,7 +21,7 @@ runs:
   using: composite
   steps:
     - name: Setup python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
       with:
         python-version: "3.12"
 
@@ -33,16 +33,21 @@ runs:
     - name: Validate changelog using custom paths
       run: >-
         python3 ${{ github.action_path }}/validate_changelog.py
-        --ref ${{ inputs.base_ref }}
-        --custom-paths ${{ inputs.custom_paths }}
+        --ref "$BASE_REF"
+        --custom-paths "$CUSTOM_PATHS"
       shell: bash
       working-directory: ${{ inputs.path }}
       if: inputs.custom_paths != ''
+      env:
+        BASE_REF: ${{ inputs.base_ref }}
+        CUSTOM_PATHS: ${{ inputs.custom_paths }}
 
     - name: Validate changelog
       run: >-
         python3 ${{ github.action_path }}/validate_changelog.py
-        --ref ${{ inputs.base_ref }}
+        --ref "$BASE_REF"
       shell: bash
       working-directory: ${{ inputs.path }}
       if: inputs.custom_paths == ''
+      env:
+        BASE_REF: ${{ inputs.base_ref }}

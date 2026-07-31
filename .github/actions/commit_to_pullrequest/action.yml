@@ -32,26 +32,36 @@ outputs:
 runs:
   using: composite
   steps:
+    # allow-unsafe-pr-checkout is required because this action needs to check out
+    # fork PR code to commit changes back. Mitigated by persist-credentials: false
+    # and all inputs passed via env vars (not shell-interpolated).
     - name: checkout fork repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         repository: ${{ github.event.pull_request.head.repo.full_name }}
         ref: ${{ github.head_ref }}
+        token: ${{ inputs.token }}
+        persist-credentials: false
+        allow-unsafe-pr-checkout: true
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
       with:
         python-version: "3.12"
 
     - name: Install required python libraries
-      run: pip install -U ${{ inputs.python_libs }}
+      run: pip install -U $PYTHON_LIBS
       shell: bash
       if: inputs.python_libs != ''
+      env:
+        PYTHON_LIBS: ${{ inputs.python_libs }}
 
     - name: Download python script
       run: >-
-        curl -o /tmp/update_repository.py ${{ inputs.python_executable_url }}
+        curl -o /tmp/update_repository.py "$PYTHON_EXECUTABLE_URL"
       shell: bash
+      env:
+        PYTHON_EXECUTABLE_URL: ${{ inputs.python_executable_url }}
 
     - name: Execute python script
       run: >-
@@ -63,9 +73,11 @@ runs:
       run: |
         if [[ -n $(git status -s) ]]; then
           echo -e "changes detected\n$(git status -s)"
-          git add -A ${{ inputs.file_pattern }}
-          git -c user.name="$GIT_USER_NAME" -c user.email="$GIT_USER_EMAIL" commit -m "${{ inputs.commit_message }}" --author="$GIT_AUTHOR"
-          git push origin ${{ github.head_ref }}
+          git add -A $FILE_PATTERN
+          git -c user.name="$GIT_USER_NAME" -c user.email="$GIT_USER_EMAIL" commit -m "$COMMIT_MESSAGE" --author="$GIT_AUTHOR"
+          echo "$GITHUB_TOKEN" | gh auth login --with-token
+          gh auth setup-git
+          git push origin "$HEAD_REF"
           echo "changes_detected=true" >> $GITHUB_OUTPUT
         else
           echo "changes_detected=false" >> $GITHUB_OUTPUT
@@ -76,3 +88,6 @@ runs:
         GIT_USER_NAME: "github-actions[bot]"
         GIT_USER_EMAIL: "41898282+github-actions[bot]@users.noreply.github.com"
         GIT_AUTHOR: "${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>"
+        HEAD_REF: ${{ github.head_ref }}
+        COMMIT_MESSAGE: ${{ inputs.commit_message }}
+        FILE_PATTERN: ${{ inputs.file_pattern }}
