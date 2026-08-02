@@ -17,6 +17,7 @@ max-line-length = 100
 
 [tool.pylint.master]
 no-docstring-rgx = "__.*__"
+py-version = "3.9"
 
 [tool.pylint.messages_control]
 disable = ["fixme"]
