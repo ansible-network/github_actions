@@ -13,7 +13,6 @@ from typing import Optional
 
 import yaml
 
-
 FORMAT = "[%(asctime)s] - %(message)s"
 logging.basicConfig(format=FORMAT)
 logger = logging.getLogger("validate_changelog")
