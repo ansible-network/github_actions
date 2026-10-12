@@ -8,7 +8,6 @@ from pathlib import PosixPath
 
 import yaml
 
-
 FORMAT = "[%(asctime)s] - %(message)s"
 logging.basicConfig(format=FORMAT)
 logger = logging.getLogger("update_aws_user_agent")
