@@ -9,7 +9,6 @@ import sys
 
 import requests
 
-
 FORMAT = "[%(asctime)s] - %(message)s"
 logging.basicConfig(format=FORMAT)
 logger = logging.getLogger("create_aws_session")
