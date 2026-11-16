@@ -10,7 +10,6 @@ from argparse import ArgumentParser
 from github import Github
 from github import GithubException
 
-
 FORMAT = "[%(asctime)s] - %(message)s"
 logging.basicConfig(format=FORMAT)
 logger = logging.getLogger(__file__)
