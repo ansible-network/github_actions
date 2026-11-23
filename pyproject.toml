@@ -1,3 +1,29 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+# Minimal packaging so this repository can be consumed as a pre-commit hook
+# repository (see .pre-commit-hooks.yaml). pre-commit builds a virtualenv from
+# this metadata, which is how the hooks get their dependencies -- `language:
+# script` could not install pyyaml for update_aws_user_agent.
+[project]
+name = "ansible-network-github-actions"
+version = "1.0.0"
+description = "Helper scripts for ansible-network collection CI, exposed as pre-commit hooks"
+requires-python = ">=3.9"
+dependencies = ["pyyaml"]
+
+[project.scripts]
+update-aws-user-agent = "update_aws_user_agent:main"
+update-aws-boto-constraints = "update_aws_boto_constraints:main"
+
+[tool.setuptools]
+# scripts/ contains standalone top-level modules, not a package.
+py-modules = ["update_aws_user_agent", "update_aws_boto_constraints"]
+
+[tool.setuptools.package-dir]
+"" = "scripts"
+
 [tool]
 
 [tool.black]

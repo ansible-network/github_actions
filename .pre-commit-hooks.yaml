@@ -1,0 +1,42 @@
+---
+# Hook definitions for this repository, so collections can run the AWS variable
+# updaters locally and in CI instead of through a privileged workflow that
+# commits back to the pull request.
+#
+# Consume them from a collection, pinned to a commit of this repository:
+#
+#   repos:
+#     - repo: https://github.com/ansible-network/github_actions
+#       rev: <commit sha>
+#       hooks:
+#         - id: update-aws-user-agent
+#         - id: update-aws-boto-constraints
+#
+# Both hooks are pure functions of files already tracked in the collection, so
+# they are idempotent: running them again after they have made a change is a
+# no-op. That is what lets pre-commit.ci autofix a pull request exactly once
+# instead of looping.
+
+- id: update-aws-user-agent
+  name: update aws user-agent variable from galaxy.yml
+  description: >-
+    Keep the <NAMESPACE>_<NAME>_COLLECTION_VERSION constant under plugins/ in
+    sync with the version declared in galaxy.yml.
+  entry: update-aws-user-agent
+  language: python
+  # The script derives everything from galaxy.yml and walks plugins/ itself, so
+  # it must not be handed the staged filenames.
+  pass_filenames: false
+  files: ^(galaxy\.yml|plugins/.*\.py)$
+
+- id: update-aws-boto-constraints
+  name: update botocore and boto3 constraints
+  description: >-
+    Sync the boto3/botocore pins in tests/unit/constraints.txt,
+    tests/integration/constraints.txt and the MINIMUM_BOTO3_VERSION /
+    MINIMUM_BOTOCORE_VERSION constants under plugins/ with the versions
+    declared in requirements.txt.
+  entry: update-aws-boto-constraints
+  language: python
+  pass_filenames: false
+  files: ^(requirements\.txt|plugins/.*\.py|tests/(unit|integration)/constraints\.txt)$
