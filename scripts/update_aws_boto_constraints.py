@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Script to update boto* library constraints aws hard-coded variable."""
 
+from __future__ import annotations
+
 import logging
 import os
 import re
@@ -16,6 +18,7 @@ logger.setLevel(logging.DEBUG)
 
 MIN_BOTOCORE_RE = re.compile(r"MINIMUM_BOTOCORE_VERSION( *)=( *)[\"|'][0-9\.]+[\"|']")
 MIN_BOTO3_RE = re.compile(r"MINIMUM_BOTO3_VERSION( *)=( *)[\"|'][0-9\.]+[\"|']")
+INCLUDE_RE = re.compile(r"^[ \t]*(?:-r|--requirement)[= \t]+(\S+)", re.MULTILINE)
 
 
 def replace_vars(values: dict[str, str], line: str) -> str:
@@ -71,19 +74,57 @@ def update_tests_constraints(boto3_version: str, botocore_version: str) -> None:
             update_single_file(os.path.join(root, name), min_boto_values)
 
 
+def read_requirements(path: PosixPath, seen: set[PosixPath] | None = None) -> str:
+    """Read a requirements file, inlining any file it pulls in with -r/--requirement.
+
+    Collections do not always declare the boto floors directly in
+    requirements.txt; some only carry "-r meta/ee-requirements.txt" and keep the
+    pins there. pip resolves an include relative to the directory of the file
+    that contains it, so the same rule is applied here.
+
+    :param path: The requirements file to read.
+    :param seen: Files already read, used to stop include cycles.
+    :returns: The content of the file concatenated with everything it includes.
+    """
+    already_read = set() if seen is None else seen
+    resolved = PosixPath(os.path.abspath(path))
+    if resolved in already_read or not path.is_file():
+        return ""
+    already_read.add(resolved)
+
+    content = path.read_text(encoding="utf-8")
+    for include in INCLUDE_RE.findall(content):
+        content += "\n" + read_requirements(path.parent / include, already_read)
+    return content
+
+
 def read_boto_version() -> tuple[str, str]:
     """Read boto version constraints from requirement file.
 
     :returns: Tuple of boto3 and botocore version constraints
+    :raises ValueError: If either version cannot be determined.
     """
     botocore_regex = re.compile(r"^botocore[>=<]+([0-9\.]+)", re.MULTILINE | re.IGNORECASE)
     boto3_regex = re.compile(r"^boto3[>=<]+([0-9\.]+)", re.MULTILINE | re.IGNORECASE)
 
-    with PosixPath("requirements.txt").open(encoding="utf-8") as file_desc:
-        content = file_desc.read()
-        m_boto3 = boto3_regex.search(content)
-        m_botocore = botocore_regex.search(content)
-        return m_boto3.group(1) if m_boto3 else "", m_botocore.group(1) if m_botocore else ""
+    content = read_requirements(PosixPath("requirements.txt"))
+    m_boto3 = boto3_regex.search(content)
+    m_botocore = botocore_regex.search(content)
+
+    # Returning "" here used to be silent, and the caller would then write the
+    # empty string over every pin it found -- blanking out the constraints files
+    # and turning MINIMUM_BOTOCORE_VERSION into "". Fail loudly instead.
+    missing = [
+        name for name, match in (("boto3", m_boto3), ("botocore", m_botocore)) if match is None
+    ]
+    if missing:
+        raise ValueError(
+            f"Could not determine the minimum version of {' and '.join(missing)} from "
+            "requirements.txt or the files it includes. Refusing to continue, because "
+            "writing an empty version would erase the existing constraints."
+        )
+
+    return m_boto3.group(1), m_botocore.group(1)  # type: ignore[union-attr]
 
 
 def main() -> None:
